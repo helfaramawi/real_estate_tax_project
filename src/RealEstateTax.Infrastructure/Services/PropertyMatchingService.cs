@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+using NetTopologySuite.Geometries;
 using RealEstateTax.Application.Common.Interfaces;
 using RealEstateTax.Domain.Entities;
 using RealEstateTax.Domain.Services;
@@ -161,33 +162,68 @@ public class PropertyMatchingService : IPropertyMatchingService
 
     private async Task<Guid?> FindByGisAsync(double lat, double lng, CancellationToken ct)
     {
-        // TODO: Replace with PostGIS ST_DWithin query for accurate spatial search
-        var tolerance = GisMatchRadiusMeters / 111000.0; // rough degree conversion
+        // The column is geometry(Point,4326): ST_DWithin distance is in degrees.
+        // 1° ≈ 111 km at the equator; Egypt is 24–31°N so this approximation is accurate to ~10%.
+        // To use true metres, change the column type to geography(Point,4326) in the schema.
+        var toleranceDeg = GisMatchRadiusMeters / 111_000.0;
+        var point = new Point(lng, lat) { SRID = 4326 };
+
         var location = await _db.PropertyLocations
             .Where(l => !l.IsDeleted
-                && l.Latitude.HasValue && l.Longitude.HasValue
-                && Math.Abs(l.Latitude!.Value - lat) < tolerance
-                && Math.Abs(l.Longitude!.Value - lng) < tolerance)
+                && l.Coordinates != null
+                && l.Coordinates.IsWithinDistance(point, toleranceDeg))
             .Select(l => (Guid?)l.PropertyId)
             .FirstOrDefaultAsync(ct);
-        return location;
+
+        if (location.HasValue) return location;
+
+        // Scalar-coordinate fallback for rows without a PostGIS geometry value
+        return await _db.PropertyLocations
+            .Where(l => !l.IsDeleted
+                && l.Coordinates == null
+                && l.Latitude.HasValue && l.Longitude.HasValue
+                && Math.Abs(l.Latitude!.Value - lat) < toleranceDeg
+                && Math.Abs(l.Longitude!.Value - lng) < toleranceDeg)
+            .Select(l => (Guid?)l.PropertyId)
+            .FirstOrDefaultAsync(ct);
     }
 
     private async Task<Guid?> FindByAddressSimilarityAsync(string address, CancellationToken ct)
     {
-        // TODO: Replace with PostgreSQL trigram similarity (pg_trgm) for production quality matching
-        var normalised = address.ToUpperInvariant().Trim();
+        var normalised = address.Trim();
+
+        // pg_trgm similarity via EF.Functions — only translatable by the PostgreSQL provider.
+        // TrigramsAreSimilar throws InvalidOperationException when evaluated locally (tests/non-PG).
+        try
+        {
+            var pgMatch = await _db.Properties
+                .Where(p => !p.IsDeleted
+                    && p.FullAddress != null
+                    && EF.Functions.TrigramsAreSimilar(p.FullAddress, normalised))
+                .OrderByDescending(p => EF.Functions.TrigramsSimilarity(p.FullAddress!, normalised))
+                .Select(p => (Guid?)p.Id)
+                .FirstOrDefaultAsync(ct);
+
+            if (pgMatch.HasValue) return pgMatch;
+        }
+        catch (InvalidOperationException)
+        {
+            // pg_trgm not available in the current provider — fall through to Jaccard
+        }
+
+        // In-process Jaccard trigram fallback (tests and non-PostgreSQL providers)
+        var normUpper = normalised.ToUpperInvariant();
         var potential = await _db.Properties
             .Where(p => !p.IsDeleted && p.FullAddress != null)
             .Select(p => new { p.Id, p.FullAddress })
-            .Take(100)
+            .Take(200)
             .ToListAsync(ct);
 
         foreach (var p in potential)
         {
             if (p.FullAddress == null) continue;
-            var sim = ComputeSimpleSimilarity(normalised, p.FullAddress.ToUpperInvariant());
-            if (sim >= AddressSimilarityThreshold) return p.Id;
+            if (ComputeSimpleSimilarity(normUpper, p.FullAddress.ToUpperInvariant()) >= AddressSimilarityThreshold)
+                return p.Id;
         }
         return null;
     }
