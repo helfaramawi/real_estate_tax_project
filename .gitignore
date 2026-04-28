@@ -1,0 +1,65 @@
+## .NET
+bin/
+obj/
+*.user
+*.suo
+.vs/
+*.userprefs
+*.pidb
+*.booproj
+.idea/
+*.swp
+*~
+
+## Build results
+[Dd]ebug/
+[Rr]elease/
+x64/
+x86/
+[Ww][Ii][Nn]32/
+[Aa][Rr][Mm]/
+[Aa][Rr][Mm]64/
+bld/
+[Bb]in/
+[Oo]bj/
+[Ll]og/
+[Ll]ogs/
+publish/
+
+## NuGet
+*.nupkg
+*.snupkg
+.nuget/
+packages/
+!**/packages/repositories.config
+!**/packages/build/
+project.lock.json
+packages.lock.json
+
+## Secrets — NEVER commit
+appsettings.Production.json
+appsettings.Staging.json
+*.pfx
+*.p12
+.env
+.env.*
+secrets.json
+*secrets*.json
+
+## Docker
+.dockerignore
+
+## OS
+.DS_Store
+Thumbs.db
+Desktop.ini
+
+## Test results
+TestResults/
+coverage/
+*.coveragexml
+*.coverage
+
+## Uploads
+/var/retax/
+uploads/

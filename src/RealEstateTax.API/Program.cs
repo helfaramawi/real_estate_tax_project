@@ -1,0 +1,147 @@
+using AspNetCoreRateLimit;
+using Hangfire;
+using Microsoft.AspNetCore.Http.Features;
+using Microsoft.OpenApi.Models;
+using RealEstateTax.API.Middleware;
+using RealEstateTax.Application;
+using RealEstateTax.Infrastructure;
+using RealEstateTax.Infrastructure.Persistence;
+using Serilog;
+using Serilog.Events;
+
+// ─── Bootstrap Serilog ────────────────────────────────────────────────────────
+Log.Logger = new LoggerConfiguration()
+    .MinimumLevel.Override("Microsoft", LogEventLevel.Warning)
+    .MinimumLevel.Override("System", LogEventLevel.Warning)
+    .Enrich.FromLogContext()
+    .WriteTo.Console()
+    .CreateBootstrapLogger();
+
+try
+{
+    var builder = WebApplication.CreateBuilder(args);
+
+    // ─── Serilog from config ──────────────────────────────────────────────────
+    builder.Host.UseSerilog((ctx, services, lc) => lc
+        .ReadFrom.Configuration(ctx.Configuration)
+        .ReadFrom.Services(services)
+        .Enrich.FromLogContext()
+        .WriteTo.Console());
+
+    // ─── Layers DI ───────────────────────────────────────────────────────────
+    builder.Services.AddApplication();
+    builder.Services.AddInfrastructure(builder.Configuration);
+
+    // ─── HTTP context ─────────────────────────────────────────────────────────
+    builder.Services.AddHttpContextAccessor();
+
+    // ─── Controllers ─────────────────────────────────────────────────────────
+    builder.Services.AddControllers()
+        .AddJsonOptions(o => o.JsonSerializerOptions.PropertyNamingPolicy = System.Text.Json.JsonNamingPolicy.CamelCase);
+
+    // ─── Swagger / OpenAPI ────────────────────────────────────────────────────
+    builder.Services.AddEndpointsApiExplorer();
+    builder.Services.AddSwaggerGen(c =>
+    {
+        c.SwaggerDoc("v1", new OpenApiInfo
+        {
+            Title = "Real Estate Tax Intelligence Platform – Egypt",
+            Version = "v1",
+            Description = "Backend API for the Egyptian Real Estate Tax Administration System",
+            Contact = new OpenApiContact { Name = "Tax Authority IT", Email = "it@retax.gov.eg" }
+        });
+
+        var jwtScheme = new OpenApiSecurityScheme
+        {
+            BearerFormat = "JWT",
+            Name = "Authorization",
+            In = ParameterLocation.Header,
+            Type = SecuritySchemeType.Http,
+            Scheme = "bearer",
+            Description = "Enter: Bearer {token}",
+            Reference = new OpenApiReference { Id = "Bearer", Type = ReferenceType.SecurityScheme }
+        };
+        c.AddSecurityDefinition("Bearer", jwtScheme);
+        c.AddSecurityRequirement(new OpenApiSecurityRequirement { { jwtScheme, Array.Empty<string>() } });
+        c.EnableAnnotations();
+    });
+
+    // ─── Rate limiting ────────────────────────────────────────────────────────
+    builder.Services.AddMemoryCache();
+    builder.Services.Configure<IpRateLimitOptions>(builder.Configuration.GetSection("IpRateLimiting"));
+    builder.Services.AddSingleton<IIpPolicyStore, MemoryCacheIpPolicyStore>();
+    builder.Services.AddSingleton<IRateLimitCounterStore, MemoryCacheRateLimitCounterStore>();
+    builder.Services.AddSingleton<IRateLimitConfiguration, RateLimitConfiguration>();
+    builder.Services.AddSingleton<IProcessingStrategy, AsyncKeyLockProcessingStrategy>();
+    builder.Services.AddInMemoryRateLimiting();
+
+    // ─── File upload size limit ───────────────────────────────────────────────
+    builder.Services.Configure<FormOptions>(o => o.MultipartBodyLengthLimit = 20 * 1024 * 1024);
+
+    // ─── CORS ─────────────────────────────────────────────────────────────────
+    builder.Services.AddCors(o => o.AddPolicy("DefaultPolicy", p =>
+        p.WithOrigins(builder.Configuration.GetSection("Cors:AllowedOrigins").Get<string[]>() ?? ["http://localhost:3000"])
+         .AllowAnyMethod()
+         .AllowAnyHeader()
+         .AllowCredentials()));
+
+    // ─── Health checks ────────────────────────────────────────────────────────
+    builder.Services.AddHealthChecks()
+        .AddNpgSql(builder.Configuration.GetConnectionString("DefaultConnection")!);
+
+    var app = builder.Build();
+
+    // ─── Database migration & seed ────────────────────────────────────────────
+    using (var scope = app.Services.CreateScope())
+    {
+        var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+        await db.Database.MigrateAsync();
+        await ApplicationDbContextSeed.SeedAsync(db);
+    }
+
+    // ─── Middleware pipeline ──────────────────────────────────────────────────
+    app.UseMiddleware<ExceptionHandlingMiddleware>();
+    app.UseMiddleware<CorrelationIdMiddleware>();
+
+    app.UseSerilogRequestLogging(o =>
+    {
+        o.MessageTemplate = "{RequestMethod} {RequestPath} responded {StatusCode} in {Elapsed:0.0000} ms | CorrelationId: {CorrelationId}";
+        o.EnrichDiagnosticContext = (dc, ctx) =>
+        {
+            dc.Set("CorrelationId", ctx.Request.Headers["X-Correlation-ID"].FirstOrDefault() ?? ctx.TraceIdentifier);
+            dc.Set("UserAgent", ctx.Request.Headers.UserAgent.ToString());
+        };
+    });
+
+    app.UseIpRateLimiting();
+    app.UseCors("DefaultPolicy");
+
+    if (app.Environment.IsDevelopment() || app.Environment.IsStaging())
+    {
+        app.UseSwagger();
+        app.UseSwaggerUI(c =>
+        {
+            c.SwaggerEndpoint("/swagger/v1/swagger.json", "RET Platform v1");
+            c.RoutePrefix = "swagger";
+        });
+    }
+
+    app.UseAuthentication();
+    app.UseAuthorization();
+    app.MapControllers();
+    app.MapHealthChecks("/health");
+    app.UseHangfireDashboard("/hangfire", new DashboardOptions
+    {
+        // TODO: Restrict Hangfire dashboard to Admin role in production
+    });
+
+    await app.RunAsync();
+}
+catch (Exception ex) when (ex is not HostAbortedException)
+{
+    Log.Fatal(ex, "Application terminated unexpectedly");
+}
+finally
+{
+    Log.CloseAndFlush();
+}
