@@ -13,6 +13,8 @@ services:
       POSTGRES_DB: retax_db
     volumes:
       - postgres_data:/var/lib/postgresql/data
+      # Mount the initial schema so it runs automatically on first start
+      - ./src/RealEstateTax.Infrastructure/Migrations/V1__InitialSchema.sql:/docker-entrypoint-initdb.d/V1__InitialSchema.sql:ro
     ports:
       - "5432:5432"
     healthcheck:
