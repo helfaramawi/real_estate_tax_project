@@ -1,6 +1,7 @@
 using AspNetCoreRateLimit;
 using Hangfire;
 using Microsoft.AspNetCore.Http.Features;
+using RealEstateTax.Infrastructure.BackgroundJobs;
 using Microsoft.OpenApi.Models;
 using RealEstateTax.API.Middleware;
 using RealEstateTax.Application;
@@ -134,6 +135,22 @@ try
     {
         // TODO: Restrict Hangfire dashboard to Admin role in production
     });
+
+    // ─── Recurring jobs ───────────────────────────────────────────────────────
+    RecurringJob.AddOrUpdate<BillReminderJob>(
+        "bill-reminders-daily",
+        j => j.SendRemindersAsync(CancellationToken.None),
+        Cron.Daily(8));   // 08:00 UTC every day
+
+    RecurringJob.AddOrUpdate<BillReminderJob>(
+        "mark-overdue-bills-daily",
+        j => j.MarkOverdueBillsAsync(CancellationToken.None),
+        Cron.Daily(0));   // midnight UTC every day
+
+    RecurringJob.AddOrUpdate<PenaltyCalculationJob>(
+        "penalty-calculation-monthly",
+        j => j.CalculateAndApplyPenaltiesAsync(CancellationToken.None),
+        Cron.Monthly(1, 6));  // 1st of each month at 06:00 UTC
 
     await app.RunAsync();
 }

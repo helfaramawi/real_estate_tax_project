@@ -729,7 +729,9 @@ public class IntegrationAppService : IIntegrationService
 
         await _db.IntegrationRequests.AddAsync(integrationRequest, ct);
         await _db.SaveChangesAsync(ct);
-        // TODO: Enqueue Hangfire background job to process the integration request
+
+        Hangfire.BackgroundJob.Enqueue<BackgroundJobs.IntegrationProcessingJob>(
+            j => j.ProcessAsync(integrationRequest.Id, CancellationToken.None));
 
         return Result<IntegrationReceiveResultDto>.Success(new IntegrationReceiveResultDto { RequestId = integrationRequest.Id, Accepted = true, Message = "Request queued for processing.", CorrelationId = integrationRequest.CorrelationId });
     }
@@ -749,6 +751,11 @@ public class IntegrationAppService : IIntegrationService
         req.Status = IntegrationRequestStatus.RetryScheduled;
         req.NextRetryAt = DateTime.UtcNow.AddSeconds(30);
         await _db.SaveChangesAsync(ct);
+
+        Hangfire.BackgroundJob.Schedule<BackgroundJobs.IntegrationProcessingJob>(
+            j => j.ProcessAsync(req.Id, CancellationToken.None),
+            TimeSpan.FromSeconds(30));
+
         return Result<bool>.Success(true);
     }
 }

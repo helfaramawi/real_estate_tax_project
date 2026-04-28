@@ -11,6 +11,7 @@ using RealEstateTax.Application.Services;
 using RealEstateTax.Domain.Services;
 using RealEstateTax.Infrastructure.Identity;
 using RealEstateTax.Infrastructure.Persistence;
+using RealEstateTax.Infrastructure.BackgroundJobs;
 using RealEstateTax.Infrastructure.Services;
 using RealEstateTax.Infrastructure.Services.ApplicationServices;
 
@@ -55,6 +56,12 @@ public static class DependencyInjection
         services.AddHangfire(config =>
             config.UsePostgreSqlStorage(opts => opts.UseNpgsqlConnection(connectionString)));
         services.AddHangfireServer();
+
+        // Background job classes (resolved by Hangfire's IoC activator)
+        services.AddScoped<IntegrationProcessingJob>();
+        services.AddScoped<BillReminderJob>();
+        services.AddScoped<PenaltyCalculationJob>();
+        services.AddScoped<RiskRecalculationJob>();
 
         // Infrastructure services
         services.AddScoped<IJwtTokenService, JwtTokenService>();

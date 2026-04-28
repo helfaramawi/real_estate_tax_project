@@ -147,7 +147,9 @@ public enum NotificationType
     FieldSurveyAssigned = 5,
     ValuationCompleted = 6,
     RiskFlagRaised = 7,
-    SystemAlert = 8
+    SystemAlert = 8,
+    BillReminder = 9,
+    OverdueNotice = 10
 }
 
 public enum NotificationChannel
