@@ -75,6 +75,7 @@ public static class DependencyInjection
         services.AddScoped<ITaxCalculationService, TaxCalculationService>();
         services.AddScoped<IValuationService, ValuationDomainService>();
         services.AddScoped<IRiskScoringService, RiskScoringService>();
+        services.AddScoped<IExemptionService, ExemptionDomainService>();
 
         // Application services
         services.AddScoped<IAuthService, AuthAppService>();
