@@ -65,6 +65,10 @@ try
         c.AddSecurityDefinition("Bearer", jwtScheme);
         c.AddSecurityRequirement(new OpenApiSecurityRequirement { { jwtScheme, Array.Empty<string>() } });
         c.EnableAnnotations();
+
+        var xmlFile = $"{System.Reflection.Assembly.GetExecutingAssembly().GetName().Name}.xml";
+        var xmlPath = Path.Combine(AppContext.BaseDirectory, xmlFile);
+        if (File.Exists(xmlPath)) c.IncludeXmlComments(xmlPath);
     });
 
     // ─── Rate limiting ────────────────────────────────────────────────────────
