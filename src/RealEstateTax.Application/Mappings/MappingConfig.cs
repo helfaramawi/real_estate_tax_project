@@ -99,10 +99,12 @@ public static class MappingConfig
             .Map(dest => dest.PropertyCode, src => src.Property.PropertyCode)
             .Map(dest => dest.Level, src => src.Level.ToString())
             .Map(dest => dest.RiskFactors, src => src.RiskFactors != null
-                ? System.Text.Json.JsonSerializer.Deserialize<List<string>>(src.RiskFactors)
+
+                ? System.Text.Json.JsonSerializer.Deserialize<List<string>>(src.RiskFactors, (System.Text.Json.JsonSerializerOptions?)null)
                 : new List<string>())
             .Map(dest => dest.Recommendations, src => src.Recommendations != null
-                ? System.Text.Json.JsonSerializer.Deserialize<List<string>>(src.Recommendations)
+ 
+                ? System.Text.Json.JsonSerializer.Deserialize<List<string>>(src.Recommendations, (System.Text.Json.JsonSerializerOptions?)null)
                 : new List<string>());
 
         TypeAdapterConfig<FraudFlag, FraudFlagDto>.NewConfig()
