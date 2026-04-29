@@ -10,6 +10,7 @@ using RealEstateTax.Domain.Enums;
 
 namespace RealEstateTax.API.Controllers;
 
+/// <summary>Field survey assignment, progress tracking, and photo/document attachment upload.</summary>
 [ApiController]
 [Route("api/field-surveys")]
 [Authorize]
@@ -29,7 +30,9 @@ public class FieldSurveysController : ControllerBase
         _user = user;
     }
 
+    /// <summary>List field surveys; FieldInspector role is automatically filtered to their own assignments.</summary>
     [HttpGet]
+    [ProducesResponseType(200)]
     public async Task<IActionResult> GetAll([FromQuery] QueryParameters query, CancellationToken ct)
     {
         IQueryable<FieldSurvey> q = _db.FieldSurveys
@@ -59,8 +62,11 @@ public class FieldSurveysController : ControllerBase
         });
     }
 
+    /// <summary>Assign a new field survey to an inspector for a specific property.</summary>
     [HttpPost]
     [Authorize(Roles = "Admin,SuperAdmin,TaxOfficer")]
+    [ProducesResponseType(200)]
+    [ProducesResponseType(400)]
     public async Task<IActionResult> Create([FromBody] CreateFieldSurveyRequest request, CancellationToken ct)
     {
         var survey = request.Adapt<FieldSurvey>();
@@ -76,8 +82,13 @@ public class FieldSurveysController : ControllerBase
         return Ok(new { success = true, data = survey.Adapt<FieldSurveyDto>() });
     }
 
+    /// <summary>Update survey field data (measurements, observations). Transitions status to InProgress on first update.</summary>
+    /// <param name="id">Survey GUID.</param>
     [HttpPut("{id:guid}")]
     [Authorize(Roles = "Admin,SuperAdmin,TaxOfficer,FieldInspector")]
+    [ProducesResponseType(200)]
+    [ProducesResponseType(403)]
+    [ProducesResponseType(404)]
     public async Task<IActionResult> Update(Guid id, [FromBody] UpdateFieldSurveyRequest request, CancellationToken ct)
     {
         var survey = await _db.FieldSurveys.FindAsync([id], ct);
@@ -96,8 +107,12 @@ public class FieldSurveysController : ControllerBase
         return Ok(new { success = true, data = survey.Adapt<FieldSurveyDetailDto>() });
     }
 
+    /// <summary>Submit a completed survey for supervisor review (status → Submitted).</summary>
+    /// <param name="id">Survey GUID.</param>
     [HttpPost("{id:guid}/submit")]
     [Authorize(Roles = "FieldInspector,Admin,SuperAdmin")]
+    [ProducesResponseType(200)]
+    [ProducesResponseType(404)]
     public async Task<IActionResult> Submit(Guid id, CancellationToken ct)
     {
         var survey = await _db.FieldSurveys.FindAsync([id], ct);
@@ -111,9 +126,14 @@ public class FieldSurveysController : ControllerBase
         return Ok(new { success = true, message = "Survey submitted." });
     }
 
+    /// <summary>Upload a photo or PDF attachment to a field survey (max 20 MB; JPEG, PNG, WebP, PDF).</summary>
+    /// <param name="id">Survey GUID.</param>
     [HttpPost("{id:guid}/attachments")]
     [Authorize(Roles = "FieldInspector,Admin,SuperAdmin")]
     [RequestSizeLimit(20 * 1024 * 1024)]
+    [ProducesResponseType(200)]
+    [ProducesResponseType(400)]
+    [ProducesResponseType(404)]
     public async Task<IActionResult> UploadAttachment(
         Guid id,
         IFormFile file,

@@ -41,15 +41,15 @@ public class ExemptionDomainService : IExemptionService
         // Evaluate based on exemption type
         switch (rule.ExemptionType)
         {
-            case nameof(ExemptionType.SocialHousing):
+            case nameof(ExemptionType.LowIncome):
                 EvaluateSocialHousing(property, satisfied, failed);
                 break;
 
-            case nameof(ExemptionType.DisabledOwner):
+            case nameof(ExemptionType.Disabled):
                 EvaluateDisabledOwner(taxpayer, satisfied, failed);
                 break;
 
-            case nameof(ExemptionType.WidowOrOrphan):
+            case nameof(ExemptionType.Other):
                 EvaluateWidowOrOrphan(taxpayer, satisfied, failed);
                 break;
 
@@ -57,7 +57,7 @@ public class ExemptionDomainService : IExemptionService
                 EvaluateAgricultural(property, satisfied, failed);
                 break;
 
-            case nameof(ExemptionType.ReligiousInstitution):
+            case nameof(ExemptionType.Religious):
                 EvaluateReligious(property, taxpayer, satisfied, failed);
                 break;
 
@@ -153,10 +153,10 @@ public class ExemptionDomainService : IExemptionService
 
     private static void EvaluateReligious(Property property, Taxpayer taxpayer, List<string> sat, List<string> fail)
     {
-        if (property.Type == PropertyType.Religious)
-            sat.Add("PropertyTypeIsReligious");
+        if (property.Type == PropertyType.Institutional)
+            sat.Add("PropertyTypeIsInstitutional");
         else
-            fail.Add($"PropertyType={property.Type}IsNotReligious");
+            fail.Add($"PropertyType={property.Type}IsNotInstitutional");
 
         if (taxpayer.IsCorporate)
             sat.Add("OwnerIsCorporateEntity");

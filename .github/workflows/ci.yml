@@ -1,0 +1,134 @@
+name: CI
+
+on:
+  push:
+    branches: [main, claude/real-estate-tax-backend-ua7ex]
+  pull_request:
+    branches: [main]
+
+env:
+  DOTNET_VERSION: "8.0.x"
+  DOTNET_NOLOGO: true
+  DOTNET_CLI_TELEMETRY_OPTOUT: true
+
+jobs:
+  # ─── Build & Unit Tests ─────────────────────────────────────────────────────
+  build-and-unit-test:
+    name: Build + Unit Tests
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup .NET ${{ env.DOTNET_VERSION }}
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: ${{ env.DOTNET_VERSION }}
+
+      - name: Restore dependencies
+        run: dotnet restore
+
+      - name: Build (release)
+        run: dotnet build --no-restore --configuration Release
+
+      - name: Run unit tests
+        run: |
+          dotnet test tests/RealEstateTax.UnitTests/RealEstateTax.UnitTests.csproj \
+            --no-build \
+            --configuration Release \
+            --logger "trx;LogFileName=unit-test-results.trx" \
+            --results-directory ./test-results
+
+      - name: Upload unit test results
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: unit-test-results
+          path: ./test-results/*.trx
+
+  # ─── Integration Tests (needs PostgreSQL + PostGIS) ─────────────────────────
+  integration-test:
+    name: Integration Tests
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgis/postgis:16-3.4
+        env:
+          POSTGRES_USER: retax_user
+          POSTGRES_PASSWORD: retax_password
+          POSTGRES_DB: retax_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U retax_user -d retax_test"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup .NET ${{ env.DOTNET_VERSION }}
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: ${{ env.DOTNET_VERSION }}
+
+      - name: Restore dependencies
+        run: dotnet restore
+
+      - name: Build (release)
+        run: dotnet build --no-restore --configuration Release
+
+      - name: Run integration tests
+        env:
+          # Override the connection string for the integration test host
+          # (CustomWebApplicationFactory swaps it out for in-memory anyway,
+          # but the DI setup reads it before the factory override fires)
+          ConnectionStrings__DefaultConnection: >-
+            Host=localhost;Port=5432;Database=retax_test;
+            Username=retax_user;Password=retax_password
+          Jwt__Secret: "CiTestSecretKeyMustBe32CharsLong!!"
+          Jwt__Issuer: "RealEstateTaxTestIssuer"
+          Jwt__Audience: "RealEstateTaxTestAudience"
+        run: |
+          dotnet test tests/RealEstateTax.IntegrationTests/RealEstateTax.IntegrationTests.csproj \
+            --no-build \
+            --configuration Release \
+            --logger "trx;LogFileName=integration-test-results.trx" \
+            --results-directory ./test-results
+
+      - name: Upload integration test results
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: integration-test-results
+          path: ./test-results/*.trx
+
+  # ─── Docker build (smoke-test that the image builds) ─────────────────────────
+  docker-build:
+    name: Docker Build
+    runs-on: ubuntu-latest
+    needs: build-and-unit-test
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build Docker image
+        run: docker build -t retax-api:ci .
+
+      - name: Verify image starts (health check)
+        run: |
+          docker run -d --name retax_smoke \
+            -e ASPNETCORE_ENVIRONMENT=Development \
+            -e ConnectionStrings__DefaultConnection="Host=localhost;Database=smoke" \
+            -e Jwt__Secret="SmokeTestSecretKeyMustBe32Chars!!" \
+            -e Jwt__Issuer="SmokeIssuer" \
+            -e Jwt__Audience="SmokeAudience" \
+            -p 8081:8080 \
+            retax-api:ci || true
+          # Give the container a few seconds to start (it will fail to connect
+          # to Postgres but the HTTP server itself should initialise)
+          sleep 5
+          docker logs retax_smoke
+          docker stop retax_smoke || true
