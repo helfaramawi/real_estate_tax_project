@@ -57,6 +57,31 @@ public class ApplicationDbContext : DbContext, IApplicationDbContext
         // DomainEvent is discovered via BaseEntity.DomainEvents — ignore it, it is not a DB table
         modelBuilder.Ignore<DomainEvent>();
         modelBuilder.ApplyConfigurationsFromAssembly(Assembly.GetExecutingAssembly());
+
+        // Map all column names to snake_case to match the PostgreSQL schema.
+        // Table names are already set explicitly in each IEntityTypeConfiguration.
+        foreach (var entityType in modelBuilder.Model.GetEntityTypes())
+        {
+            foreach (var property in entityType.GetProperties())
+            {
+                var current = property.GetColumnBaseName();
+                if (current != null)
+                    property.SetColumnName(ToSnakeCase(current));
+            }
+        }
+    }
+
+    private static string ToSnakeCase(string name)
+    {
+        if (string.IsNullOrEmpty(name)) return name;
+        var sb = new System.Text.StringBuilder();
+        for (int i = 0; i < name.Length; i++)
+        {
+            if (i > 0 && char.IsUpper(name[i]) && !char.IsUpper(name[i - 1]))
+                sb.Append('_');
+            sb.Append(char.ToLower(name[i]));
+        }
+        return sb.ToString();
     }
 
     public override async Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
