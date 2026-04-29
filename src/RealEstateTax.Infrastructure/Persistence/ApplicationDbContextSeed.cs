@@ -10,6 +10,7 @@ public static class ApplicationDbContextSeed
     {
         await SeedRolesAsync(context);
         await SeedPermissionsAsync(context);
+        await SeedRolePermissionsAsync(context);
         await SeedAdminUserAsync(context);
         await SeedRulesAsync(context);
         await SeedExternalEntitiesAsync(context);
@@ -71,6 +72,59 @@ public static class ApplicationDbContextSeed
             .ToList();
 
         await context.Permissions.AddRangeAsync(permissions);
+        await context.SaveChangesAsync();
+    }
+
+    private static async Task SeedRolePermissionsAsync(ApplicationDbContext context)
+    {
+        var superAdminId = Guid.Parse("10000001-0000-0000-0000-000000000001");
+        if (await context.RolePermissions.AnyAsync(rp => rp.RoleId == superAdminId)) return;
+
+        var allPermissions = await context.Permissions.ToListAsync();
+        var permByName = allPermissions.ToDictionary(p => p.Name);
+        var rolePermissions = new List<RolePermission>();
+
+        // SuperAdmin and Admin get every permission
+        var fullAccessIds = new[]
+        {
+            Guid.Parse("10000001-0000-0000-0000-000000000001"), // SuperAdmin
+            Guid.Parse("10000001-0000-0000-0000-000000000002"), // Admin
+        };
+        foreach (var roleId in fullAccessIds)
+            rolePermissions.AddRange(allPermissions.Select(p => new RolePermission { RoleId = roleId, PermissionId = p.Id, CreatedBy = "Seed" }));
+
+        // Scoped permissions for specialist roles
+        var scopedPerms = new Dictionary<Guid, string[]>
+        {
+            [Guid.Parse("10000001-0000-0000-0000-000000000003")] = // TaxOfficer
+                ["properties:read", "taxpayers:read", "taxpayers:create", "taxpayers:update",
+                 "valuations:read", "assessments:read", "assessments:create", "assessments:approve",
+                 "bills:read", "bills:create", "bills:issue", "payments:read", "exemptions:read", "dashboard:read"],
+            [Guid.Parse("10000001-0000-0000-0000-000000000004")] = // ValuationOfficer
+                ["properties:read", "valuations:read", "valuations:create", "valuations:approve",
+                 "assessments:read", "dashboard:read"],
+            [Guid.Parse("10000001-0000-0000-0000-000000000005")] = // FieldInspector
+                ["properties:read", "field-surveys:read", "field-surveys:create", "field-surveys:submit",
+                 "dashboard:read"],
+            [Guid.Parse("10000001-0000-0000-0000-000000000006")] = // AppealsOfficer
+                ["properties:read", "taxpayers:read", "appeals:read", "appeals:create",
+                 "appeals:assign", "appeals:decide", "exemptions:read", "dashboard:read"],
+            [Guid.Parse("10000001-0000-0000-0000-000000000007")] = // CollectionOfficer
+                ["bills:read", "payments:read", "payments:create", "taxpayers:read", "dashboard:read"],
+            [Guid.Parse("10000001-0000-0000-0000-000000000008")] = // Auditor
+                ["audit-logs:read", "properties:read", "taxpayers:read", "valuations:read",
+                 "assessments:read", "bills:read", "payments:read", "appeals:read", "dashboard:read"],
+            [Guid.Parse("10000001-0000-0000-0000-000000000009")] = // Citizen
+                ["properties:read", "bills:read", "payments:read", "appeals:read", "appeals:create",
+                 "exemptions:read", "dashboard:read"],
+        };
+
+        foreach (var (roleId, names) in scopedPerms)
+            foreach (var name in names)
+                if (permByName.TryGetValue(name, out var perm))
+                    rolePermissions.Add(new RolePermission { RoleId = roleId, PermissionId = perm.Id, CreatedBy = "Seed" });
+
+        await context.RolePermissions.AddRangeAsync(rolePermissions);
         await context.SaveChangesAsync();
     }
 
