@@ -28,9 +28,6 @@ RUN dotnet publish "src/RealEstateTax.API/RealEstateTax.API.csproj" \
 FROM mcr.microsoft.com/dotnet/aspnet:8.0 AS final
 WORKDIR /app
 
-# Install libgdal for NetTopologySuite PostGIS support
-RUN apt-get update && apt-get install -y libgdal-dev && rm -rf /var/lib/apt/lists/*
-
 COPY --from=publish /app/publish .
 
 RUN mkdir -p /var/retax/uploads && chmod 755 /var/retax/uploads
