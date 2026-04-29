@@ -946,10 +946,10 @@ INSERT INTO user_roles (id, user_id, role_id, created_at, created_by) VALUES
 
 -- Seed exemption rules
 INSERT INTO exemption_rules (id, code, name, exemption_type, exemption_percentage, is_full_exemption, requires_approval, is_active, legal_reference, created_at, created_by) VALUES
-    (gen_random_uuid(), 'EX-SOCIAL', 'Social Housing Exemption',   'SocialHousing',     100, TRUE,  TRUE,  TRUE, 'Law 196/2008 Art. 18', NOW(), 'system'),
-    (gen_random_uuid(), 'EX-WIDOW',  'Widow/Orphan Exemption',     'WidowOrOrphan',     100, TRUE,  TRUE,  TRUE, 'Law 196/2008 Art. 19', NOW(), 'system'),
-    (gen_random_uuid(), 'EX-DISABL', 'Disabled Owner Exemption',   'DisabledOwner',      50, FALSE, TRUE,  TRUE, 'Law 196/2008 Art. 20', NOW(), 'system'),
-    (gen_random_uuid(), 'EX-AGRI',   'Agricultural Land Exemption','Agricultural',      100, TRUE,  FALSE, TRUE, 'Law 196/2008 Art. 22', NOW(), 'system'),
-    (gen_random_uuid(), 'EX-RELIG',  'Religious Property Exemption','Religious',        100, TRUE,  FALSE, TRUE, 'Law 196/2008 Art. 23', NOW(), 'system'),
-    (gen_random_uuid(), 'EX-GOVT',   'Government Property Exemption','Government',      100, TRUE,  FALSE, TRUE, 'Law 196/2008 Art. 24', NOW(), 'system'),
-    (gen_random_uuid(), 'EX-NEWBLD', 'New Construction Exemption', 'NewConstruction',   100, TRUE,  FALSE, TRUE, 'Law 196/2008 Art. 25', NOW(), 'system');
+    (gen_random_uuid(), 'EX-SOCIAL', 'Social Housing Exemption',    'LowIncome',         100, TRUE,  TRUE,  TRUE, 'Law 196/2008 Art. 18', NOW(), 'system'),
+    (gen_random_uuid(), 'EX-WIDOW',  'Widow/Orphan Exemption',      'Other',             100, TRUE,  TRUE,  TRUE, 'Law 196/2008 Art. 19', NOW(), 'system'),
+    (gen_random_uuid(), 'EX-DISABL', 'Disabled Owner Exemption',    'Disabled',           50, FALSE, TRUE,  TRUE, 'Law 196/2008 Art. 20', NOW(), 'system'),
+    (gen_random_uuid(), 'EX-AGRI',   'Agricultural Land Exemption', 'Agricultural',      100, TRUE,  FALSE, TRUE, 'Law 196/2008 Art. 22', NOW(), 'system'),
+    (gen_random_uuid(), 'EX-RELIG',  'Religious Property Exemption','Religious',         100, TRUE,  FALSE, TRUE, 'Law 196/2008 Art. 23', NOW(), 'system'),
+    (gen_random_uuid(), 'EX-GOVT',   'Government Property Exemption','GovernmentOwned',  100, TRUE,  FALSE, TRUE, 'Law 196/2008 Art. 24', NOW(), 'system'),
+    (gen_random_uuid(), 'EX-NEWBLD', 'New Construction Exemption',  'NewConstruction',   100, TRUE,  FALSE, TRUE, 'Law 196/2008 Art. 25', NOW(), 'system');

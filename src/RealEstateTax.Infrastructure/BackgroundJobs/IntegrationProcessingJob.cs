@@ -36,7 +36,7 @@ public class IntegrationProcessingJob
             return;
         }
 
-        if (request.Status is IntegrationRequestStatus.Processed)
+        if (request.Status is IntegrationRequestStatus.Completed)
         {
             _logger.LogInformation("IntegrationRequest {Id} already processed", integrationRequestId);
             return;
@@ -55,7 +55,7 @@ public class IntegrationProcessingJob
             // e.g. if (request.Direction == IntegrationDirection.Inbound) await HandleInboundAsync(request, ct);
             //      else await HandleOutboundAsync(request, ct);
 
-            request.Status = IntegrationRequestStatus.Processed;
+            request.Status = IntegrationRequestStatus.Completed;
             request.ProcessedAt = DateTime.UtcNow;
             request.RetryCount++;
         }

@@ -124,7 +124,7 @@ public class RiskScoringService : IRiskScoringService
         if (!current.Any(o => o.IsVerified)) { score -= 25; factors.Add("UnverifiedOwnership"); recs.Add("Verify title deed documents"); }
 
         var totalPct = current.Sum(o => o.OwnershipPercentage);
-        if (Math.Abs((double)(totalPct - 100m)) > 0.01m) { score -= 20; factors.Add($"OwnershipPercentageSum={totalPct}"); recs.Add("Reconcile ownership percentages to 100%"); }
+        if (Math.Abs((double)(totalPct - 100m)) > 0.01) { score -= 20; factors.Add($"OwnershipPercentageSum={totalPct}"); recs.Add("Reconcile ownership percentages to 100%"); }
         if (!current.Any(o => !string.IsNullOrEmpty(o.TitleDeedNumber))) { score -= 15; factors.Add("NoTitleDeedReference"); }
 
         return Math.Max(0, score);

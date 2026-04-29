@@ -49,14 +49,14 @@ public class RiskRecalculationJob
 
         if (existing is not null)
         {
-            existing.OverallScore = (decimal)result.OverallScore;
+            existing.Score = result.OverallScore;
             existing.Level = result.Level;
-            existing.DataCompletenessScore = (decimal)result.DataCompletenessScore;
-            existing.ValuationConsistencyScore = (decimal)result.ValuationConsistencyScore;
-            existing.OwnershipChainScore = (decimal)result.OwnershipChainScore;
-            existing.PaymentHistoryScore = (decimal)result.PaymentHistoryScore;
-            existing.GeoVerificationScore = (decimal)result.GeoVerificationScore;
-            existing.SourceConsistencyScore = (decimal)result.SourceConsistencyScore;
+            existing.DataCompletenessScore = result.DataCompletenessScore;
+            existing.ValuationConsistencyScore = result.ValuationConsistencyScore;
+            existing.OwnershipChainScore = result.OwnershipChainScore;
+            existing.PaymentHistoryScore = result.PaymentHistoryScore;
+            existing.GeoVerificationScore = result.GeoVerificationScore;
+            existing.SourceConsistencyScore = result.SourceConsistencyScore;
             existing.RiskFactors = System.Text.Json.JsonSerializer.Serialize(result.RiskFactors);
             existing.Recommendations = System.Text.Json.JsonSerializer.Serialize(result.Recommendations);
             existing.CalculatedAt = DateTime.UtcNow;
@@ -67,14 +67,14 @@ public class RiskRecalculationJob
             {
                 Id = Guid.NewGuid(),
                 PropertyId = propertyId,
-                OverallScore = (decimal)result.OverallScore,
+                Score = result.OverallScore,
                 Level = result.Level,
-                DataCompletenessScore = (decimal)result.DataCompletenessScore,
-                ValuationConsistencyScore = (decimal)result.ValuationConsistencyScore,
-                OwnershipChainScore = (decimal)result.OwnershipChainScore,
-                PaymentHistoryScore = (decimal)result.PaymentHistoryScore,
-                GeoVerificationScore = (decimal)result.GeoVerificationScore,
-                SourceConsistencyScore = (decimal)result.SourceConsistencyScore,
+                DataCompletenessScore = result.DataCompletenessScore,
+                ValuationConsistencyScore = result.ValuationConsistencyScore,
+                OwnershipChainScore = result.OwnershipChainScore,
+                PaymentHistoryScore = result.PaymentHistoryScore,
+                GeoVerificationScore = result.GeoVerificationScore,
+                SourceConsistencyScore = result.SourceConsistencyScore,
                 RiskFactors = System.Text.Json.JsonSerializer.Serialize(result.RiskFactors),
                 Recommendations = System.Text.Json.JsonSerializer.Serialize(result.Recommendations),
                 CalculatedAt = DateTime.UtcNow
