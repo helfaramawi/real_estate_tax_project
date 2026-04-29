@@ -54,6 +54,8 @@ public class ApplicationDbContext : DbContext, IApplicationDbContext
     {
         base.OnModelCreating(modelBuilder);
         modelBuilder.HasPostgresExtension("postgis");
+        // DomainEvent is discovered via BaseEntity.DomainEvents — ignore it, it is not a DB table
+        modelBuilder.Ignore<DomainEvent>();
         modelBuilder.ApplyConfigurationsFromAssembly(Assembly.GetExecutingAssembly());
     }
 
