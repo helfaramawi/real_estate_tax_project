@@ -37,8 +37,7 @@ CREATE TABLE users (
     updated_by  VARCHAR(100),
     is_deleted  BOOLEAN     NOT NULL DEFAULT FALSE,
     deleted_at  TIMESTAMPTZ,
-    deleted_by  VARCHAR(100),
-    xmin        XID         -- used as row version (EF Core UseXminAsConcurrencyToken)
+    deleted_by  VARCHAR(100)
 );
 
 CREATE UNIQUE INDEX uq_users_username ON users (username) WHERE NOT is_deleted;
@@ -55,8 +54,7 @@ CREATE TABLE roles (
     updated_by  VARCHAR(100),
     is_deleted  BOOLEAN     NOT NULL DEFAULT FALSE,
     deleted_at  TIMESTAMPTZ,
-    deleted_by  VARCHAR(100),
-    xmin        XID
+    deleted_by  VARCHAR(100)
 );
 
 CREATE UNIQUE INDEX uq_roles_name ON roles (name) WHERE NOT is_deleted;
@@ -146,8 +144,7 @@ CREATE TABLE taxpayers (
     updated_by  VARCHAR(100),
     is_deleted  BOOLEAN     NOT NULL DEFAULT FALSE,
     deleted_at  TIMESTAMPTZ,
-    deleted_by  VARCHAR(100),
-    xmin        XID
+    deleted_by  VARCHAR(100)
 );
 
 CREATE UNIQUE INDEX uq_taxpayers_code ON taxpayers (taxpayer_code) WHERE NOT is_deleted;
@@ -202,8 +199,7 @@ CREATE TABLE properties (
     updated_by  VARCHAR(100),
     is_deleted  BOOLEAN     NOT NULL DEFAULT FALSE,
     deleted_at  TIMESTAMPTZ,
-    deleted_by  VARCHAR(100),
-    xmin        XID
+    deleted_by  VARCHAR(100)
 );
 
 CREATE UNIQUE INDEX uq_properties_code   ON properties (property_code)  WHERE NOT is_deleted;
@@ -471,8 +467,7 @@ CREATE TABLE valuations (
     updated_by  VARCHAR(100),
     is_deleted  BOOLEAN     NOT NULL DEFAULT FALSE,
     deleted_at  TIMESTAMPTZ,
-    deleted_by  VARCHAR(100),
-    xmin        XID
+    deleted_by  VARCHAR(100)
 );
 
 CREATE UNIQUE INDEX uq_valuations_code ON valuations (valuation_code) WHERE NOT is_deleted;
@@ -559,8 +554,7 @@ CREATE TABLE exemptions (
     updated_by  VARCHAR(100),
     is_deleted  BOOLEAN     NOT NULL DEFAULT FALSE,
     deleted_at  TIMESTAMPTZ,
-    deleted_by  VARCHAR(100),
-    xmin        XID
+    deleted_by  VARCHAR(100)
 );
 
 CREATE UNIQUE INDEX uq_exemptions_code ON exemptions (exemption_code) WHERE NOT is_deleted;
@@ -593,8 +587,7 @@ CREATE TABLE tax_assessments (
     updated_by  VARCHAR(100),
     is_deleted  BOOLEAN     NOT NULL DEFAULT FALSE,
     deleted_at  TIMESTAMPTZ,
-    deleted_by  VARCHAR(100),
-    xmin        XID
+    deleted_by  VARCHAR(100)
 );
 
 CREATE UNIQUE INDEX uq_tax_assessments_code ON tax_assessments (assessment_code) WHERE NOT is_deleted;
@@ -624,8 +617,7 @@ CREATE TABLE tax_bills (
     updated_by  VARCHAR(100),
     is_deleted  BOOLEAN     NOT NULL DEFAULT FALSE,
     deleted_at  TIMESTAMPTZ,
-    deleted_by  VARCHAR(100),
-    xmin        XID
+    deleted_by  VARCHAR(100)
 );
 
 CREATE UNIQUE INDEX uq_tax_bills_number ON tax_bills (bill_number) WHERE NOT is_deleted;
@@ -692,8 +684,7 @@ CREATE TABLE appeals (
     updated_by  VARCHAR(100),
     is_deleted  BOOLEAN     NOT NULL DEFAULT FALSE,
     deleted_at  TIMESTAMPTZ,
-    deleted_by  VARCHAR(100),
-    xmin        XID
+    deleted_by  VARCHAR(100)
 );
 
 CREATE UNIQUE INDEX uq_appeals_code ON appeals (appeal_code) WHERE NOT is_deleted;
