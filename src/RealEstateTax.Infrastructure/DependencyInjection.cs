@@ -30,8 +30,7 @@ public static class DependencyInjection
             {
                 npgsql.UseNetTopologySuite();
                 npgsql.EnableRetryOnFailure(3);
-            })
-            .UseSnakeCaseNamingConventions());
+            }));
 
         services.AddScoped<IApplicationDbContext>(sp => sp.GetRequiredService<ApplicationDbContext>());
 
