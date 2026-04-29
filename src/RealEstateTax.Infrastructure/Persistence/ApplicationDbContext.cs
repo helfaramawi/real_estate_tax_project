@@ -60,9 +60,14 @@ public class ApplicationDbContext : DbContext, IApplicationDbContext
 
         // Map all column names to snake_case to match the PostgreSQL schema.
         // Table names are already set explicitly in each IEntityTypeConfiguration.
-        foreach (var entityType in modelBuilder.Model.GetEntityTypes())
+        foreach (var entityType in modelBuilder.Model.GetEntityTypes().ToList())
         {
-            foreach (var property in entityType.GetProperties())
+            // RowVersion is on BaseEntity but the DB uses the xmin system column (handled by
+            // UseXminAsConcurrencyToken in each config). Remove it so EF doesn't try to query
+            // a non-existent row_version column.
+            entityType.RemoveProperty("RowVersion");
+
+            foreach (var property in entityType.GetProperties().ToList())
             {
                 var current = property.GetColumnBaseName();
                 if (current != null)
