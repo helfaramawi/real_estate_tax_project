@@ -62,10 +62,11 @@ public class ApplicationDbContext : DbContext, IApplicationDbContext
         // Table names are already set explicitly in each IEntityTypeConfiguration.
         foreach (var entityType in modelBuilder.Model.GetEntityTypes().ToList())
         {
-            // RowVersion is on BaseEntity but the DB uses the xmin system column (handled by
-            // UseXminAsConcurrencyToken in each config). Remove it so EF doesn't try to query
-            // a non-existent row_version column.
-            entityType.RemoveProperty("RowVersion");
+            // RowVersion (uint) on BaseEntity cannot be auto-mapped by EF Core.
+            // Concurrency is handled by the xmin shadow property from UseXminAsConcurrencyToken.
+            // Calling Ignore via EntityTypeBuilder is the only way to suppress convention re-discovery.
+            if (entityType.ClrType != null)
+                modelBuilder.Entity(entityType.ClrType).Ignore("RowVersion");
 
             foreach (var property in entityType.GetProperties().ToList())
             {
