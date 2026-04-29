@@ -95,10 +95,23 @@ try
     var app = builder.Build();
 
     // ─── Seed reference data (schema created by V1__InitialSchema.sql) ────────
-    using (var scope = app.Services.CreateScope())
+    try
     {
+        using var scope = app.Services.CreateScope();
         var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
         await ApplicationDbContextSeed.SeedAsync(db);
+    }
+    catch (Exception ex)
+    {
+        Log.Error(ex, "Seeding failed — inner: {Inner}", ex.InnerException?.Message ?? "none");
+        // Log full chain
+        var inner = ex.InnerException;
+        while (inner != null)
+        {
+            Log.Error("  Caused by: {Type}: {Msg}", inner.GetType().Name, inner.Message);
+            inner = inner.InnerException;
+        }
+        // Do not crash — the API can start without seed data
     }
 
     // ─── Middleware pipeline ──────────────────────────────────────────────────
@@ -118,15 +131,12 @@ try
     app.UseIpRateLimiting();
     app.UseCors("DefaultPolicy");
 
-    if (app.Environment.IsDevelopment() || app.Environment.IsStaging())
+    app.UseSwagger();
+    app.UseSwaggerUI(c =>
     {
-        app.UseSwagger();
-        app.UseSwaggerUI(c =>
-        {
-            c.SwaggerEndpoint("/swagger/v1/swagger.json", "RET Platform v1");
-            c.RoutePrefix = "swagger";
-        });
-    }
+        c.SwaggerEndpoint("/swagger/v1/swagger.json", "RET Platform v1");
+        c.RoutePrefix = "swagger";
+    });
 
     app.UseAuthentication();
     app.UseAuthorization();
