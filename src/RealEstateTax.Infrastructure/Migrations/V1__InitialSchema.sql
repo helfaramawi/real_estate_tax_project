@@ -946,41 +946,11 @@ CREATE INDEX ix_audit_logs_user_id   ON audit_logs (user_id);
 -- hangfire schema tables: hangfire.job, hangfire.state, hangfire.jobqueue, etc.
 -- Created automatically by UseHangfireStorage(connectionString) at startup.
 
+
 -- =============================================================================
--- SEED DATA — Roles & Permissions
+-- SEED DATA
+-- All initial data (roles, permissions, users, rules, external entities,
+-- property sources) is seeded by ApplicationDbContextSeed at application
+-- startup so that BCrypt hashes are generated at runtime and role/permission
+-- definitions stay in sync with the C# domain model.
 -- =============================================================================
-
-INSERT INTO roles (id, name, description, created_at, created_by) VALUES
-    ('00000000-0000-0000-0001-000000000001', 'SuperAdmin',        'Full system access',                       NOW(), 'system'),
-    ('00000000-0000-0000-0001-000000000002', 'Admin',             'Administrative access',                    NOW(), 'system'),
-    ('00000000-0000-0000-0001-000000000003', 'DataEntry',         'Field data entry and source processing',   NOW(), 'system'),
-    ('00000000-0000-0000-0001-000000000004', 'Assessor',          'Valuation and tax assessment',             NOW(), 'system'),
-    ('00000000-0000-0000-0001-000000000005', 'Approver',          'Maker-checker approval authority',         NOW(), 'system'),
-    ('00000000-0000-0000-0001-000000000006', 'FieldSurveyor',     'Field survey operations',                  NOW(), 'system'),
-    ('00000000-0000-0000-0001-000000000007', 'TaxpayerPortal',    'Self-service taxpayer access',             NOW(), 'system'),
-    ('00000000-0000-0000-0001-000000000008', 'ReadOnly',          'Read-only reporting access',               NOW(), 'system'),
-    ('00000000-0000-0000-0001-000000000009', 'IntegrationService','Machine-to-machine API access',            NOW(), 'system');
-
--- Default SuperAdmin user (password: Admin@12345 — CHANGE IN PRODUCTION)
-INSERT INTO users (id, username, email, password_hash, first_name, last_name, is_active, created_at, created_by) VALUES
-    ('00000000-0000-0000-0000-000000000001',
-     'superadmin',
-     'admin@realestatetax.gov.eg',
-     '$2a$11$K7Gy.BQxf1LWp6Q5mBj6zuJzPT0Gw1bXB.aelPH7YRm1F.eLpAz.6',  -- BCrypt of Admin@12345
-     'System', 'Administrator', TRUE, NOW(), 'system');
-
-INSERT INTO user_roles (id, user_id, role_id, created_at, created_by) VALUES
-    (gen_random_uuid(),
-     '00000000-0000-0000-0000-000000000001',
-     '00000000-0000-0000-0001-000000000001',
-     NOW(), 'system');
-
--- Seed exemption rules
-INSERT INTO exemption_rules (id, code, name, exemption_type, exemption_percentage, is_full_exemption, requires_approval, is_active, legal_reference, created_at, created_by) VALUES
-    (gen_random_uuid(), 'EX-SOCIAL', 'Social Housing Exemption',    'LowIncome',         100, TRUE,  TRUE,  TRUE, 'Law 196/2008 Art. 18', NOW(), 'system'),
-    (gen_random_uuid(), 'EX-WIDOW',  'Widow/Orphan Exemption',      'Other',             100, TRUE,  TRUE,  TRUE, 'Law 196/2008 Art. 19', NOW(), 'system'),
-    (gen_random_uuid(), 'EX-DISABL', 'Disabled Owner Exemption',    'Disabled',           50, FALSE, TRUE,  TRUE, 'Law 196/2008 Art. 20', NOW(), 'system'),
-    (gen_random_uuid(), 'EX-AGRI',   'Agricultural Land Exemption', 'Agricultural',      100, TRUE,  FALSE, TRUE, 'Law 196/2008 Art. 22', NOW(), 'system'),
-    (gen_random_uuid(), 'EX-RELIG',  'Religious Property Exemption','Religious',         100, TRUE,  FALSE, TRUE, 'Law 196/2008 Art. 23', NOW(), 'system'),
-    (gen_random_uuid(), 'EX-GOVT',   'Government Property Exemption','GovernmentOwned',  100, TRUE,  FALSE, TRUE, 'Law 196/2008 Art. 24', NOW(), 'system'),
-    (gen_random_uuid(), 'EX-NEWBLD', 'New Construction Exemption',  'NewConstruction',   100, TRUE,  FALSE, TRUE, 'Law 196/2008 Art. 25', NOW(), 'system');
