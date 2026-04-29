@@ -64,7 +64,6 @@ try
         };
         c.AddSecurityDefinition("Bearer", jwtScheme);
         c.AddSecurityRequirement(new OpenApiSecurityRequirement { { jwtScheme, Array.Empty<string>() } });
-        c.EnableAnnotations();
 
         var xmlFile = $"{System.Reflection.Assembly.GetExecutingAssembly().GetName().Name}.xml";
         var xmlPath = Path.Combine(AppContext.BaseDirectory, xmlFile);
@@ -91,16 +90,14 @@ try
          .AllowCredentials()));
 
     // ─── Health checks ────────────────────────────────────────────────────────
-    builder.Services.AddHealthChecks()
-        .AddNpgSql(builder.Configuration.GetConnectionString("DefaultConnection")!);
+    builder.Services.AddHealthChecks();
 
     var app = builder.Build();
 
-    // ─── Database migration & seed ────────────────────────────────────────────
+    // ─── Seed reference data (schema created by V1__InitialSchema.sql) ────────
     using (var scope = app.Services.CreateScope())
     {
         var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
-        await db.Database.MigrateAsync();
         await ApplicationDbContextSeed.SeedAsync(db);
     }
 
