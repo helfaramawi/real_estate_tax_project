@@ -5,7 +5,8 @@ using RealEstateTax.IntegrationTests.Helpers;
 
 namespace RealEstateTax.IntegrationTests.Taxpayers;
 
-public class TaxpayersEndpointsTests : IClassFixture<CustomWebApplicationFactory>, IAsyncLifetime
+[Collection("Integration")]
+public class TaxpayersEndpointsTests : IAsyncLifetime
 {
     private readonly CustomWebApplicationFactory _factory;
     private HttpClient _client = null!;

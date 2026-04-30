@@ -60,7 +60,7 @@ public class TaxCalculationServiceTests
             Id = Guid.NewGuid(),
             Status = ExemptionStatus.Approved,
             ExemptionPercentage = 50m,
-            Type = ExemptionType.DisabledOwner
+            Type = ExemptionType.Disabled
         };
 
         var result = await _sut.CalculateAsync(AnyProperty(), ValuationWith(100_000m), RuleWith(10m), exemption);
@@ -78,7 +78,7 @@ public class TaxCalculationServiceTests
             Id = Guid.NewGuid(),
             Status = ExemptionStatus.Approved,
             ExemptAmount = 999_999m,   // larger than gross tax
-            Type = ExemptionType.SocialHousing
+            Type = ExemptionType.LowIncome
         };
 
         var result = await _sut.CalculateAsync(AnyProperty(), ValuationWith(100_000m), RuleWith(10m), exemption);
@@ -96,7 +96,7 @@ public class TaxCalculationServiceTests
             Id = Guid.NewGuid(),
             Status = ExemptionStatus.Submitted,
             ExemptionPercentage = 100m,
-            Type = ExemptionType.DisabledOwner
+            Type = ExemptionType.Disabled
         };
 
         var result = await _sut.CalculateAsync(AnyProperty(), ValuationWith(100_000m), RuleWith(10m), exemption);

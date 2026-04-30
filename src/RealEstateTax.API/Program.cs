@@ -1,4 +1,5 @@
 using AspNetCoreRateLimit;
+using FluentValidation.AspNetCore;
 using Hangfire;
 using Microsoft.AspNetCore.Http.Features;
 using RealEstateTax.Infrastructure.BackgroundJobs;
@@ -38,7 +39,9 @@ try
 
     // ─── Controllers ─────────────────────────────────────────────────────────
     builder.Services.AddControllers()
-        .AddJsonOptions(o => o.JsonSerializerOptions.PropertyNamingPolicy = System.Text.Json.JsonNamingPolicy.CamelCase);
+        .AddJsonOptions(o => o.JsonSerializerOptions.PropertyNamingPolicy = System.Text.Json.JsonNamingPolicy.CamelCase)
+        .AddFluentValidation();
+    builder.Services.AddFluentValidationAutoValidation();
 
     // ─── Swagger / OpenAPI ────────────────────────────────────────────────────
     builder.Services.AddEndpointsApiExplorer();

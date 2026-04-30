@@ -5,7 +5,8 @@ using RealEstateTax.Application.DTOs.Auth;
 
 namespace RealEstateTax.IntegrationTests.Auth;
 
-public class AuthEndpointsTests : IClassFixture<CustomWebApplicationFactory>, IAsyncLifetime
+[Collection("Integration")]
+public class AuthEndpointsTests : IAsyncLifetime
 {
     private readonly HttpClient _client;
     private readonly CustomWebApplicationFactory _factory;

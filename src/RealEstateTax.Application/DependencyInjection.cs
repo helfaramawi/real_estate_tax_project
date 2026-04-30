@@ -16,7 +16,7 @@ public static class DependencyInjection
         services.AddSingleton(config);
         services.AddScoped<IMapper, ServiceMapper>();
 
-        services.AddValidatorsFromAssemblyContaining<DependencyInjection>();
+        services.AddValidatorsFromAssembly(typeof(DependencyInjection).Assembly);
 
         return services;
     }

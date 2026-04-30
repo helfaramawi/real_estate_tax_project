@@ -48,13 +48,14 @@ public static class MockDbSetHelper
     public static Mock<Microsoft.EntityFrameworkCore.DbSet<T>> CreateMockDbSet<T>(IEnumerable<T> data) where T : class
     {
         var enumerable = new TestAsyncEnumerable<T>(data);
+        IQueryable<T> queryable = enumerable;
         var mock = new Mock<Microsoft.EntityFrameworkCore.DbSet<T>>();
         mock.As<IAsyncEnumerable<T>>()
             .Setup(m => m.GetAsyncEnumerator(It.IsAny<CancellationToken>()))
             .Returns(enumerable.GetAsyncEnumerator());
-        mock.As<IQueryable<T>>().Setup(m => m.Provider).Returns(enumerable.Provider);
-        mock.As<IQueryable<T>>().Setup(m => m.Expression).Returns(enumerable.Expression);
-        mock.As<IQueryable<T>>().Setup(m => m.ElementType).Returns(enumerable.ElementType);
+        mock.As<IQueryable<T>>().Setup(m => m.Provider).Returns(queryable.Provider);
+        mock.As<IQueryable<T>>().Setup(m => m.Expression).Returns(queryable.Expression);
+        mock.As<IQueryable<T>>().Setup(m => m.ElementType).Returns(queryable.ElementType);
         mock.As<IQueryable<T>>().Setup(m => m.GetEnumerator()).Returns(enumerable.AsEnumerable().GetEnumerator());
         return mock;
     }
