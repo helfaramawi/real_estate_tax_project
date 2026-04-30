@@ -41,7 +41,7 @@ public class AuthAppServiceTests
     [Fact]
     public async Task Login_WrongPassword_IncrementsFailedAttempts()
     {
-        var user = ActiveUserWithPassword("correct_hash_for_wrong_pass");
+        var user = ActiveUserWithPassword(BCrypt.Net.BCrypt.HashPassword("correctpassword"));
         user.FailedLoginAttempts = 0;
         SetupUsers([user]);
         _db.Setup(d => d.SaveChangesAsync(It.IsAny<CancellationToken>())).ReturnsAsync(1);
@@ -54,7 +54,7 @@ public class AuthAppServiceTests
     [Fact]
     public async Task Login_FiveFailedAttempts_LocksAccount()
     {
-        var user = ActiveUserWithPassword("someHash");
+        var user = ActiveUserWithPassword(BCrypt.Net.BCrypt.HashPassword("correctpassword"));
         user.FailedLoginAttempts = 4;
         SetupUsers([user]);
         _db.Setup(d => d.SaveChangesAsync(It.IsAny<CancellationToken>())).ReturnsAsync(1);

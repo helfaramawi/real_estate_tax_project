@@ -10,9 +10,12 @@ public class CreateTaxpayerRequestValidator : AbstractValidator<CreateTaxpayerRe
         RuleFor(x => x.NationalId)
             .NotEmpty()
             .Length(14)
-            .Matches(@"^\d{14}$").WithMessage("National ID must be exactly 14 digits.")
+            .Matches(@"^\d{14}$").WithMessage("National ID must be exactly 14 digits.");
+
+        RuleFor(x => x.NationalId)
             .Must(EgyptianNidValidator.IsStructurallyValid)
-            .WithMessage("National ID has an invalid structure (century digit, date, or governorate code).");
+            .WithMessage("National ID has an invalid structure (century digit, date, or governorate code).")
+            .When(x => !x.IsCorporate);
 
         RuleFor(x => x.FirstName)
             .NotEmpty()
@@ -35,7 +38,7 @@ public class CreateTaxpayerRequestValidator : AbstractValidator<CreateTaxpayerRe
             .When(x => !string.IsNullOrEmpty(x.Email));
 
         RuleFor(x => x.PhoneNumber)
-            .Matches(@"^(\+20|0)?1[0-2,5]\d{8}$")
+            .Matches(@"^(\+20|20|0)?1[0-2,5]\d{8}$")
             .WithMessage("Phone number must be a valid Egyptian mobile number.")
             .When(x => !string.IsNullOrEmpty(x.PhoneNumber));
     }
@@ -51,7 +54,7 @@ public class UpdateTaxpayerRequestValidator : AbstractValidator<UpdateTaxpayerRe
             .When(x => !string.IsNullOrEmpty(x.Email));
 
         RuleFor(x => x.PhoneNumber)
-            .Matches(@"^(\+20|0)?1[0-2,5]\d{8}$")
+            .Matches(@"^(\+20|20|0)?1[0-2,5]\d{8}$")
             .WithMessage("Phone number must be a valid Egyptian mobile number.")
             .When(x => !string.IsNullOrEmpty(x.PhoneNumber));
     }

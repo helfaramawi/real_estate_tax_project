@@ -98,14 +98,8 @@ public static class MappingConfig
         TypeAdapterConfig<RiskScore, RiskScoreDto>.NewConfig()
             .Map(dest => dest.PropertyCode, src => src.Property.PropertyCode)
             .Map(dest => dest.Level, src => src.Level.ToString())
-            .Map(dest => dest.RiskFactors, src => src.RiskFactors != null
-
-                ? System.Text.Json.JsonSerializer.Deserialize<List<string>>(src.RiskFactors, (System.Text.Json.JsonSerializerOptions?)null)
-                : new List<string>())
-            .Map(dest => dest.Recommendations, src => src.Recommendations != null
- 
-                ? System.Text.Json.JsonSerializer.Deserialize<List<string>>(src.Recommendations, (System.Text.Json.JsonSerializerOptions?)null)
-                : new List<string>());
+            .Map(dest => dest.RiskFactors, src => DeserializeStringList(src.RiskFactors))
+            .Map(dest => dest.Recommendations, src => DeserializeStringList(src.Recommendations));
 
         TypeAdapterConfig<FraudFlag, FraudFlagDto>.NewConfig()
             .Map(dest => dest.PropertyCode, src => src.Property.PropertyCode)
@@ -119,4 +113,9 @@ public static class MappingConfig
         // Audit
         TypeAdapterConfig<AuditLog, AuditLogDto>.NewConfig();
     }
+
+    private static List<string> DeserializeStringList(string? json) =>
+        json is not null
+            ? System.Text.Json.JsonSerializer.Deserialize<List<string>>(json) ?? []
+            : [];
 }

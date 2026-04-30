@@ -42,7 +42,7 @@ public class ExemptionDomainServiceTests
     {
         var result = await _sut.CheckEligibilityAsync(
             ResidentialProperty(), Individual(),
-            ActiveRule(nameof(ExemptionType.SocialHousing), isActive: false));
+            ActiveRule(nameof(ExemptionType.LowIncome), isActive: false));
 
         result.IsEligible.Should().BeFalse();
         result.FailedCriteria.Should().Contain(c => c.Contains("inactive"));
@@ -53,7 +53,7 @@ public class ExemptionDomainServiceTests
     {
         var result = await _sut.CheckEligibilityAsync(
             ResidentialProperty(80m), Individual(),
-            ActiveRule(nameof(ExemptionType.SocialHousing)));
+            ActiveRule(nameof(ExemptionType.LowIncome)));
 
         result.IsEligible.Should().BeTrue();
         result.SatisfiedCriteria.Should().Contain(c => c.Contains("≤100m²"));
@@ -64,7 +64,7 @@ public class ExemptionDomainServiceTests
     {
         var result = await _sut.CheckEligibilityAsync(
             ResidentialProperty(150m), Individual(),
-            ActiveRule(nameof(ExemptionType.SocialHousing)));
+            ActiveRule(nameof(ExemptionType.LowIncome)));
 
         result.IsEligible.Should().BeFalse();
         result.FailedCriteria.Should().Contain(c => c.Contains("ExceedsSocialHousingLimit"));
@@ -78,7 +78,7 @@ public class ExemptionDomainServiceTests
 
         var result = await _sut.CheckEligibilityAsync(
             commercial, Individual(),
-            ActiveRule(nameof(ExemptionType.SocialHousing)));
+            ActiveRule(nameof(ExemptionType.LowIncome)));
 
         result.IsEligible.Should().BeFalse();
         result.FailedCriteria.Should().Contain(c => c.Contains("NotResidential"));
@@ -105,7 +105,7 @@ public class ExemptionDomainServiceTests
 
         var result = await _sut.CheckEligibilityAsync(
             ResidentialProperty(), corporate,
-            ActiveRule(nameof(ExemptionType.DisabledOwner)));
+            ActiveRule(nameof(ExemptionType.Disabled)));
 
         result.IsEligible.Should().BeFalse();
         result.FailedCriteria.Should().Contain(c => c.Contains("Corporate"));

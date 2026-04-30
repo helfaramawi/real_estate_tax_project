@@ -159,8 +159,8 @@ public class RiskScoringServiceTests
             ],
             SourceRecords =
             [
-                new PropertySourceRecord { Id = Guid.NewGuid(), PropertyId = id, AreaFromSource = 120m },
-                new PropertySourceRecord { Id = Guid.NewGuid(), PropertyId = id, AreaFromSource = 121m }
+                new PropertySourceRecord { Id = Guid.NewGuid(), MasterPropertyId = id, AreaFromSource = 120m },
+                new PropertySourceRecord { Id = Guid.NewGuid(), MasterPropertyId = id, AreaFromSource = 121m }
             ]
         };
     }
