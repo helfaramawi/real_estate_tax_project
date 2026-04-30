@@ -32,7 +32,7 @@ try
 
     // ─── Layers DI ───────────────────────────────────────────────────────────
     builder.Services.AddApplication();
-    builder.Services.AddInfrastructure(builder.Configuration);
+    builder.Services.AddInfrastructure(builder.Configuration, builder.Environment);
 
     // ─── HTTP context ─────────────────────────────────────────────────────────
     builder.Services.AddHttpContextAccessor();
