@@ -76,7 +76,7 @@ public class TaxCalculationService : ITaxCalculationService
 
         // TODO: Verify late payment penalty rate and schedule per Egyptian tax regulations
         // Placeholder: 1% per month, capped at 50%
-        var monthsOverdue = (int)Math.Ceiling((asOfDate - bill.DueDate).TotalDays / 30.0);
+        var monthsOverdue = (int)((asOfDate - bill.DueDate).TotalDays / 30.0);
         const decimal monthlyPenaltyRate = 0.01m;  // TODO: VERIFY
         const decimal maxPenaltyRate = 0.50m;       // TODO: VERIFY
 

@@ -38,7 +38,7 @@ public class NidValidatorTests
     }
 
     [Theory]
-    [InlineData("20002291234567")]  // 2000-02-29 (2000 IS a leap year)
+    [InlineData("30002291234567")]  // 2000-02-29 (2000 IS a leap year, century digit 3)
     [InlineData("29602291234567")]  // 1996-02-29 (1996 IS a leap year)
     public void IsStructurallyValid_LeapYearDate_ReturnsTrue(string nid)
     {

@@ -84,7 +84,7 @@ public class PropertyMatchingService : IPropertyMatchingService
         var isMatch = totalScore >= 0.60 && bestMatchId.HasValue;
         var method = factors.Count > 0 ? string.Join("+", factors) : "NoMatch";
 
-        return new MatchResult(isMatch, isMatch ? bestMatchId : null, totalScore, method, [.. factors]);
+        return new MatchResult(isMatch, bestMatchId, totalScore, method, [.. factors]);
     }
 
     public async Task<double> CalculateConfidenceScoreAsync(Property property, CancellationToken ct = default)
