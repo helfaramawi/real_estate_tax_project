@@ -1,6 +1,6 @@
 import { useParams, useNavigate } from 'react-router-dom'
 import { useQuery } from '@tanstack/react-query'
-import { ArrowLeft } from 'lucide-react'
+import { ArrowRight } from 'lucide-react'
 import api from '../../lib/api'
 import type { Taxpayer } from '../../lib/types'
 
@@ -26,8 +26,8 @@ export default function TaxpayerDetailPage() {
     enabled: !!id,
   })
 
-  if (isLoading) return <div className="p-8 text-sm text-slate-400">Loading…</div>
-  if (!taxpayer) return <div className="p-8 text-sm text-red-500">Taxpayer not found.</div>
+  if (isLoading) return <div className="p-8 text-sm text-slate-400">جاري التحميل…</div>
+  if (!taxpayer) return <div className="p-8 text-sm text-red-500">المكلف غير موجود.</div>
 
   const fullName = taxpayer.isCorporate
     ? taxpayer.companyName
@@ -37,7 +37,7 @@ export default function TaxpayerDetailPage() {
     <div>
       <button onClick={() => navigate('/taxpayers')}
         className="flex items-center gap-2 text-sm text-slate-500 hover:text-slate-700 mb-5 transition-colors">
-        <ArrowLeft size={16} /> Back to Taxpayers
+        <ArrowRight size={16} /> العودة إلى المكلفين
       </button>
 
       <div className="mb-6">
@@ -47,29 +47,29 @@ export default function TaxpayerDetailPage() {
             {taxpayer.taxpayerCode}
           </span>
           <span className="text-sm text-slate-500">
-            {taxpayer.isCorporate ? 'Corporate' : 'Individual'}
+            {taxpayer.isCorporate ? 'شركة' : 'فرد'}
           </span>
         </div>
       </div>
 
       <div className="bg-white rounded-xl border border-slate-200 p-5">
-        <h2 className="text-base font-semibold text-slate-900 mb-4">Taxpayer Information</h2>
+        <h2 className="text-base font-semibold text-slate-900 mb-4">بيانات المكلف</h2>
         <dl className="grid grid-cols-2 md:grid-cols-3 gap-x-6 gap-y-4">
-          <Detail label="Taxpayer Code" value={taxpayer.taxpayerCode} />
-          <Detail label="National ID / Reg. No." value={taxpayer.nationalId} />
-          <Detail label="Type" value={taxpayer.isCorporate ? 'Corporate' : 'Individual'} />
+          <Detail label="كود المكلف" value={taxpayer.taxpayerCode} />
+          <Detail label="الرقم القومي / رقم السجل" value={taxpayer.nationalId} />
+          <Detail label="النوع" value={taxpayer.isCorporate ? 'شركة' : 'فرد'} />
           {taxpayer.isCorporate
-            ? <Detail label="Company Name" value={taxpayer.companyName} />
+            ? <Detail label="اسم الشركة" value={taxpayer.companyName} />
             : <>
-              <Detail label="First Name" value={taxpayer.firstName} />
-              <Detail label="Last Name" value={taxpayer.lastName} />
+              <Detail label="الاسم الأول" value={taxpayer.firstName} />
+              <Detail label="الاسم الأخير" value={taxpayer.lastName} />
             </>
           }
-          <Detail label="Email" value={taxpayer.email} />
-          <Detail label="Phone" value={taxpayer.phoneNumber} />
-          <Detail label="Governorate" value={taxpayer.governorate} />
-          <Detail label="City" value={taxpayer.city} />
-          <Detail label="Registered On" value={new Date(taxpayer.createdAt).toLocaleDateString('en-GB')} />
+          <Detail label="البريد الإلكتروني" value={taxpayer.email} />
+          <Detail label="الهاتف" value={taxpayer.phoneNumber} />
+          <Detail label="المحافظة" value={taxpayer.governorate} />
+          <Detail label="المدينة" value={taxpayer.city} />
+          <Detail label="تاريخ التسجيل" value={new Date(taxpayer.createdAt).toLocaleDateString('ar-EG')} />
         </dl>
       </div>
     </div>

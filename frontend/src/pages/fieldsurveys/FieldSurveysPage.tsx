@@ -38,38 +38,46 @@ function CreateSurveyModal({ onClose }: { onClose: () => void }) {
       qc.invalidateQueries({ queryKey: ['field-surveys'] })
       onClose()
     },
-    onError: (err: any) => setError(err.response?.data?.error ?? 'Failed to create survey'),
+    onError: (err: any) => setError(err.response?.data?.error ?? 'فشل إنشاء المعاينة'),
   })
 
   return (
-    <Modal title="Assign Field Survey" onClose={onClose}>
+    <Modal title="تكليف بمعاينة ميدانية" onClose={onClose}>
       <div className="space-y-4">
         {error && <div className="bg-red-50 text-red-700 text-sm rounded px-3 py-2">{error}</div>}
-        <FormField label="Property ID" required>
+        <FormField label="معرف العقار" required>
           <Input value={form.propertyId} onChange={(e) => setForm({ ...form, propertyId: e.target.value })} placeholder="GUID" />
         </FormField>
-        <FormField label="Assign To (Inspector User ID)">
-          <Input value={form.assignedToId} onChange={(e) => setForm({ ...form, assignedToId: e.target.value })} placeholder="GUID (optional)" />
+        <FormField label="تكليف إلى (معرف المفتش)">
+          <Input value={form.assignedToId} onChange={(e) => setForm({ ...form, assignedToId: e.target.value })} placeholder="GUID (اختياري)" />
         </FormField>
-        <FormField label="Scheduled Date">
+        <FormField label="تاريخ المعاينة المجدولة">
           <Input type="date" value={form.scheduledDate} onChange={(e) => setForm({ ...form, scheduledDate: e.target.value })} />
         </FormField>
-        <FormField label="Notes">
+        <FormField label="ملاحظات">
           <Textarea value={form.notes} onChange={(e) => setForm({ ...form, notes: e.target.value })} />
         </FormField>
-        <div className="flex gap-3 justify-end pt-2">
-          <button onClick={onClose} className="px-4 py-2 text-sm border border-slate-200 rounded-lg text-slate-600 hover:bg-slate-50">Cancel</button>
+        <div className="flex gap-3 justify-start pt-2">
           <button
             onClick={() => mutation.mutate()}
             disabled={mutation.isPending || !form.propertyId}
             className="px-4 py-2 text-sm bg-blue-600 hover:bg-blue-700 text-white rounded-lg disabled:opacity-60">
-            {mutation.isPending ? 'Assigning…' : 'Assign Survey'}
+            {mutation.isPending ? 'جاري التكليف…' : 'تكليف بمعاينة'}
           </button>
+          <button onClick={onClose} className="px-4 py-2 text-sm border border-slate-200 rounded-lg text-slate-600 hover:bg-slate-50">إلغاء</button>
         </div>
       </div>
     </Modal>
   )
 }
+
+const statusFilters = [
+  { value: '', label: 'الكل' },
+  { value: 'Assigned', label: 'مكلف' },
+  { value: 'InProgress', label: 'جارية' },
+  { value: 'Submitted', label: 'مقدمة' },
+  { value: 'Approved', label: 'معتمدة' },
+]
 
 export default function FieldSurveysPage() {
   const qc = useQueryClient()
@@ -94,22 +102,22 @@ export default function FieldSurveysPage() {
   return (
     <div>
       <PageHeader
-        title="Field Surveys"
-        subtitle="Property inspection and survey assignments"
+        title="المعاينات الميدانية"
+        subtitle="مهام المعاينة والفحص الميداني للعقارات"
         action={
           <button onClick={() => setShowCreate(true)}
             className="px-4 py-2 text-sm bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors">
-            Assign Survey
+            تكليف بمعاينة
           </button>
         }
       />
 
       <div className="mb-4 flex gap-3 flex-wrap">
-        {['', 'Assigned', 'InProgress', 'Submitted', 'Approved'].map((s) => (
-          <button key={s}
-            onClick={() => setStatusFilter(s)}
-            className={`px-3 py-1.5 text-sm rounded-lg border transition-colors ${statusFilter === s ? 'bg-blue-600 text-white border-blue-600' : 'bg-white text-slate-600 border-slate-200 hover:bg-slate-50'}`}>
-            {s || 'All'}
+        {statusFilters.map(({ value, label }) => (
+          <button key={value}
+            onClick={() => setStatusFilter(value)}
+            className={`px-3 py-1.5 text-sm rounded-lg border transition-colors ${statusFilter === value ? 'bg-blue-600 text-white border-blue-600' : 'bg-white text-slate-600 border-slate-200 hover:bg-slate-50'}`}>
+            {label}
           </button>
         ))}
       </div>
@@ -117,17 +125,17 @@ export default function FieldSurveysPage() {
       <DataTable<FieldSurvey>
         loading={isLoading}
         columns={[
-          { key: 'propertyId', header: 'Property ID', render: (r) => <span className="font-mono text-xs">{r.propertyId.slice(0, 8)}…</span> },
-          { key: 'scheduledDate', header: 'Scheduled', render: (r) => r.scheduledDate ? new Date(r.scheduledDate).toLocaleDateString('en-GB') : '—' },
-          { key: 'completedDate', header: 'Completed', render: (r) => r.completedDate ? new Date(r.completedDate).toLocaleDateString('en-GB') : '—' },
-          { key: 'statusName', header: 'Status', render: (r) => <StatusBadge label={r.statusName} /> },
-          { key: 'notes', header: 'Notes', render: (r) => <span className="max-w-xs truncate block text-slate-500">{r.notes ?? '—'}</span> },
+          { key: 'propertyId', header: 'معرف العقار', render: (r) => <span className="font-mono text-xs">{r.propertyId.slice(0, 8)}…</span> },
+          { key: 'scheduledDate', header: 'موعد المعاينة', render: (r) => r.scheduledDate ? new Date(r.scheduledDate).toLocaleDateString('ar-EG') : '—' },
+          { key: 'completedDate', header: 'تاريخ الإنجاز', render: (r) => r.completedDate ? new Date(r.completedDate).toLocaleDateString('ar-EG') : '—' },
+          { key: 'statusName', header: 'الحالة', render: (r) => <StatusBadge label={r.statusName} /> },
+          { key: 'notes', header: 'ملاحظات', render: (r) => <span className="max-w-xs truncate block text-slate-500">{r.notes ?? '—'}</span> },
           {
             key: 'actions', header: '',
             render: (r) => r.statusName === 'InProgress' ? (
               <button onClick={(e) => { e.stopPropagation(); submitMutation.mutate(r.id) }}
                 className="text-xs px-2 py-1 bg-blue-100 text-blue-700 rounded hover:bg-blue-200">
-                Submit
+                تقديم
               </button>
             ) : null
           },

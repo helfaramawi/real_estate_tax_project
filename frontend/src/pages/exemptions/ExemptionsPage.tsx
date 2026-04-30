@@ -9,13 +9,13 @@ import Modal from '../../components/Modal'
 import FormField, { Input, Select } from '../../components/FormField'
 
 const exemptionTypes = [
-  { value: 0, label: 'LowIncome' },
-  { value: 1, label: 'Disabled' },
-  { value: 2, label: 'WidowOrphan' },
-  { value: 3, label: 'Religious' },
-  { value: 4, label: 'Government' },
-  { value: 5, label: 'Historical' },
-  { value: 6, label: 'Agricultural' },
+  { value: 0, label: 'دخل محدود' },
+  { value: 1, label: 'ذوو إعاقة' },
+  { value: 2, label: 'أرامل وأيتام' },
+  { value: 3, label: 'جهات دينية' },
+  { value: 4, label: 'جهات حكومية' },
+  { value: 5, label: 'مباني تاريخية' },
+  { value: 6, label: 'أراضٍ زراعية' },
 ]
 
 function CreateExemptionModal({ onClose }: { onClose: () => void }) {
@@ -44,50 +44,50 @@ function CreateExemptionModal({ onClose }: { onClose: () => void }) {
       qc.invalidateQueries({ queryKey: ['exemptions'] })
       onClose()
     },
-    onError: (err: any) => setError(err.response?.data?.error ?? 'Failed to create exemption'),
+    onError: (err: any) => setError(err.response?.data?.error ?? 'فشل إنشاء الإعفاء'),
   })
 
   return (
-    <Modal title="New Exemption" onClose={onClose}>
+    <Modal title="طلب إعفاء جديد" onClose={onClose}>
       <div className="space-y-4">
         {error && <div className="bg-red-50 text-red-700 text-sm rounded px-3 py-2">{error}</div>}
-        <FormField label="Property ID" required>
+        <FormField label="معرف العقار" required>
           <Input value={form.propertyId} onChange={(e) => setForm({ ...form, propertyId: e.target.value })} placeholder="GUID" />
         </FormField>
-        <FormField label="Taxpayer ID">
-          <Input value={form.taxpayerId} onChange={(e) => setForm({ ...form, taxpayerId: e.target.value })} placeholder="GUID (optional)" />
+        <FormField label="معرف المكلف">
+          <Input value={form.taxpayerId} onChange={(e) => setForm({ ...form, taxpayerId: e.target.value })} placeholder="GUID (اختياري)" />
         </FormField>
-        <FormField label="Type" required>
+        <FormField label="نوع الإعفاء" required>
           <Select value={form.type} onChange={(e) => setForm({ ...form, type: e.target.value })}>
             {exemptionTypes.map((t) => <option key={t.value} value={t.value}>{t.label}</option>)}
           </Select>
         </FormField>
         <div className="grid grid-cols-2 gap-4">
-          <FormField label="Exemption % (0–100)">
+          <FormField label="نسبة الإعفاء (0–100)">
             <Input type="number" value={form.exemptionPercentage}
               onChange={(e) => setForm({ ...form, exemptionPercentage: e.target.value })} placeholder="50" />
           </FormField>
-          <FormField label="Fixed Exempt Amount (EGP)">
+          <FormField label="مبلغ الإعفاء الثابت (ج.م)">
             <Input type="number" value={form.exemptAmount}
-              onChange={(e) => setForm({ ...form, exemptAmount: e.target.value })} placeholder="Or fixed amount" />
+              onChange={(e) => setForm({ ...form, exemptAmount: e.target.value })} placeholder="أو مبلغ ثابت" />
           </FormField>
         </div>
         <div className="grid grid-cols-2 gap-4">
-          <FormField label="Start Date">
+          <FormField label="تاريخ البداية">
             <Input type="date" value={form.startDate} onChange={(e) => setForm({ ...form, startDate: e.target.value })} />
           </FormField>
-          <FormField label="End Date">
+          <FormField label="تاريخ الانتهاء">
             <Input type="date" value={form.endDate} onChange={(e) => setForm({ ...form, endDate: e.target.value })} />
           </FormField>
         </div>
-        <div className="flex gap-3 justify-end pt-2">
-          <button onClick={onClose} className="px-4 py-2 text-sm border border-slate-200 rounded-lg text-slate-600 hover:bg-slate-50">Cancel</button>
+        <div className="flex gap-3 justify-start pt-2">
           <button
             onClick={() => mutation.mutate()}
             disabled={mutation.isPending || !form.propertyId}
             className="px-4 py-2 text-sm bg-blue-600 hover:bg-blue-700 text-white rounded-lg disabled:opacity-60">
-            {mutation.isPending ? 'Submitting…' : 'Submit Exemption'}
+            {mutation.isPending ? 'جاري التقديم…' : 'تقديم الإعفاء'}
           </button>
+          <button onClick={onClose} className="px-4 py-2 text-sm border border-slate-200 rounded-lg text-slate-600 hover:bg-slate-50">إلغاء</button>
         </div>
       </div>
     </Modal>
@@ -123,12 +123,12 @@ export default function ExemptionsPage() {
   return (
     <div>
       <PageHeader
-        title="Exemptions"
-        subtitle="Property tax exemption requests"
+        title="الإعفاءات"
+        subtitle="طلبات الإعفاء من ضريبة العقارات"
         action={
           <button onClick={() => setShowCreate(true)}
             className="px-4 py-2 text-sm bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors">
-            New Exemption
+            إعفاء جديد
           </button>
         }
       />
@@ -136,7 +136,7 @@ export default function ExemptionsPage() {
       <div className="mb-4 flex gap-2">
         <input
           type="text"
-          placeholder="Enter Property ID (GUID)…"
+          placeholder="أدخل معرف العقار (GUID)…"
           value={propertyId}
           onChange={(e) => setPropertyId(e.target.value)}
           className="border border-slate-300 rounded-lg px-3 py-2 text-sm w-80 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
@@ -144,28 +144,28 @@ export default function ExemptionsPage() {
         <button
           onClick={() => setSearched(propertyId)}
           className="px-4 py-2 text-sm bg-slate-700 hover:bg-slate-800 text-white rounded-lg transition-colors">
-          Search
+          بحث
         </button>
       </div>
 
       <DataTable<Exemption>
         loading={isLoading}
-        emptyMessage={searched ? 'No exemptions found for this property' : 'Enter a Property ID to search'}
+        emptyMessage={searched ? 'لا توجد إعفاءات لهذا العقار' : 'أدخل معرف العقار للبحث'}
         columns={[
-          { key: 'typeName', header: 'Type' },
-          { key: 'statusName', header: 'Status', render: (r) => <StatusBadge label={r.statusName} /> },
-          { key: 'exemptionPercentage', header: 'Exemption %', render: (r) => r.exemptionPercentage ? `${r.exemptionPercentage}%` : '—' },
-          { key: 'exemptAmount', header: 'Fixed Amount', render: (r) => r.exemptAmount ? `EGP ${r.exemptAmount.toLocaleString()}` : '—' },
-          { key: 'startDate', header: 'Start', render: (r) => r.startDate ? new Date(r.startDate).toLocaleDateString('en-GB') : '—' },
-          { key: 'endDate', header: 'End', render: (r) => r.endDate ? new Date(r.endDate).toLocaleDateString('en-GB') : '—' },
+          { key: 'typeName', header: 'النوع' },
+          { key: 'statusName', header: 'الحالة', render: (r) => <StatusBadge label={r.statusName} /> },
+          { key: 'exemptionPercentage', header: 'نسبة الإعفاء', render: (r) => r.exemptionPercentage ? `${r.exemptionPercentage}%` : '—' },
+          { key: 'exemptAmount', header: 'المبلغ الثابت', render: (r) => r.exemptAmount ? `${r.exemptAmount.toLocaleString()} ج.م` : '—' },
+          { key: 'startDate', header: 'البداية', render: (r) => r.startDate ? new Date(r.startDate).toLocaleDateString('ar-EG') : '—' },
+          { key: 'endDate', header: 'الانتهاء', render: (r) => r.endDate ? new Date(r.endDate).toLocaleDateString('ar-EG') : '—' },
           {
-            key: 'actions', header: 'Actions',
+            key: 'actions', header: 'الإجراءات',
             render: (r) => r.statusName === 'Submitted' ? (
               <div className="flex gap-2">
                 <button onClick={(e) => { e.stopPropagation(); approveMutation.mutate(r.id) }}
-                  className="text-xs px-2 py-1 bg-green-100 text-green-700 rounded hover:bg-green-200">Approve</button>
+                  className="text-xs px-2 py-1 bg-green-100 text-green-700 rounded hover:bg-green-200">موافقة</button>
                 <button onClick={(e) => { e.stopPropagation(); rejectMutation.mutate(r.id) }}
-                  className="text-xs px-2 py-1 bg-red-100 text-red-700 rounded hover:bg-red-200">Reject</button>
+                  className="text-xs px-2 py-1 bg-red-100 text-red-700 rounded hover:bg-red-200">رفض</button>
               </div>
             ) : null
           },

@@ -13,12 +13,12 @@ interface Props<T> {
 }
 
 export default function DataTable<T extends { id?: string }>({
-  columns, data, loading, onRowClick, emptyMessage = 'No records found'
+  columns, data, loading, onRowClick, emptyMessage = 'لا توجد سجلات'
 }: Props<T>) {
   if (loading) {
     return (
       <div className="bg-white rounded-xl border border-slate-200 overflow-hidden">
-        <div className="p-12 text-center text-slate-400 text-sm">Loading…</div>
+        <div className="p-12 text-center text-slate-400 text-sm">جاري التحميل…</div>
       </div>
     )
   }
@@ -32,7 +32,7 @@ export default function DataTable<T extends { id?: string }>({
               {columns.map((col) => (
                 <th
                   key={col.key}
-                  className="px-4 py-3 text-left text-xs font-semibold text-slate-500 uppercase tracking-wide whitespace-nowrap"
+                  className="px-4 py-3 text-start text-xs font-semibold text-slate-500 uppercase tracking-wide whitespace-nowrap"
                 >
                   {col.header}
                 </th>

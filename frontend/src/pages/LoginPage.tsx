@@ -18,7 +18,7 @@ export default function LoginPage() {
       await login(username, password)
       navigate('/')
     } catch (err: any) {
-      const msg = err.response?.data?.error ?? err.response?.data?.message ?? 'Login failed'
+      const msg = err.response?.data?.error ?? err.response?.data?.message ?? 'فشل تسجيل الدخول'
       setError(msg)
     } finally {
       setLoading(false)
@@ -33,16 +33,16 @@ export default function LoginPage() {
           <div className="inline-flex items-center justify-center w-14 h-14 bg-blue-600 rounded-2xl mb-4">
             <Building2 size={28} className="text-white" />
           </div>
-          <h1 className="text-2xl font-bold text-white">RETAX Platform</h1>
-          <p className="text-slate-400 text-sm mt-1">Egyptian Real Estate Tax Administration</p>
+          <h1 className="text-2xl font-bold text-white">منصة ريتاكس</h1>
+          <p className="text-slate-400 text-sm mt-1">هيئة الضريبة على العقارات المصرية</p>
         </div>
 
         {/* Card */}
         <div className="bg-white rounded-2xl shadow-xl p-6">
-          <h2 className="text-lg font-semibold text-slate-900 mb-4">Sign in to continue</h2>
+          <h2 className="text-lg font-semibold text-slate-900 mb-4">تسجيل الدخول</h2>
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
-              <label className="block text-sm font-medium text-slate-700 mb-1">Username</label>
+              <label className="block text-sm font-medium text-slate-700 mb-1">اسم المستخدم</label>
               <input
                 type="text"
                 value={username}
@@ -53,7 +53,7 @@ export default function LoginPage() {
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-slate-700 mb-1">Password</label>
+              <label className="block text-sm font-medium text-slate-700 mb-1">كلمة المرور</label>
               <input
                 type="password"
                 value={password}
@@ -73,13 +73,13 @@ export default function LoginPage() {
               disabled={loading}
               className="w-full bg-blue-600 hover:bg-blue-700 disabled:opacity-60 text-white font-medium rounded-lg py-2.5 text-sm transition-colors"
             >
-              {loading ? 'Signing in…' : 'Sign in'}
+              {loading ? 'جاري الدخول…' : 'دخول'}
             </button>
           </form>
         </div>
 
         <p className="text-center text-xs text-slate-500 mt-6">
-          Ministry of Finance · Real Estate Tax Authority
+          وزارة المالية · هيئة الضريبة على العقارات
         </p>
       </div>
     </div>

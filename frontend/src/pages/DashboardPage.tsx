@@ -33,9 +33,9 @@ function KpiCard({
 
 function fmt(n?: number) {
   if (n === undefined) return '—'
-  if (n >= 1_000_000) return `EGP ${(n / 1_000_000).toFixed(1)}M`
-  if (n >= 1_000) return `EGP ${(n / 1_000).toFixed(0)}K`
-  return `EGP ${n.toFixed(0)}`
+  if (n >= 1_000_000) return `${(n / 1_000_000).toFixed(1)} مليون ج.م`
+  if (n >= 1_000) return `${(n / 1_000).toFixed(0)} ألف ج.م`
+  return `${n.toFixed(0)} ج.م`
 }
 
 export default function DashboardPage() {
@@ -51,8 +51,8 @@ export default function DashboardPage() {
   return (
     <div>
       <div className="mb-6">
-        <h1 className="text-2xl font-semibold text-slate-900">Dashboard</h1>
-        <p className="text-sm text-slate-500 mt-1">Real Estate Tax Administration Overview</p>
+        <h1 className="text-2xl font-semibold text-slate-900">لوحة التحكم</h1>
+        <p className="text-sm text-slate-500 mt-1">نظرة عامة على إدارة الضريبة على العقارات</p>
       </div>
 
       {isLoading ? (
@@ -63,31 +63,31 @@ export default function DashboardPage() {
         </div>
       ) : (
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-          <KpiCard label="Total Properties" value={data?.totalProperties} icon={Building2} color="bg-blue-600" />
-          <KpiCard label="Taxpayers" value={data?.totalTaxpayers} icon={Users} color="bg-indigo-600" />
-          <KpiCard label="Bills Issued" value={data?.totalBillsIssued} icon={FileText} color="bg-violet-600" />
-          <KpiCard label="Total Collected" value={fmt(data?.totalCollected)} icon={DollarSign} color="bg-green-600" />
-          <KpiCard label="Overdue Amount" value={fmt(data?.totalOverdue)} icon={AlertTriangle} color="bg-red-500" />
-          <KpiCard label="Pending Appeals" value={data?.pendingAppeals} icon={Scale} color="bg-orange-500" />
-          <KpiCard label="Pending Exemptions" value={data?.pendingExemptions} icon={ShieldCheck} color="bg-amber-500" />
-          <KpiCard label="High Risk Properties" value={data?.highRiskProperties} icon={TrendingUp} color="bg-rose-600" />
+          <KpiCard label="إجمالي العقارات" value={data?.totalProperties} icon={Building2} color="bg-blue-600" />
+          <KpiCard label="المكلفون" value={data?.totalTaxpayers} icon={Users} color="bg-indigo-600" />
+          <KpiCard label="الفواتير الصادرة" value={data?.totalBillsIssued} icon={FileText} color="bg-violet-600" />
+          <KpiCard label="إجمالي المحصل" value={fmt(data?.totalCollected)} icon={DollarSign} color="bg-green-600" />
+          <KpiCard label="المبالغ المتأخرة" value={fmt(data?.totalOverdue)} icon={AlertTriangle} color="bg-red-500" />
+          <KpiCard label="الطعون المعلقة" value={data?.pendingAppeals} icon={Scale} color="bg-orange-500" />
+          <KpiCard label="الإعفاءات المعلقة" value={data?.pendingExemptions} icon={ShieldCheck} color="bg-amber-500" />
+          <KpiCard label="عقارات عالية المخاطر" value={data?.highRiskProperties} icon={TrendingUp} color="bg-rose-600" />
         </div>
       )}
 
       {!isLoading && !data && (
         <div className="mt-4 text-center text-sm text-slate-400 bg-white rounded-xl border border-slate-200 py-10">
-          Dashboard KPIs unavailable — ensure the backend is running and you have Admin access.
+          بيانات لوحة التحكم غير متاحة — تأكد من تشغيل الخادم وامتلاكك صلاحيات المسؤول.
         </div>
       )}
 
       <div className="mt-8 bg-white rounded-xl border border-slate-200 p-5">
-        <h2 className="text-base font-semibold text-slate-900 mb-3">Quick Actions</h2>
+        <h2 className="text-base font-semibold text-slate-900 mb-3">إجراءات سريعة</h2>
         <div className="flex flex-wrap gap-3">
           {[
-            { label: 'Register Property', to: '/properties/new' },
-            { label: 'Add Taxpayer', to: '/taxpayers/new' },
-            { label: 'Generate Bill', to: '/bills' },
-            { label: 'Record Payment', to: '/payments' },
+            { label: 'تسجيل عقار', to: '/properties' },
+            { label: 'إضافة مكلف', to: '/taxpayers' },
+            { label: 'إصدار فاتورة', to: '/bills' },
+            { label: 'تسجيل دفعة', to: '/payments' },
           ].map(({ label, to }) => (
             <a
               key={to}

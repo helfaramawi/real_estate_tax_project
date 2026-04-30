@@ -19,10 +19,34 @@ const colorMap: Record<string, string> = {
   closed: 'bg-slate-100 text-slate-500',
   needsreview: 'bg-orange-100 text-orange-800',
   inprogress: 'bg-blue-100 text-blue-700',
+  assigned: 'bg-indigo-100 text-indigo-700',
+}
+
+const arabicLabels: Record<string, string> = {
+  Draft: 'مسودة',
+  Active: 'نشط',
+  Verified: 'موثق',
+  Taxable: 'خاضع للضريبة',
+  Exempt: 'معفى',
+  Archived: 'مؤرشف',
+  Issued: 'صادرة',
+  Paid: 'مدفوعة',
+  Overdue: 'متأخرة',
+  Cancelled: 'ملغاة',
+  Submitted: 'مقدمة',
+  Approved: 'معتمدة',
+  Rejected: 'مرفوضة',
+  Pending: 'معلقة',
+  Open: 'مفتوحة',
+  Closed: 'مغلقة',
+  NeedsReview: 'تحتاج مراجعة',
+  InProgress: 'جارية',
+  Assigned: 'مكلف',
 }
 
 export default function StatusBadge({ label }: { label: string }) {
   const key = label?.toLowerCase().replace(/\s/g, '') ?? ''
+  const displayLabel = arabicLabels[label] ?? label
   return (
     <span
       className={clsx(
@@ -30,7 +54,7 @@ export default function StatusBadge({ label }: { label: string }) {
         colorMap[key] ?? 'bg-slate-100 text-slate-700'
       )}
     >
-      {label}
+      {displayLabel}
     </span>
   )
 }

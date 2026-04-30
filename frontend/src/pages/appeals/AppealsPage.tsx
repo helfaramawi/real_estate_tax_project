@@ -27,34 +27,34 @@ function SubmitAppealModal({ onClose }: { onClose: () => void }) {
       qc.invalidateQueries({ queryKey: ['appeals'] })
       onClose()
     },
-    onError: (err: any) => setError(err.response?.data?.error ?? 'Failed to submit appeal'),
+    onError: (err: any) => setError(err.response?.data?.error ?? 'فشل تقديم الطعن'),
   })
 
   return (
-    <Modal title="Submit Appeal" onClose={onClose}>
+    <Modal title="تقديم طعن جديد" onClose={onClose}>
       <div className="space-y-4">
         {error && <div className="bg-red-50 text-red-700 text-sm rounded px-3 py-2">{error}</div>}
-        <FormField label="Property ID" required>
+        <FormField label="معرف العقار" required>
           <Input value={form.propertyId} onChange={(e) => setForm({ ...form, propertyId: e.target.value })} placeholder="GUID" />
         </FormField>
-        <FormField label="Taxpayer ID" required>
+        <FormField label="معرف المكلف" required>
           <Input value={form.taxpayerId} onChange={(e) => setForm({ ...form, taxpayerId: e.target.value })} placeholder="GUID" />
         </FormField>
-        <FormField label="Assessment ID (optional)">
+        <FormField label="معرف التقييم (اختياري)">
           <Input value={form.assessmentId} onChange={(e) => setForm({ ...form, assessmentId: e.target.value })} placeholder="GUID" />
         </FormField>
-        <FormField label="Reason" required>
+        <FormField label="أسباب الطعن" required>
           <Textarea value={form.reason} onChange={(e) => setForm({ ...form, reason: e.target.value })}
-            placeholder="Describe the grounds for appeal…" />
+            placeholder="صف أسباب الطعن بالتفصيل…" />
         </FormField>
-        <div className="flex gap-3 justify-end pt-2">
-          <button onClick={onClose} className="px-4 py-2 text-sm border border-slate-200 rounded-lg text-slate-600 hover:bg-slate-50">Cancel</button>
+        <div className="flex gap-3 justify-start pt-2">
           <button
             onClick={() => mutation.mutate()}
             disabled={mutation.isPending || !form.propertyId || !form.reason}
             className="px-4 py-2 text-sm bg-blue-600 hover:bg-blue-700 text-white rounded-lg disabled:opacity-60">
-            {mutation.isPending ? 'Submitting…' : 'Submit Appeal'}
+            {mutation.isPending ? 'جاري التقديم…' : 'تقديم الطعن'}
           </button>
+          <button onClick={onClose} className="px-4 py-2 text-sm border border-slate-200 rounded-lg text-slate-600 hover:bg-slate-50">إلغاء</button>
         </div>
       </div>
     </Modal>
@@ -75,14 +75,14 @@ export default function AppealsPage() {
   return (
     <div>
       <PageHeader
-        title="Appeals"
-        subtitle="Taxpayer appeal submissions and decisions"
+        title="الطعون"
+        subtitle="طعون المكلفين وقرارات الفصل فيها"
         action={
           <button
             onClick={() => setShowSubmit(true)}
             className="px-4 py-2 text-sm bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors"
           >
-            Submit Appeal
+            تقديم طعن
           </button>
         }
       />
@@ -90,12 +90,12 @@ export default function AppealsPage() {
       <DataTable<Appeal>
         loading={isLoading}
         columns={[
-          { key: 'appealNumber', header: 'Number' },
-          { key: 'reason', header: 'Reason', render: (r) => <span className="max-w-xs truncate block">{r.reason}</span> },
-          { key: 'statusName', header: 'Status', render: (r) => <StatusBadge label={r.statusName} /> },
-          { key: 'submittedAt', header: 'Submitted', render: (r) => new Date(r.submittedAt).toLocaleDateString('en-GB') },
-          { key: 'decisionAt', header: 'Decision', render: (r) => r.decisionAt ? new Date(r.decisionAt).toLocaleDateString('en-GB') : '—' },
-          { key: 'decisionNotes', header: 'Decision Notes', render: (r) => r.decisionNotes ?? '—' },
+          { key: 'appealNumber', header: 'الرقم' },
+          { key: 'reason', header: 'أسباب الطعن', render: (r) => <span className="max-w-xs truncate block">{r.reason}</span> },
+          { key: 'statusName', header: 'الحالة', render: (r) => <StatusBadge label={r.statusName} /> },
+          { key: 'submittedAt', header: 'تاريخ التقديم', render: (r) => new Date(r.submittedAt).toLocaleDateString('ar-EG') },
+          { key: 'decisionAt', header: 'تاريخ القرار', render: (r) => r.decisionAt ? new Date(r.decisionAt).toLocaleDateString('ar-EG') : '—' },
+          { key: 'decisionNotes', header: 'ملاحظات القرار', render: (r) => r.decisionNotes ?? '—' },
         ]}
         data={data ?? []}
       />

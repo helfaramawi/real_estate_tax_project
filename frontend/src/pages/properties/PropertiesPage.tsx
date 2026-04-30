@@ -11,19 +11,41 @@ import Modal from '../../components/Modal'
 import FormField, { Input, Select } from '../../components/FormField'
 
 const propertyTypes = [
-  { value: 0, label: 'Residential' },
-  { value: 1, label: 'Commercial' },
-  { value: 2, label: 'Industrial' },
-  { value: 3, label: 'Agricultural' },
-  { value: 4, label: 'Mixed Use' },
+  { value: 0, label: 'سكني' },
+  { value: 1, label: 'تجاري' },
+  { value: 2, label: 'صناعي' },
+  { value: 3, label: 'زراعي' },
+  { value: 4, label: 'متعدد الاستخدامات' },
 ]
 
 const governorates = [
-  'Cairo', 'Giza', 'Alexandria', 'Qalyubia', 'Sharqia', 'Dakahlia',
-  'Beheira', 'Kafr El Sheikh', 'Gharbia', 'Menoufia', 'Ismailia',
-  'Port Said', 'Suez', 'North Sinai', 'South Sinai', 'Matruh',
-  'Damietta', 'Faiyum', 'Beni Suef', 'Minya', 'Asyut', 'Sohag',
-  'Qena', 'Luxor', 'Aswan', 'Red Sea', 'New Valley',
+  { ar: 'القاهرة', en: 'Cairo' },
+  { ar: 'الجيزة', en: 'Giza' },
+  { ar: 'الإسكندرية', en: 'Alexandria' },
+  { ar: 'القليوبية', en: 'Qalyubia' },
+  { ar: 'الشرقية', en: 'Sharqia' },
+  { ar: 'الدقهلية', en: 'Dakahlia' },
+  { ar: 'البحيرة', en: 'Beheira' },
+  { ar: 'كفر الشيخ', en: 'Kafr El Sheikh' },
+  { ar: 'الغربية', en: 'Gharbia' },
+  { ar: 'المنوفية', en: 'Menoufia' },
+  { ar: 'الإسماعيلية', en: 'Ismailia' },
+  { ar: 'بورسعيد', en: 'Port Said' },
+  { ar: 'السويس', en: 'Suez' },
+  { ar: 'شمال سيناء', en: 'North Sinai' },
+  { ar: 'جنوب سيناء', en: 'South Sinai' },
+  { ar: 'مطروح', en: 'Matruh' },
+  { ar: 'دمياط', en: 'Damietta' },
+  { ar: 'الفيوم', en: 'Faiyum' },
+  { ar: 'بني سويف', en: 'Beni Suef' },
+  { ar: 'المنيا', en: 'Minya' },
+  { ar: 'أسيوط', en: 'Asyut' },
+  { ar: 'سوهاج', en: 'Sohag' },
+  { ar: 'قنا', en: 'Qena' },
+  { ar: 'الأقصر', en: 'Luxor' },
+  { ar: 'أسوان', en: 'Aswan' },
+  { ar: 'البحر الأحمر', en: 'Red Sea' },
+  { ar: 'الوادي الجديد', en: 'New Valley' },
 ]
 
 export default function PropertiesPage() {
@@ -76,14 +98,14 @@ export default function PropertiesPage() {
     onError: (err: any) => {
       const detail = err.response?.data
       if (detail?.errors) setErrors(detail.errors)
-      else setErrors({ _: detail?.error ?? 'Failed to create property' })
+      else setErrors({ _: detail?.error ?? 'فشل إنشاء العقار' })
     },
   })
 
   function validate() {
     const e: Record<string, string> = {}
-    if (!form.builtUpArea || isNaN(parseFloat(form.builtUpArea))) e.builtUpArea = 'Required'
-    if (!form.governorate) e.governorate = 'Required'
+    if (!form.builtUpArea || isNaN(parseFloat(form.builtUpArea))) e.builtUpArea = 'مطلوب'
+    if (!form.governorate) e.governorate = 'مطلوب'
     setErrors(e)
     return Object.keys(e).length === 0
   }
@@ -91,14 +113,14 @@ export default function PropertiesPage() {
   return (
     <div>
       <PageHeader
-        title="Properties"
-        subtitle="Manage registered real estate properties"
+        title="العقارات"
+        subtitle="إدارة العقارات المسجلة"
         action={
           <button
             onClick={() => setShowCreate(true)}
             className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium px-4 py-2 rounded-lg transition-colors"
           >
-            <Plus size={16} /> New Property
+            <Plus size={16} /> عقار جديد
           </button>
         }
       />
@@ -106,7 +128,7 @@ export default function PropertiesPage() {
       <div className="mb-4">
         <input
           type="text"
-          placeholder="Search by code, address, city…"
+          placeholder="بحث بالكود أو العنوان أو المدينة…"
           value={search}
           onChange={(e) => setSearch(e.target.value)}
           className="border border-slate-300 rounded-lg px-3 py-2 text-sm w-72 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
@@ -116,74 +138,74 @@ export default function PropertiesPage() {
       <DataTable<Property>
         loading={isLoading}
         columns={[
-          { key: 'propertyCode', header: 'Code' },
-          { key: 'typeName', header: 'Type' },
-          { key: 'builtUpArea', header: 'Area (m²)', render: (r) => r.builtUpArea?.toFixed(1) },
-          { key: 'city', header: 'City' },
-          { key: 'governorate', header: 'Governorate' },
-          { key: 'statusName', header: 'Status', render: (r) => <StatusBadge label={r.statusName} /> },
-          { key: 'currentTaxAmount', header: 'Tax Amount', render: (r) => r.currentTaxAmount ? `EGP ${r.currentTaxAmount.toLocaleString()}` : '—' },
-          { key: 'createdAt', header: 'Created', render: (r) => new Date(r.createdAt).toLocaleDateString('en-GB') },
+          { key: 'propertyCode', header: 'الكود' },
+          { key: 'typeName', header: 'النوع' },
+          { key: 'builtUpArea', header: 'المساحة (م²)', render: (r) => r.builtUpArea?.toFixed(1) },
+          { key: 'city', header: 'المدينة' },
+          { key: 'governorate', header: 'المحافظة' },
+          { key: 'statusName', header: 'الحالة', render: (r) => <StatusBadge label={r.statusName} /> },
+          { key: 'currentTaxAmount', header: 'قيمة الضريبة', render: (r) => r.currentTaxAmount ? `${r.currentTaxAmount.toLocaleString()} ج.م` : '—' },
+          { key: 'createdAt', header: 'تاريخ الإنشاء', render: (r) => new Date(r.createdAt).toLocaleDateString('ar-EG') },
         ]}
         data={properties}
         onRowClick={(r) => navigate(`/properties/${r.id}`)}
       />
 
       {showCreate && (
-        <Modal title="Register New Property" onClose={() => setShowCreate(false)}>
+        <Modal title="تسجيل عقار جديد" onClose={() => setShowCreate(false)}>
           <div className="space-y-4">
             {errors._ && <div className="bg-red-50 text-red-700 text-sm rounded px-3 py-2">{errors._}</div>}
             <div className="grid grid-cols-2 gap-4">
-              <FormField label="Type" required>
+              <FormField label="النوع" required>
                 <Select value={form.type} onChange={(e) => setForm({ ...form, type: e.target.value })}>
                   {propertyTypes.map((t) => <option key={t.value} value={t.value}>{t.label}</option>)}
                 </Select>
               </FormField>
-              <FormField label="Built-Up Area (m²)" required error={errors.builtUpArea}>
+              <FormField label="مساحة البناء (م²)" required error={errors.builtUpArea}>
                 <Input type="number" value={form.builtUpArea} error={!!errors.builtUpArea}
                   onChange={(e) => setForm({ ...form, builtUpArea: e.target.value })} placeholder="120.5" />
               </FormField>
             </div>
             <div className="grid grid-cols-2 gap-4">
-              <FormField label="Land Area (m²)">
+              <FormField label="مساحة الأرض (م²)">
                 <Input type="number" value={form.landArea}
-                  onChange={(e) => setForm({ ...form, landArea: e.target.value })} placeholder="Optional" />
+                  onChange={(e) => setForm({ ...form, landArea: e.target.value })} placeholder="اختياري" />
               </FormField>
-              <FormField label="Year Built">
+              <FormField label="سنة البناء">
                 <Input type="number" value={form.yearBuilt}
                   onChange={(e) => setForm({ ...form, yearBuilt: e.target.value })} placeholder="2010" />
               </FormField>
             </div>
-            <FormField label="Street Address">
+            <FormField label="عنوان الشارع">
               <Input value={form.streetAddress}
-                onChange={(e) => setForm({ ...form, streetAddress: e.target.value })} placeholder="15 Nile Corniche" />
+                onChange={(e) => setForm({ ...form, streetAddress: e.target.value })} placeholder="15 كورنيش النيل" />
             </FormField>
             <div className="grid grid-cols-3 gap-4">
-              <FormField label="District">
+              <FormField label="الحي">
                 <Input value={form.district}
-                  onChange={(e) => setForm({ ...form, district: e.target.value })} placeholder="Garden City" />
+                  onChange={(e) => setForm({ ...form, district: e.target.value })} placeholder="جاردن سيتي" />
               </FormField>
-              <FormField label="City">
+              <FormField label="المدينة">
                 <Input value={form.city}
-                  onChange={(e) => setForm({ ...form, city: e.target.value })} placeholder="Cairo" />
+                  onChange={(e) => setForm({ ...form, city: e.target.value })} placeholder="القاهرة" />
               </FormField>
-              <FormField label="Governorate" required error={errors.governorate}>
+              <FormField label="المحافظة" required error={errors.governorate}>
                 <Select value={form.governorate} error={!!errors.governorate}
                   onChange={(e) => setForm({ ...form, governorate: e.target.value })}>
-                  {governorates.map((g) => <option key={g}>{g}</option>)}
+                  {governorates.map((g) => <option key={g.en} value={g.en}>{g.ar}</option>)}
                 </Select>
               </FormField>
             </div>
-            <div className="flex gap-3 justify-end pt-2">
-              <button onClick={() => setShowCreate(false)}
-                className="px-4 py-2 text-sm text-slate-600 hover:text-slate-800 border border-slate-200 rounded-lg">
-                Cancel
-              </button>
+            <div className="flex gap-3 justify-start pt-2">
               <button
                 onClick={() => { if (validate()) createMutation.mutate() }}
                 disabled={createMutation.isPending}
                 className="px-4 py-2 text-sm bg-blue-600 hover:bg-blue-700 text-white rounded-lg disabled:opacity-60">
-                {createMutation.isPending ? 'Creating…' : 'Create Property'}
+                {createMutation.isPending ? 'جاري الإنشاء…' : 'إنشاء عقار'}
+              </button>
+              <button onClick={() => setShowCreate(false)}
+                className="px-4 py-2 text-sm text-slate-600 hover:text-slate-800 border border-slate-200 rounded-lg">
+                إلغاء
               </button>
             </div>
           </div>

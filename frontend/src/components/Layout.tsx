@@ -3,22 +3,32 @@ import { Link, useLocation, Outlet } from 'react-router-dom'
 import {
   LayoutDashboard, Building2, Users, FileText, CreditCard,
   Scale, ShieldCheck, ClipboardList, TrendingUp, LogOut,
-  Menu, X, ChevronRight,
+  Menu, X, ChevronLeft,
 } from 'lucide-react'
 import { logout, getStoredUser } from '../lib/auth'
 import clsx from 'clsx'
 
 const nav = [
-  { to: '/', label: 'Dashboard', icon: LayoutDashboard },
-  { to: '/properties', label: 'Properties', icon: Building2 },
-  { to: '/taxpayers', label: 'Taxpayers', icon: Users },
-  { to: '/bills', label: 'Tax Bills', icon: FileText },
-  { to: '/payments', label: 'Payments', icon: CreditCard },
-  { to: '/valuations', label: 'Valuations', icon: TrendingUp },
-  { to: '/exemptions', label: 'Exemptions', icon: ShieldCheck },
-  { to: '/appeals', label: 'Appeals', icon: Scale },
-  { to: '/field-surveys', label: 'Field Surveys', icon: ClipboardList },
+  { to: '/', label: 'لوحة التحكم', icon: LayoutDashboard },
+  { to: '/properties', label: 'العقارات', icon: Building2 },
+  { to: '/taxpayers', label: 'المكلفون', icon: Users },
+  { to: '/bills', label: 'فواتير الضريبة', icon: FileText },
+  { to: '/payments', label: 'المدفوعات', icon: CreditCard },
+  { to: '/valuations', label: 'التقييمات', icon: TrendingUp },
+  { to: '/exemptions', label: 'الإعفاءات', icon: ShieldCheck },
+  { to: '/appeals', label: 'الطعون', icon: Scale },
+  { to: '/field-surveys', label: 'المعاينات الميدانية', icon: ClipboardList },
 ]
+
+const roleNames: Record<string, string> = {
+  SuperAdmin: 'مدير النظام',
+  Admin: 'مسؤول',
+  Assessor: 'محاسب',
+  Inspector: 'مفتش',
+  Collector: 'محصل',
+  Reviewer: 'مراجع',
+  User: 'مستخدم',
+}
 
 export default function Layout() {
   const location = useLocation()
@@ -35,19 +45,19 @@ export default function Layout() {
         />
       )}
 
-      {/* Sidebar */}
+      {/* Sidebar — fixed on right for mobile, static (RTL flex) on desktop */}
       <aside
         className={clsx(
-          'fixed inset-y-0 left-0 z-30 w-64 bg-slate-900 text-white flex flex-col transition-transform duration-300',
+          'fixed inset-y-0 right-0 z-30 w-64 bg-slate-900 text-white flex flex-col transition-transform duration-300',
           'lg:static lg:translate-x-0',
-          sidebarOpen ? 'translate-x-0' : '-translate-x-full'
+          sidebarOpen ? 'translate-x-0' : 'translate-x-full'
         )}
       >
         {/* Logo */}
         <div className="flex items-center justify-between px-4 py-5 border-b border-slate-700">
           <div>
-            <div className="text-sm font-bold text-blue-400 tracking-wide">RETAX</div>
-            <div className="text-xs text-slate-400 leading-tight">Real Estate Tax Platform</div>
+            <div className="text-sm font-bold text-blue-400 tracking-wide">ريتاكس</div>
+            <div className="text-xs text-slate-400 leading-tight">منصة ضريبة العقارات</div>
           </div>
           <button className="lg:hidden text-slate-400 hover:text-white" onClick={() => setSidebarOpen(false)}>
             <X size={18} />
@@ -74,7 +84,7 @@ export default function Layout() {
               >
                 <Icon size={18} />
                 {label}
-                {active && <ChevronRight size={14} className="ml-auto" />}
+                {active && <ChevronLeft size={14} className="ms-auto" />}
               </Link>
             )
           })}
@@ -83,12 +93,14 @@ export default function Layout() {
         {/* User footer */}
         <div className="border-t border-slate-700 px-4 py-3">
           <div className="text-sm text-slate-300 font-medium truncate">{user?.username}</div>
-          <div className="text-xs text-slate-500 mb-2">{user?.roles?.[0] ?? 'User'}</div>
+          <div className="text-xs text-slate-500 mb-2">
+            {roleNames[user?.roles?.[0] ?? ''] ?? user?.roles?.[0] ?? 'مستخدم'}
+          </div>
           <button
             onClick={logout}
             className="flex items-center gap-2 text-xs text-slate-400 hover:text-red-400 transition-colors"
           >
-            <LogOut size={14} /> Sign out
+            <LogOut size={14} /> تسجيل الخروج
           </button>
         </div>
       </aside>
@@ -105,7 +117,7 @@ export default function Layout() {
           </button>
           <div className="flex-1" />
           <div className="text-xs text-slate-400">
-            Egyptian Real Estate Tax Administration System
+            نظام إدارة الضريبة على العقارات — جمهورية مصر العربية
           </div>
         </header>
 

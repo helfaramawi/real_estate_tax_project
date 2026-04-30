@@ -8,11 +8,11 @@ import Modal from '../../components/Modal'
 import FormField, { Input, Select } from '../../components/FormField'
 
 const paymentMethods = [
-  { value: 0, label: 'Cash' },
-  { value: 1, label: 'Bank Transfer' },
-  { value: 2, label: 'Online' },
-  { value: 3, label: 'Mobile Wallet' },
-  { value: 4, label: 'Cheque' },
+  { value: 0, label: 'نقدي' },
+  { value: 1, label: 'تحويل بنكي' },
+  { value: 2, label: 'إلكتروني' },
+  { value: 3, label: 'محفظة إلكترونية' },
+  { value: 4, label: 'شيك' },
 ]
 
 function RegisterPaymentModal({ onClose }: { onClose: () => void }) {
@@ -37,42 +37,42 @@ function RegisterPaymentModal({ onClose }: { onClose: () => void }) {
       qc.invalidateQueries({ queryKey: ['payments'] })
       onClose()
     },
-    onError: (err: any) => setError(err.response?.data?.error ?? 'Failed to register payment'),
+    onError: (err: any) => setError(err.response?.data?.error ?? 'فشل تسجيل الدفعة'),
   })
 
   return (
-    <Modal title="Register Payment" onClose={onClose}>
+    <Modal title="تسجيل دفعة جديدة" onClose={onClose}>
       <div className="space-y-4">
         {error && <div className="bg-red-50 text-red-700 text-sm rounded px-3 py-2">{error}</div>}
-        <FormField label="Bill ID" required>
+        <FormField label="معرف الفاتورة" required>
           <Input value={form.billId} onChange={(e) => setForm({ ...form, billId: e.target.value })} placeholder="GUID" />
         </FormField>
         <div className="grid grid-cols-2 gap-4">
-          <FormField label="Amount (EGP)" required>
+          <FormField label="المبلغ (ج.م)" required>
             <Input type="number" value={form.amount} onChange={(e) => setForm({ ...form, amount: e.target.value })} />
           </FormField>
-          <FormField label="Payment Method" required>
+          <FormField label="طريقة الدفع" required>
             <Select value={form.method} onChange={(e) => setForm({ ...form, method: e.target.value })}>
               {paymentMethods.map((m) => <option key={m.value} value={m.value}>{m.label}</option>)}
             </Select>
           </FormField>
         </div>
         <div className="grid grid-cols-2 gap-4">
-          <FormField label="Reference No.">
-            <Input value={form.reference} onChange={(e) => setForm({ ...form, reference: e.target.value })} placeholder="Receipt / Ref" />
+          <FormField label="رقم المرجع">
+            <Input value={form.reference} onChange={(e) => setForm({ ...form, reference: e.target.value })} placeholder="إيصال / مرجع" />
           </FormField>
-          <FormField label="Payment Date" required>
+          <FormField label="تاريخ الدفع" required>
             <Input type="date" value={form.paidAt} onChange={(e) => setForm({ ...form, paidAt: e.target.value })} />
           </FormField>
         </div>
-        <div className="flex gap-3 justify-end pt-2">
-          <button onClick={onClose} className="px-4 py-2 text-sm border border-slate-200 rounded-lg text-slate-600 hover:bg-slate-50">Cancel</button>
+        <div className="flex gap-3 justify-start pt-2">
           <button
             onClick={() => mutation.mutate()}
             disabled={mutation.isPending || !form.billId || !form.amount}
             className="px-4 py-2 text-sm bg-blue-600 hover:bg-blue-700 text-white rounded-lg disabled:opacity-60">
-            {mutation.isPending ? 'Registering…' : 'Register Payment'}
+            {mutation.isPending ? 'جاري التسجيل…' : 'تسجيل الدفعة'}
           </button>
+          <button onClick={onClose} className="px-4 py-2 text-sm border border-slate-200 rounded-lg text-slate-600 hover:bg-slate-50">إلغاء</button>
         </div>
       </div>
     </Modal>
@@ -97,34 +97,34 @@ export default function PaymentsPage() {
   return (
     <div>
       <PageHeader
-        title="Payments"
-        subtitle="Payment records for tax bills"
+        title="المدفوعات"
+        subtitle="سجلات مدفوعات الفواتير الضريبية"
         action={
           <button onClick={() => setShowRegister(true)}
             className="px-4 py-2 text-sm bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors">
-            Register Payment
+            تسجيل دفعة
           </button>
         }
       />
 
       <div className="mb-4 flex gap-2">
-        <input type="text" placeholder="Enter Bill ID (GUID)…"
+        <input type="text" placeholder="أدخل معرف الفاتورة (GUID)…"
           value={billId} onChange={(e) => setBillId(e.target.value)}
           className="border border-slate-300 rounded-lg px-3 py-2 text-sm w-80 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100" />
         <button onClick={() => setSearched(billId)}
           className="px-4 py-2 text-sm bg-slate-700 hover:bg-slate-800 text-white rounded-lg transition-colors">
-          Search
+          بحث
         </button>
       </div>
 
       <DataTable<Payment>
         loading={isLoading}
-        emptyMessage={searched ? 'No payments found for this bill' : 'Enter a Bill ID to search'}
+        emptyMessage={searched ? 'لا توجد مدفوعات لهذه الفاتورة' : 'أدخل معرف الفاتورة للبحث'}
         columns={[
-          { key: 'amount', header: 'Amount', render: (r) => `EGP ${r.amount.toLocaleString()}` },
-          { key: 'methodName', header: 'Method' },
-          { key: 'reference', header: 'Reference', render: (r) => r.reference ?? '—' },
-          { key: 'paidAt', header: 'Paid At', render: (r) => new Date(r.paidAt).toLocaleDateString('en-GB') },
+          { key: 'amount', header: 'المبلغ', render: (r) => `${r.amount.toLocaleString()} ج.م` },
+          { key: 'methodName', header: 'طريقة الدفع' },
+          { key: 'reference', header: 'المرجع', render: (r) => r.reference ?? '—' },
+          { key: 'paidAt', header: 'تاريخ الدفع', render: (r) => new Date(r.paidAt).toLocaleDateString('ar-EG') },
         ]}
         data={data ?? []}
       />
