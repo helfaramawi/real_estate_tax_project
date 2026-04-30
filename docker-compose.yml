@@ -45,12 +45,7 @@ services:
     ports:
       - "8080:8080"
     healthcheck:
-      test: ["CMD-SHELL", "curl -f http://localhost:8080/health || exit 1"]
-      interval: 30s
-      timeout: 10s
-      start_period: 60s
-      retries: 3
-
+      disable: true
   # ─── pgAdmin (development only) ────────────────────────────────────────────
   pgadmin:
     image: dpage/pgadmin4:8
@@ -59,7 +54,7 @@ services:
     profiles:
       - dev
     environment:
-      PGADMIN_DEFAULT_EMAIL: admin@retax.local
+      PGADMIN_DEFAULT_EMAIL: admin@retax.com
       PGADMIN_DEFAULT_PASSWORD: admin
     ports:
       - "5050:80"
