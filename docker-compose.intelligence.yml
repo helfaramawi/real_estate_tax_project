@@ -1,17 +1,15 @@
-version: "3.9"
-
 # ─── Intelligence stack overlay ───────────────────────────────────────────────
 # Usage: docker compose -f docker-compose.yml -f docker-compose.intelligence.yml up -d
-# Existing containers (postgres, retax_api, pgadmin) are unaffected.
 
 services:
+
   # ── Redis: caching + ML job queue ──────────────────────────────────────────
   redis:
     image: redis:7.2-alpine
     container_name: retax_redis
     restart: unless-stopped
-    ports:
-      - "6379:6379"
+    expose:
+      - "6379"
     volumes:
       - redis_data:/data
     command:
@@ -36,22 +34,22 @@ services:
     container_name: retax_ml
     restart: unless-stopped
     environment:
-      DATABASE_URL: "postgresql://retax_user:${RETAX_DB_PASSWORD:-retax_password_change_in_prod}@postgres:5432/retax_db"
-      REDIS_URL: "redis://redis:6379"
-      MLFLOW_TRACKING_URI: "http://mlflow:5000"
-      MODEL_ARTIFACT_PATH: "/app/models"
-      INTERNAL_SECRET: "${ML_INTERNAL_SECRET:-dev-secret}"
-      ENVIRONMENT: "${ASPNETCORE_ENVIRONMENT:-Production}"
-      LOG_LEVEL: "INFO"
+      DATABASE_URL:          "postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB}"
+      REDIS_URL:             "redis://redis:6379"
+      MLFLOW_TRACKING_URI:   "http://mlflow:5000"
+      MODEL_ARTIFACT_PATH:   "/app/models"
+      INTERNAL_SECRET:       ${ML_INTERNAL_SECRET}
+      ENVIRONMENT:           ${ASPNETCORE_ENVIRONMENT:-Production}
+      LOG_LEVEL:             "INFO"
     volumes:
       - ml_models:/app/models
+    expose:
+      - "8001"
     depends_on:
       postgres:
         condition: service_healthy
       redis:
         condition: service_healthy
-    expose:
-      - "8001"    # Internal only — not exposed to host
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8001/health"]
       interval: 30s
@@ -65,18 +63,23 @@ services:
     container_name: retax_mlflow
     restart: unless-stopped
     environment:
-      MLFLOW_BACKEND_STORE_URI: "postgresql://retax_user:${RETAX_DB_PASSWORD:-retax_password_change_in_prod}@postgres:5432/retax_db"
+      MLFLOW_BACKEND_STORE_URI:    "postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB}"
       MLFLOW_DEFAULT_ARTIFACT_ROOT: "/mlflow/artifacts"
     volumes:
       - mlflow_artifacts:/mlflow/artifacts
     ports:
-      - "5001:5000"   # MLflow UI accessible on host:5001
-    command: >
-      mlflow server
-        --backend-store-uri postgresql://retax_user:${RETAX_DB_PASSWORD:-retax_password_change_in_prod}@postgres:5432/retax_db
-        --default-artifact-root /mlflow/artifacts
-        --host 0.0.0.0
-        --port 5000
+      - "5001:5000"
+    entrypoint:
+      - mlflow
+      - server
+      - --backend-store-uri
+      - "postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB}"
+      - --default-artifact-root
+      - /mlflow/artifacts
+      - --host
+      - "0.0.0.0"
+      - --port
+      - "5000"
     depends_on:
       postgres:
         condition: service_healthy
@@ -86,22 +89,17 @@ services:
       timeout: 10s
       retries: 3
 
-  # ── OSRM Route Engine (enable with --profile routing) ─────────────────────
+  # ── OSRM Route Engine (optional — enable with: --profile routing) ──────────
   osrm:
     image: osrm/osrm-backend:v5.27.1
     container_name: retax_osrm
-    profiles: ["routing"]   # Start with: docker compose --profile routing up osrm
+    profiles: ["routing"]
     restart: unless-stopped
     volumes:
       - osrm_data:/data
     expose:
       - "5000"
     command: osrm-routed --algorithm mld /data/egypt-latest.osrm
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:5000/health"]
-      interval: 30s
-      timeout: 5s
-      retries: 3
 
 volumes:
   redis_data:
