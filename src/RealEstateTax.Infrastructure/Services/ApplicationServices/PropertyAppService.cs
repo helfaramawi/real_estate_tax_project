@@ -60,13 +60,13 @@ public class PropertyAppService : IPropertyService
     {
         var property = await _db.Properties.AsNoTracking()
             .Include(p => p.Location)
-            .Include(p => p.Units.Where(u => !u.IsDeleted))
-            .Include(p => p.Ownerships.Where(o => !o.IsDeleted))
+            .Include(p => p.Units)
+            .Include(p => p.Ownerships)
                 .ThenInclude(o => o.Taxpayer)
-            .Include(p => p.Valuations.Where(v => !v.IsDeleted))
-            .Include(p => p.TaxAssessments.Where(a => !a.IsDeleted))
-            .Include(p => p.TaxBills.Where(b => !b.IsDeleted))
-            .Include(p => p.RiskScores.Where(r => !r.IsDeleted))
+            .Include(p => p.Valuations)
+            .Include(p => p.TaxAssessments)
+            .Include(p => p.TaxBills)
+            .Include(p => p.RiskScores)
             .FirstOrDefaultAsync(p => p.Id == id, ct);
 
         if (property == null) return Result<PropertyDetailDto>.NotFound();
