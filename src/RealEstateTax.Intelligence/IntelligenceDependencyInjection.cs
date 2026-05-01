@@ -48,9 +48,9 @@ public static class IntelligenceDependencyInjection
         .AddStandardResilienceHandler(o =>
         {
             o.Retry.MaxRetryAttempts = 3;
+            o.AttemptTimeout.Timeout = TimeSpan.FromSeconds(15);
             o.CircuitBreaker.FailureRatio = 0.5;
-            o.CircuitBreaker.SamplingDuration = TimeSpan.FromSeconds(30);
-            o.AttemptTimeout.Timeout = TimeSpan.FromSeconds(20);
+            o.CircuitBreaker.SamplingDuration = TimeSpan.FromSeconds(60); // must be >= 2x AttemptTimeout
         });
 
         // ── Services ─────────────────────────────────────────────────────────
