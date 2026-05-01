@@ -25,13 +25,14 @@ export default function PropertyDetailPage() {
   const [showDeleteDialog, setShowDeleteDialog] = useState(false)
   const [deleteReason, setDeleteReason] = useState('')
 
-  const { data: property, isLoading } = useQuery<Property>({
+  const { data: property, isLoading, isError, error } = useQuery<Property>({
     queryKey: ['property', id],
     queryFn: async () => {
       const res = await api.get(`/properties/${id}`)
       return res.data.data
     },
     enabled: !!id,
+    retry: false,
   })
 
   const verifyMutation = useMutation({
@@ -51,6 +52,21 @@ export default function PropertyDetailPage() {
 
   if (isLoading) {
     return <div className="p-8 text-sm text-slate-400">جاري تحميل بيانات العقار…</div>
+  }
+
+  if (isError) {
+    const status = (error as any)?.response?.status
+    return (
+      <div className="p-8">
+        <button onClick={() => navigate('/properties')}
+          className="flex items-center gap-2 text-sm text-slate-500 hover:text-slate-700 mb-4 transition-colors">
+          <ArrowRight size={16} /> العودة إلى العقارات
+        </button>
+        <div className="bg-red-50 border border-red-200 rounded-lg p-4 text-sm text-red-700">
+          {status === 404 ? 'العقار غير موجود أو تم حذفه.' : 'تعذّر تحميل بيانات العقار — يرجى المحاولة مرة أخرى.'}
+        </div>
+      </div>
+    )
   }
 
   if (!property) {

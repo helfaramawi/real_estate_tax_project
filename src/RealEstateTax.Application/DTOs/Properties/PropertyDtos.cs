@@ -8,7 +8,9 @@ public class PropertyDto
     public string PropertyCode { get; set; } = string.Empty;
     public string? ParcelNumber { get; set; }
     public PropertyType Type { get; set; }
+    public string TypeName { get; set; } = string.Empty;
     public PropertyStatus Status { get; set; }
+    public string StatusName { get; set; } = string.Empty;
     public decimal BuiltUpArea { get; set; }
     public decimal? LandArea { get; set; }
     public int? YearBuilt { get; set; }
@@ -23,6 +25,8 @@ public class PropertyDto
     public bool HasDuplicateSuspicion { get; set; }
     public DateTime CreatedAt { get; set; }
     public string? PrimaryOwnerName { get; set; }
+    public decimal? CurrentAssessedValue { get; set; }
+    public decimal? CurrentTaxAmount { get; set; }
 }
 
 public class PropertyDetailDto : PropertyDto
