@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { Plus } from 'lucide-react'
+import { Plus, Upload } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 import api from '../../lib/api'
 import type { Property, PagedResult } from '../../lib/types'
@@ -10,6 +10,7 @@ import StatusBadge from '../../components/StatusBadge'
 import Modal from '../../components/Modal'
 import FormField, { Input, Select } from '../../components/FormField'
 import MapLocationPicker from '../../components/MapLocationPicker'
+import PropertyImportModal from './PropertyImportModal'
 
 const propertyTypes = [
   { value: 0, label: 'سكني' },
@@ -53,6 +54,7 @@ export default function PropertiesPage() {
   const navigate = useNavigate()
   const qc = useQueryClient()
   const [showCreate, setShowCreate] = useState(false)
+  const [showImport, setShowImport] = useState(false)
   const [search, setSearch] = useState('')
   const [page] = useState(1)
 
@@ -121,12 +123,20 @@ export default function PropertiesPage() {
         title="العقارات"
         subtitle="إدارة العقارات المسجلة"
         action={
-          <button
-            onClick={() => setShowCreate(true)}
-            className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium px-4 py-2 rounded-lg transition-colors"
-          >
-            <Plus size={16} /> عقار جديد
-          </button>
+          <div className="flex gap-2">
+            <button
+              onClick={() => setShowImport(true)}
+              className="flex items-center gap-2 bg-white hover:bg-slate-50 text-slate-700 text-sm font-medium px-4 py-2 rounded-lg border border-slate-200 transition-colors"
+            >
+              <Upload size={16} /> استيراد CSV
+            </button>
+            <button
+              onClick={() => setShowCreate(true)}
+              className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium px-4 py-2 rounded-lg transition-colors"
+            >
+              <Plus size={16} /> عقار جديد
+            </button>
+          </div>
         }
       />
 
@@ -155,6 +165,8 @@ export default function PropertiesPage() {
         data={properties}
         onRowClick={(r) => navigate(`/properties/${r.id}`)}
       />
+
+      {showImport && <PropertyImportModal onClose={() => setShowImport(false)} />}
 
       {showCreate && (
         <Modal title="تسجيل عقار جديد" onClose={() => setShowCreate(false)}>

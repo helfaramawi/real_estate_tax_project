@@ -260,6 +260,23 @@ public class PropertyAppService : IPropertyService
         return Result<IEnumerable<NearbyPropertyDto>>.Success(dtos);
     }
 
+    public async Task<Result<BulkImportResult>> BulkImportAsync(List<CreatePropertyRequest> requests, CancellationToken ct = default)
+    {
+        var result = new BulkImportResult();
+        for (int i = 0; i < requests.Count; i++)
+        {
+            var r = await CreateAsync(requests[i], ct);
+            if (r.IsSuccess)
+                result.Succeeded++;
+            else
+            {
+                result.Failed++;
+                result.Errors.Add(new BulkImportRowError { Row = i + 1, Message = r.Error ?? "خطأ غير معروف" });
+            }
+        }
+        return Result<BulkImportResult>.Success(result);
+    }
+
     private async Task<string> GeneratePropertyCodeAsync(CancellationToken ct)
     {
         var year = DateTime.UtcNow.Year;

@@ -193,3 +193,16 @@ public class RiskScoreSummaryDto
     public string Level { get; set; } = string.Empty;
     public DateTime CalculatedAt { get; set; }
 }
+
+public class BulkImportRowError
+{
+    public int Row { get; set; }
+    public string Message { get; set; } = string.Empty;
+}
+
+public class BulkImportResult
+{
+    public int Succeeded { get; set; }
+    public int Failed { get; set; }
+    public List<BulkImportRowError> Errors { get; set; } = [];
+}

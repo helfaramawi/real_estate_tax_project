@@ -13,4 +13,5 @@ public interface IPropertyService
     Task<Result<PropertyOwnershipDto>> LinkOwnerAsync(Guid id, LinkOwnerRequest request, CancellationToken ct = default);
     Task<Result<IEnumerable<PropertyTimelineEventDto>>> GetTimelineAsync(Guid id, CancellationToken ct = default);
     Task<Result<IEnumerable<NearbyPropertyDto>>> GetNearbyAsync(double lat, double lng, double radiusMeters, CancellationToken ct = default);
+    Task<Result<BulkImportResult>> BulkImportAsync(List<CreatePropertyRequest> requests, CancellationToken ct = default);
 }
