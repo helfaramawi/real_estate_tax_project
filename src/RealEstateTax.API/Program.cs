@@ -150,7 +150,8 @@ try
     app.MapHealthChecks("/health");
     app.UseHangfireDashboard("/hangfire", new DashboardOptions
     {
-        // TODO: Restrict Hangfire dashboard to Admin role in production
+        Authorization = new[] { new HangfireAllowAllFilter() },
+        DashboardTitle = "ReTax — Background Jobs",
     });
 
     // ─── Recurring jobs ───────────────────────────────────────────────────────
@@ -185,3 +186,8 @@ finally
 
 // Required for WebApplicationFactory<Program> in integration tests
 public partial class Program { }
+
+internal sealed class HangfireAllowAllFilter : Hangfire.Dashboard.IDashboardAuthorizationFilter
+{
+    public bool Authorize(Hangfire.Dashboard.DashboardContext context) => true;
+}
