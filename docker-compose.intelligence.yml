@@ -14,8 +14,6 @@ services:
       - "6379:6379"
     volumes:
       - redis_data:/data
-    networks:
-      - retax_net
     command:
       - redis-server
       - --appendonly
@@ -47,8 +45,6 @@ services:
       LOG_LEVEL: "INFO"
     volumes:
       - ml_models:/app/models
-    networks:
-      - retax_net
     depends_on:
       postgres:
         condition: service_healthy
@@ -73,8 +69,6 @@ services:
       MLFLOW_DEFAULT_ARTIFACT_ROOT: "/mlflow/artifacts"
     volumes:
       - mlflow_artifacts:/mlflow/artifacts
-    networks:
-      - retax_net
     ports:
       - "5001:5000"   # MLflow UI accessible on host:5001
     command: >
@@ -100,8 +94,6 @@ services:
     restart: unless-stopped
     volumes:
       - osrm_data:/data
-    networks:
-      - retax_net
     expose:
       - "5000"
     command: osrm-routed --algorithm mld /data/egypt-latest.osrm
@@ -116,7 +108,3 @@ volumes:
   ml_models:
   mlflow_artifacts:
   osrm_data:
-
-networks:
-  retax_net:
-    external: true   # Reuse network defined in docker-compose.yml
