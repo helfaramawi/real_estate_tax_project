@@ -1,4 +1,4 @@
-
+﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.0.31903.59
@@ -14,6 +14,10 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RealEstateTax.UnitTests", "tests\RealEstateTax.UnitTests\RealEstateTax.UnitTests.csproj", "{55555555-5555-5555-5555-555555555555}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RealEstateTax.IntegrationTests", "tests\RealEstateTax.IntegrationTests\RealEstateTax.IntegrationTests.csproj", "{66666666-6666-6666-6666-666666666666}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{46424D24-45A3-4536-893C-349E158929A5}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RealEstateTax.Intelligence", "src\RealEstateTax.Intelligence\RealEstateTax.Intelligence.csproj", "{3AEA4697-4C5B-446B-AB2B-A3AB8796E2A2}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -33,5 +37,12 @@ Global
 		{55555555-5555-5555-5555-555555555555}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{66666666-6666-6666-6666-666666666666}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{66666666-6666-6666-6666-666666666666}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{3AEA4697-4C5B-446B-AB2B-A3AB8796E2A2}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{3AEA4697-4C5B-446B-AB2B-A3AB8796E2A2}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{3AEA4697-4C5B-446B-AB2B-A3AB8796E2A2}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{3AEA4697-4C5B-446B-AB2B-A3AB8796E2A2}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{3AEA4697-4C5B-446B-AB2B-A3AB8796E2A2} = {46424D24-45A3-4536-893C-349E158929A5}
 	EndGlobalSection
 EndGlobal

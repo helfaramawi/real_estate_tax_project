@@ -3,7 +3,7 @@ import { Link, useLocation, Outlet } from 'react-router-dom'
 import {
   LayoutDashboard, Building2, Users, FileText, CreditCard,
   Scale, ShieldCheck, ClipboardList, TrendingUp, LogOut,
-  Menu, X, ChevronLeft,
+  Menu, X, ChevronLeft, Brain, BarChart3,
 } from 'lucide-react'
 import { logout, getStoredUser } from '../lib/auth'
 import clsx from 'clsx'
@@ -18,6 +18,8 @@ const nav = [
   { to: '/exemptions', label: 'الإعفاءات', icon: ShieldCheck },
   { to: '/appeals', label: 'الطعون', icon: Scale },
   { to: '/field-surveys', label: 'المعاينات الميدانية', icon: ClipboardList },
+  { to: '/intelligence', label: 'الذكاء الاصطناعي', icon: Brain },
+  { to: '/predictions', label: 'مراجعة التنبؤات', icon: BarChart3 },
 ]
 
 const roleNames: Record<string, string> = {

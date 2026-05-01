@@ -14,6 +14,8 @@ import AppealsPage from './pages/appeals/AppealsPage'
 import ExemptionsPage from './pages/exemptions/ExemptionsPage'
 import ValuationsPage from './pages/valuations/ValuationsPage'
 import FieldSurveysPage from './pages/fieldsurveys/FieldSurveysPage'
+import IntelligencePage from './pages/intelligence/IntelligencePage'
+import PredictionsPage from './pages/intelligence/PredictionsPage'
 
 const qc = new QueryClient({
   defaultOptions: {
@@ -50,6 +52,8 @@ export default function App() {
             <Route path="exemptions" element={<ExemptionsPage />} />
             <Route path="valuations" element={<ValuationsPage />} />
             <Route path="field-surveys" element={<FieldSurveysPage />} />
+            <Route path="intelligence" element={<IntelligencePage />} />
+            <Route path="predictions" element={<PredictionsPage />} />
           </Route>
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>

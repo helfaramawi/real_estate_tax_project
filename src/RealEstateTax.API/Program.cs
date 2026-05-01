@@ -8,6 +8,7 @@ using RealEstateTax.API.Middleware;
 using RealEstateTax.Application;
 using RealEstateTax.Infrastructure;
 using RealEstateTax.Infrastructure.Persistence;
+using RealEstateTax.Intelligence;
 using Serilog;
 using Serilog.Events;
 
@@ -33,12 +34,14 @@ try
     // ─── Layers DI ───────────────────────────────────────────────────────────
     builder.Services.AddApplication();
     builder.Services.AddInfrastructure(builder.Configuration, builder.Environment);
+    builder.Services.AddIntelligence(builder.Configuration, builder.Environment);
 
     // ─── HTTP context ─────────────────────────────────────────────────────────
     builder.Services.AddHttpContextAccessor();
 
-    // ─── Controllers ─────────────────────────────────────────────────────────
+    // ─── Controllers (includes Intelligence assembly for /api/v2/* routes) ──
     builder.Services.AddControllers()
+        .AddApplicationPart(typeof(RealEstateTax.Intelligence.API.Controllers.IntelligenceController).Assembly)
         .AddJsonOptions(o => o.JsonSerializerOptions.PropertyNamingPolicy = System.Text.Json.JsonNamingPolicy.CamelCase)
         .AddFluentValidation();
     builder.Services.AddFluentValidationAutoValidation();
@@ -165,6 +168,9 @@ try
         "penalty-calculation-monthly",
         j => j.CalculateAndApplyPenaltiesAsync(CancellationToken.None),
         Cron.Monthly(1, 6));  // 1st of each month at 06:00 UTC
+
+    // ─── Intelligence recurring jobs (all gated by feature flags in jobs) ────
+    IntelligenceDependencyInjection.RegisterIntelligenceRecurringJobs();
 
     await app.RunAsync();
 }
