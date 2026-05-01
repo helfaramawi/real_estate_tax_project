@@ -9,6 +9,7 @@ import DataTable from '../../components/DataTable'
 import StatusBadge from '../../components/StatusBadge'
 import Modal from '../../components/Modal'
 import FormField, { Input, Select } from '../../components/FormField'
+import MapLocationPicker from '../../components/MapLocationPicker'
 
 const propertyTypes = [
   { value: 0, label: 'سكني' },
@@ -69,6 +70,7 @@ export default function PropertiesPage() {
     ? data
     : (data as any)?.items ?? data ?? []
 
+  const [location, setLocation] = useState<{ lat: number; lon: number } | null>(null)
   const [form, setForm] = useState({
     type: '0', builtUpArea: '', landArea: '', yearBuilt: '',
     streetAddress: '', district: '', city: '', governorate: 'Cairo',
@@ -86,6 +88,8 @@ export default function PropertiesPage() {
         district: form.district || undefined,
         city: form.city || undefined,
         governorate: form.governorate,
+        latitude: location?.lat,
+        longitude: location?.lon,
       }
       const res = await api.post('/properties', payload)
       return res.data
@@ -93,6 +97,7 @@ export default function PropertiesPage() {
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['properties'] })
       setShowCreate(false)
+      setLocation(null)
       setForm({ type: '0', builtUpArea: '', landArea: '', yearBuilt: '', streetAddress: '', district: '', city: '', governorate: 'Cairo' })
     },
     onError: (err: any) => {
@@ -196,6 +201,9 @@ export default function PropertiesPage() {
                 </Select>
               </FormField>
             </div>
+            <FormField label="الموقع الجغرافي (GPS)">
+              <MapLocationPicker value={location} onChange={setLocation} />
+            </FormField>
             <div className="flex gap-3 justify-start pt-2">
               <button
                 onClick={() => { if (validate()) createMutation.mutate() }}
