@@ -82,6 +82,20 @@ public class PropertiesController : ControllerBase
     public async Task<IActionResult> GetTimeline(Guid id, CancellationToken ct) =>
         (await _service.GetTimelineAsync(id, ct)).ToActionResult(this);
 
+    /// <summary>Soft-delete a property (Admin / SuperAdmin only). Requires a written reason for audit trail.</summary>
+    /// <param name="id">Property GUID.</param>
+    [HttpDelete("{id:guid}")]
+    [Authorize(Roles = "Admin,SuperAdmin")]
+    [ProducesResponseType(200)]
+    [ProducesResponseType(400)]
+    [ProducesResponseType(404)]
+    public async Task<IActionResult> Delete(Guid id, [FromBody] DeletePropertyRequest request, CancellationToken ct)
+    {
+        if (string.IsNullOrWhiteSpace(request.Reason))
+            return BadRequest(new { error = "يجب إدخال سبب الحذف" });
+        return (await _service.DeleteAsync(id, request.Reason, ct)).ToActionResult(this);
+    }
+
     /// <summary>Bulk import up to 500 properties from a parsed CSV payload.</summary>
     [HttpPost("bulk-import")]
     [Authorize(Roles = "Admin,SuperAdmin,TaxOfficer,FieldInspector")]

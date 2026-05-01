@@ -260,6 +260,25 @@ public class PropertyAppService : IPropertyService
         return Result<IEnumerable<NearbyPropertyDto>>.Success(dtos);
     }
 
+    public async Task<Result<bool>> DeleteAsync(Guid id, string reason, CancellationToken ct = default)
+    {
+        var property = await _db.Properties.FirstOrDefaultAsync(p => p.Id == id, ct);
+        if (property is null) return Result<bool>.NotFound();
+
+        property.DeletedBy = _currentUser.Username ?? "system";
+        property.DeletedAt = DateTime.UtcNow;
+        property.UpdatedAt = DateTime.UtcNow;
+        property.UpdatedBy = _currentUser.Username ?? "system";
+
+        _db.Properties.Remove(property); // triggers soft-delete interceptor in DbContext
+        await _db.SaveChangesAsync(ct);
+
+        await _audit.LogAsync("Delete", "Property", id, property.PropertyCode,
+            null, new { reason }, ct: ct);
+
+        return Result<bool>.Success(true);
+    }
+
     public async Task<Result<BulkImportResult>> BulkImportAsync(List<CreatePropertyRequest> requests, CancellationToken ct = default)
     {
         var result = new BulkImportResult();

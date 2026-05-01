@@ -1,9 +1,11 @@
+import { useState } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { ArrowRight, CheckCircle } from 'lucide-react'
+import { ArrowRight, CheckCircle, Trash2 } from 'lucide-react'
 import api from '../../lib/api'
 import type { Property } from '../../lib/types'
 import StatusBadge from '../../components/StatusBadge'
+import { getStoredUser } from '../../lib/auth'
 
 function Detail({ label, value }: { label: string; value?: string | number | null }) {
   return (
@@ -18,6 +20,10 @@ export default function PropertyDetailPage() {
   const { id } = useParams<{ id: string }>()
   const navigate = useNavigate()
   const qc = useQueryClient()
+  const user = getStoredUser()
+  const isAdmin = user?.roles?.some(r => r === 'Admin' || r === 'SuperAdmin') ?? false
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false)
+  const [deleteReason, setDeleteReason] = useState('')
 
   const { data: property, isLoading } = useQuery<Property>({
     queryKey: ['property', id],
@@ -33,6 +39,14 @@ export default function PropertyDetailPage() {
       await api.post(`/properties/${id}/verify`)
     },
     onSuccess: () => qc.invalidateQueries({ queryKey: ['property', id] }),
+  })
+
+  const deleteMutation = useMutation({
+    mutationFn: async () => api.delete(`/properties/${id}`, { data: { reason: deleteReason } }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['properties'] })
+      navigate('/properties')
+    },
   })
 
   if (isLoading) {
@@ -67,6 +81,14 @@ export default function PropertyDetailPage() {
             >
               <CheckCircle size={16} />
               {verifyMutation.isPending ? 'جاري التوثيق…' : 'توثيق العقار'}
+            </button>
+          )}
+          {isAdmin && (
+            <button
+              onClick={() => setShowDeleteDialog(true)}
+              className="flex items-center gap-2 px-4 py-2 text-sm bg-red-50 hover:bg-red-100 text-red-700 border border-red-200 rounded-lg transition-colors"
+            >
+              <Trash2 size={16} /> حذف العقار
             </button>
           )}
         </div>
@@ -129,6 +151,61 @@ export default function PropertyDetailPage() {
           </div>
         </div>
       </div>
+
+      {/* Delete confirmation dialog */}
+      {showDeleteDialog && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4">
+          <div className="bg-white rounded-xl shadow-2xl w-full max-w-md p-6 space-y-4">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-full bg-red-100 flex items-center justify-center flex-shrink-0">
+                <Trash2 size={18} className="text-red-600" />
+              </div>
+              <div>
+                <h3 className="font-semibold text-slate-900">حذف العقار</h3>
+                <p className="text-sm text-slate-500">{property.propertyCode}</p>
+              </div>
+            </div>
+
+            <div className="bg-amber-50 border border-amber-200 rounded-lg px-3 py-2 text-sm text-amber-800">
+              هذا الإجراء لا يُحذف العقار نهائياً — يُخفيه من النظام مع حفظه في سجل المراجعة.
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-slate-700 mb-1">
+                سبب الحذف <span className="text-red-500">*</span>
+              </label>
+              <textarea
+                rows={3}
+                value={deleteReason}
+                onChange={e => setDeleteReason(e.target.value)}
+                placeholder="مثال: تم تسجيل العقار مرتين بالخطأ، رمز العقار الصحيح هو PROP-2026-0001234"
+                className="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-red-400 focus:ring-2 focus:ring-red-100 resize-none"
+              />
+            </div>
+
+            {deleteMutation.isError && (
+              <p className="text-sm text-red-600">فشل الحذف — تحقق من الصلاحيات وحاول مرة أخرى.</p>
+            )}
+
+            <div className="flex gap-3 pt-1">
+              <button
+                onClick={() => deleteMutation.mutate()}
+                disabled={!deleteReason.trim() || deleteMutation.isPending}
+                className="flex items-center gap-2 px-5 py-2 bg-red-600 hover:bg-red-700 text-white text-sm rounded-lg disabled:opacity-50 transition-colors"
+              >
+                <Trash2 size={14} />
+                {deleteMutation.isPending ? 'جاري الحذف…' : 'تأكيد الحذف'}
+              </button>
+              <button
+                onClick={() => { setShowDeleteDialog(false); setDeleteReason('') }}
+                className="px-4 py-2 text-sm text-slate-600 border border-slate-200 rounded-lg hover:bg-slate-50"
+              >
+                إلغاء
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }

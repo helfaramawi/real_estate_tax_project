@@ -194,6 +194,11 @@ public class RiskScoreSummaryDto
     public DateTime CalculatedAt { get; set; }
 }
 
+public class DeletePropertyRequest
+{
+    public string Reason { get; set; } = string.Empty;
+}
+
 public class BulkImportRowError
 {
     public int Row { get; set; }
