@@ -59,6 +59,7 @@ public class PropertyAppService : IPropertyService
     public async Task<Result<PropertyDetailDto>> GetByIdAsync(Guid id, CancellationToken ct = default)
     {
         var property = await _db.Properties.AsNoTracking()
+            .AsSplitQuery()
             .Include(p => p.Location)
             .Include(p => p.Units)
             .Include(p => p.Ownerships)
