@@ -18,6 +18,8 @@ public class FeatureStoreService(
         logger.LogDebug("Computing features for {Count} properties at version {Version}",
             propertyIds.Count, featureVersion);
 
+        var threeYearsAgo = DateTime.UtcNow.AddYears(-3);
+
         var raw = await appDb.Properties
             .Where(p => propertyIds.Contains(p.Id) && !p.IsDeleted)
             .Select(p => new
@@ -71,10 +73,11 @@ public class FeatureStoreService(
                 MatchedCount = p.SourceRecords.Count(sr => sr.IsMatched),
                 MaxConfidence = p.SourceRecords.Max(sr => (double?)sr.MatchConfidenceScore),
 
-                OwnershipCount = p.Ownerships.Count(o => o.IsCurrent),
+                CurrentOwnerCount = p.Ownerships.Count(o => o.IsCurrent),
                 DaysSinceTransfer = p.Ownerships.Any()
                     ? (int?)(int)(DateTime.UtcNow - p.Ownerships.Max(o => o.CreatedAt)).TotalDays
                     : null,
+                TransferCount3y = p.Ownerships.Count(o => o.CreatedAt >= threeYearsAgo),
                 HasCorporate = p.Ownerships.Any(o =>
                     o.OwnershipType == RealEstateTax.Domain.Enums.OwnershipType.Corporate && o.IsCurrent),
             })
@@ -114,27 +117,40 @@ public class FeatureStoreService(
             SourceRecordsCount = p.SourceCount,
             MatchedRecordsCount = p.MatchedCount,
             MaxMatchConfidence = p.MaxConfidence,
-            OwnershipChainLength = p.OwnershipCount,
+            OwnershipChainLength = p.CurrentOwnerCount,
             DaysSinceLastTransfer = p.DaysSinceTransfer,
+            TransferCount3y = p.TransferCount3y,
+            MultipleOwnersFlag = p.CurrentOwnerCount > 1,
             CorporateOwnerFlag = p.HasCorporate,
         }).ToList();
     }
 
+    // Single-query bulk upsert: load all existing vectors in one round-trip,
+    // then let EF Core batch the inserts/updates in SaveChangesAsync.
     public async Task BulkUpsertAsync(List<FeatureVector> vectors, CancellationToken ct = default)
     {
+        if (vectors.Count == 0) return;
+
+        var version = vectors[0].FeatureVersion;
+        var ids = vectors.Select(v => v.PropertyId).ToList();
+
+        var existingById = await intelDb.FeatureVectors
+            .Where(x => ids.Contains(x.PropertyId) && x.FeatureVersion == version)
+            .ToDictionaryAsync(x => x.PropertyId, ct);
+
         foreach (var v in vectors)
         {
-            var existing = await intelDb.FeatureVectors
-                .FirstOrDefaultAsync(x => x.PropertyId == v.PropertyId && x.FeatureVersion == v.FeatureVersion, ct);
-
-            if (existing is null)
-                intelDb.FeatureVectors.Add(v);
-            else
+            if (existingById.TryGetValue(v.PropertyId, out var existing))
             {
                 intelDb.Entry(existing).CurrentValues.SetValues(v);
                 existing.ComputedAt = DateTime.UtcNow;
             }
+            else
+            {
+                intelDb.FeatureVectors.Add(v);
+            }
         }
+
         await intelDb.SaveChangesAsync(ct);
     }
 

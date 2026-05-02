@@ -51,6 +51,12 @@ public class PropertyDetailDto : PropertyDto
     public TaxAssessmentSummaryDto? LatestAssessment { get; set; }
     public TaxBillSummaryDto? LatestBill { get; set; }
     public RiskScoreSummaryDto? RiskScore { get; set; }
+    // ML Intelligence scores from the nightly batch inference pipeline
+    public double? MlRiskScore { get; set; }
+    public double? MlFraudProbability { get; set; }
+    public double? MlDuplicateScore { get; set; }
+    public DateTime? MlLastScoredAt { get; set; }
+    public string? MlModelVersion { get; set; }
 }
 
 public class CreatePropertyRequest

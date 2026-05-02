@@ -8,7 +8,7 @@ logger = logging.getLogger(__name__)
 
 
 class TrainRequest(BaseModel):
-    model_type: str   # "risk_scorer" | "fraud_detector"
+    model_type: str   # "risk_scorer" | "fraud_detector" | "duplicate_detector"
     feature_version: str = "v1"
     db_url: str = ""  # overridden from env if empty
 
@@ -16,7 +16,7 @@ class TrainRequest(BaseModel):
 @router.post("/start")
 async def start_training(request: TrainRequest, background_tasks: BackgroundTasks):
     """Trigger async model training. Returns immediately; check MLflow for progress."""
-    allowed = {"risk_scorer", "fraud_detector"}
+    allowed = {"risk_scorer", "fraud_detector", "duplicate_detector"}
     if request.model_type not in allowed:
         raise HTTPException(400, f"model_type must be one of {allowed}")
 
@@ -36,6 +36,10 @@ async def _run_training(model_type: str, feature_version: str, db_url: str):
         elif model_type == "fraud_detector":
             from app.training.train_fraud import train_fraud_model
             result = train_fraud_model(db_url, feature_version)
+        elif model_type == "duplicate_detector":
+            from app.training.train_duplicate import train
+            train()
+            result = "duplicate_detector training complete"
         else:
             return
         logger.info("Training complete for %s: %s", model_type, result)

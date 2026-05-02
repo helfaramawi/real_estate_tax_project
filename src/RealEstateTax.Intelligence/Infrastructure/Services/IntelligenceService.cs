@@ -1,6 +1,8 @@
+using System.Globalization;
 using System.Text.Json;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+using RealEstateTax.Infrastructure.Persistence;
 using RealEstateTax.Intelligence.Application.DTOs;
 using RealEstateTax.Intelligence.Application.Interfaces;
 using RealEstateTax.Intelligence.Domain.Entities;
@@ -11,6 +13,7 @@ namespace RealEstateTax.Intelligence.Infrastructure.Services;
 
 public class IntelligenceService(
     IntelligenceDbContext intelDb,
+    ApplicationDbContext appDb,
     IFeatureStoreService featureStore,
     IMLModelClient mlClient,
     ILogger<IntelligenceService> logger) : IIntelligenceService
@@ -59,8 +62,10 @@ public class IntelligenceService(
             }).ToList();
 
             intelDb.PredictionResults.AddRange(predictions);
+            await intelDb.SaveChangesAsync(ct);
+
+            await SyncScoresToPropertiesAsync(type, predictions, model.Version, ct);
         }
-        await intelDb.SaveChangesAsync(ct);
     }
 
     public async Task<PagedPredictionsDto> GetPendingReviewAsync(
@@ -161,7 +166,6 @@ public class IntelligenceService(
         var model = await intelDb.ModelRegistry.FindAsync([modelId], ct);
         if (model is null || model.Status != ModelStatus.Staged) return null;
 
-        // Retire current production model of same type
         var current = await intelDb.ModelRegistry
             .FirstOrDefaultAsync(m => m.PredictionType == model.PredictionType
                 && m.Status == ModelStatus.Production, ct);
@@ -194,6 +198,8 @@ public class IntelligenceService(
 
         logger.LogInformation("Running batch inference: type={Type}, model={Model}, batches={Batches}",
             type, model.ModelName, batches);
+
+        var allPredictions = new List<PredictionResult>();
 
         for (int i = 0; i < batches; i++)
         {
@@ -228,25 +234,83 @@ public class IntelligenceService(
 
             intelDb.PredictionResults.AddRange(predictions);
             await intelDb.SaveChangesAsync(ct);
+
+            allPredictions.AddRange(predictions);
         }
 
-        logger.LogInformation("Batch inference complete for {Type}", type);
+        // Write ML scores back to public.properties so the main API exposes them
+        await SyncScoresToPropertiesAsync(type, allPredictions, model.Version, ct);
+
+        logger.LogInformation("Batch inference complete for {Type}: {Count} predictions", type, allPredictions.Count);
+    }
+
+    // Bulk-update the denormalized ML score columns on public.properties.
+    // Uses a VALUES list in SQL — GUIDs and doubles are safe to inline.
+    private async Task SyncScoresToPropertiesAsync(
+        PredictionType type, List<PredictionResult> predictions, string modelVersion, CancellationToken ct)
+    {
+        if (predictions.Count == 0) return;
+
+        var column = type switch
+        {
+            PredictionType.RiskScore => "ml_risk_score",
+            PredictionType.FraudProbability => "ml_fraud_probability",
+            PredictionType.DuplicateDetection => "ml_duplicate_score",
+            _ => null
+        };
+        if (column is null) return;
+
+        var values = string.Join(",", predictions.Select(p =>
+            $"('{p.PropertyId:D}'::uuid,{p.Score.ToString(CultureInfo.InvariantCulture)}::float8)"));
+
+        var safeVersion = modelVersion.Replace("'", "''");
+        await appDb.Database.ExecuteSqlRawAsync(
+            $"UPDATE properties SET {column}=v.s, ml_last_scored_at=now(), ml_model_version='{safeVersion}' " +
+            $"FROM (VALUES {values}) AS v(pid,s) WHERE properties.id=v.pid");
     }
 
     private static PredictionRequestDto BuildPredictionRequest(
         ModelRegistration model, List<FeatureVector> features)
     {
-        var rows = features.Select(f => new FeatureRowDto(
-            f.PropertyId.ToString(),
-            f.Lat, f.Lon,
-            f.BuiltUpArea, f.LandArea, f.PropertyTypeCode, f.YearBuilt,
-            f.DeclaredAnnualValue, f.MarketValuePerSqm,
-            f.PaidOnTimeRate, f.OverdueCount,
-            f.NearestNeighborDistanceM, f.NeighborsWithin100m,
-            f.ExistingRiskScore, f.FraudFlagsCount,
-            f.CorporateOwnerFlag, f.OwnershipChainLength, f.DaysSinceLastSurvey,
-            f.SurveysCount, f.ValueVsClusterMedianPct
-        )).ToList();
+        var rows = features.Select(f => new FeatureRowDto
+        {
+            PropertyId = f.PropertyId.ToString(),
+            Lat = f.Lat,
+            Lon = f.Lon,
+            HasBoundaryPolygon = f.HasBoundaryPolygon,
+            NearestNeighborDistanceM = f.NearestNeighborDistanceM,
+            NeighborsWithin100m = f.NeighborsWithin100m,
+            NeighborsWithin500m = f.NeighborsWithin500m,
+            BuiltUpArea = f.BuiltUpArea,
+            LandArea = f.LandArea,
+            PropertyTypeCode = f.PropertyTypeCode,
+            YearBuilt = f.YearBuilt,
+            DeclaredAnnualValue = f.DeclaredAnnualValue,
+            MarketValuePerSqm = f.MarketValuePerSqm,
+            CapitalizationRate = f.CapitalizationRate,
+            ValueVsClusterMedianPct = f.ValueVsClusterMedianPct,
+            ValueVsDistrictMedianPct = f.ValueVsDistrictMedianPct,
+            OwnershipChainLength = f.OwnershipChainLength,
+            DaysSinceLastTransfer = f.DaysSinceLastTransfer,
+            CorporateOwnerFlag = f.CorporateOwnerFlag,
+            MultipleOwnersFlag = f.MultipleOwnersFlag,
+            SurveysCount = f.SurveysCount,
+            DaysSinceLastSurvey = f.DaysSinceLastSurvey,
+            GpsAccuracyAvg = f.GpsAccuracyAvg,
+            BillsCount = f.BillsCount,
+            PaidOnTimeRate = f.PaidOnTimeRate,
+            OverdueCount = f.OverdueCount,
+            TotalPaidEgp = f.TotalPaidEgp,
+            TotalOutstandingEgp = f.TotalOutstandingEgp,
+            ExistingRiskScore = f.ExistingRiskScore,
+            GeoVerificationScore = f.GeoVerificationScore,
+            FraudFlagsCount = f.FraudFlagsCount,
+            AppealsCount = f.AppealsCount,
+            ExemptionsCount = f.ExemptionsCount,
+            SourceRecordsCount = f.SourceRecordsCount,
+            MatchedRecordsCount = f.MatchedRecordsCount,
+            MaxMatchConfidence = f.MaxMatchConfidence,
+        }).ToList();
 
         return new PredictionRequestDto(model.ModelName, model.Version, rows);
     }

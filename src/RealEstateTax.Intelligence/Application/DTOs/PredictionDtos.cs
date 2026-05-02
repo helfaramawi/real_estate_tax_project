@@ -8,28 +8,64 @@ public record PredictionRequestDto(
     List<FeatureRowDto> Features
 );
 
-public record FeatureRowDto(
-    string PropertyId,
-    double? Lat,
-    double? Lon,
-    double? BuiltUpArea,
-    double? LandArea,
-    int? PropertyTypeCode,
-    int? YearBuilt,
-    double? DeclaredAnnualValue,
-    double? MarketValuePerSqm,
-    double? PaidOnTimeRate,
-    int? OverdueCount,
-    double? NearestNeighborDistanceM,
-    int? NeighborsWithin100m,
-    int? ExistingRiskScore,
-    int? FraudFlagsCount,
-    bool? CorporateOwnerFlag,
-    int? OwnershipChainLength,
-    int? DaysSinceLastSurvey,
-    int? SurveysCount,
-    double? ValueVsClusterMedianPct
-);
+// All 35 features — matches Python FeatureRow exactly.
+// MLModelHttpClient uses JsonNamingPolicy.SnakeCaseLower so PascalCase
+// properties are serialized as snake_case (e.g. BuiltUpArea → built_up_area).
+public class FeatureRowDto
+{
+    public required string PropertyId { get; init; }
+
+    // Spatial
+    public double? Lat { get; init; }
+    public double? Lon { get; init; }
+    public bool? HasBoundaryPolygon { get; init; }
+    public double? NearestNeighborDistanceM { get; init; }
+    public int? NeighborsWithin100m { get; init; }
+    public int? NeighborsWithin500m { get; init; }
+
+    // Property attributes
+    public double? BuiltUpArea { get; init; }
+    public double? LandArea { get; init; }
+    public int? PropertyTypeCode { get; init; }
+    public int? YearBuilt { get; init; }
+
+    // Valuation
+    public double? DeclaredAnnualValue { get; init; }
+    public double? MarketValuePerSqm { get; init; }
+    public double? CapitalizationRate { get; init; }
+    public double? ValueVsClusterMedianPct { get; init; }
+    public double? ValueVsDistrictMedianPct { get; init; }
+
+    // Ownership
+    public int? OwnershipChainLength { get; init; }
+    public int? DaysSinceLastTransfer { get; init; }
+    public bool? CorporateOwnerFlag { get; init; }
+    public bool? MultipleOwnersFlag { get; init; }
+
+    // Survey
+    public int? SurveysCount { get; init; }
+    public int? DaysSinceLastSurvey { get; init; }
+    public double? GpsAccuracyAvg { get; init; }
+
+    // Payment / billing
+    public int? BillsCount { get; init; }
+    public double? PaidOnTimeRate { get; init; }
+    public int? OverdueCount { get; init; }
+    public double? TotalPaidEgp { get; init; }
+    public double? TotalOutstandingEgp { get; init; }
+
+    // Risk / compliance
+    public int? ExistingRiskScore { get; init; }
+    public int? GeoVerificationScore { get; init; }
+    public int? FraudFlagsCount { get; init; }
+    public int? AppealsCount { get; init; }
+    public int? ExemptionsCount { get; init; }
+
+    // Source matching
+    public int? SourceRecordsCount { get; init; }
+    public int? MatchedRecordsCount { get; init; }
+    public double? MaxMatchConfidence { get; init; }
+}
 
 public record PredictionResponseDto(
     string PropertyId,

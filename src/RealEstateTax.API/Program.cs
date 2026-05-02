@@ -9,6 +9,7 @@ using RealEstateTax.Application;
 using RealEstateTax.Infrastructure;
 using RealEstateTax.Infrastructure.Persistence;
 using RealEstateTax.Intelligence;
+using RealEstateTax.Intelligence.Infrastructure.Persistence;
 using Serilog;
 using Serilog.Events;
 
@@ -107,11 +108,23 @@ try
         using var scope = app.Services.CreateScope();
         var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
         await ApplicationDbContextSeed.ApplySchemaMigrationsAsync(db);
-        Log.Information("Schema migration V3 applied (or already present).");
+        Log.Information("Schema migrations (V2 intelligence + V3 fix) applied.");
     }
     catch (Exception ex)
     {
-        Log.Error(ex, "Schema migration V3 failed: {Message}", ex.Message);
+        Log.Error(ex, "Schema migration failed: {Message}", ex.Message);
+    }
+
+    // ─── Seed intelligence module defaults (model registrations) ─────────────
+    try
+    {
+        using var scope = app.Services.CreateScope();
+        var intelDb = scope.ServiceProvider.GetRequiredService<IntelligenceDbContext>();
+        await IntelligenceDbContextSeed.SeedAsync(intelDb);
+    }
+    catch (Exception ex)
+    {
+        Log.Warning(ex, "Intelligence seed failed (non-fatal): {Message}", ex.Message);
     }
 
     // ─── Seed reference data (schema created by V1__InitialSchema.sql) ────────

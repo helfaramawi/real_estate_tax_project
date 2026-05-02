@@ -7,6 +7,7 @@ import os
 from app.routers import predict, train, health
 from app.models.risk_scorer import RiskScorer
 from app.models.fraud_detector import FraudDetector
+from app.models.duplicate_detector import DuplicateDetector
 
 logger = logging.getLogger(__name__)
 MODEL_STORE: dict = {}
@@ -32,6 +33,18 @@ async def lifespan(app: FastAPI):
         logger.info("Fraud detector model loaded")
     except Exception as e:
         logger.warning("Fraud detector not loaded (no trained model yet): %s", e)
+
+    try:
+        MODEL_STORE["duplicate_detector"] = DuplicateDetector.load_production()
+        logger.info("Duplicate detector ML model loaded")
+    except FileNotFoundError:
+        # No trained artefact yet — fall back to the rule-based scorer so the
+        # nightly batch inference job can run immediately without training.
+        MODEL_STORE["duplicate_detector"] = DuplicateDetector()
+        logger.info("Duplicate detector using rule-based fallback (no trained model)")
+    except Exception as e:
+        MODEL_STORE["duplicate_detector"] = DuplicateDetector()
+        logger.warning("Duplicate detector fallback due to load error: %s", e)
 
     app.state.models = MODEL_STORE
     yield
