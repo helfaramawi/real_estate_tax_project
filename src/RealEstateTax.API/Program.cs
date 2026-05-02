@@ -106,8 +106,7 @@ try
     {
         using var scope = app.Services.CreateScope();
         var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
-        await db.Database.ExecuteSqlRawAsync(
-            "ALTER TABLE tax_assessments ADD COLUMN IF NOT EXISTS prepared_at TIMESTAMPTZ;");
+        await ApplicationDbContextSeed.ApplySchemaMigrationsAsync(db);
         Log.Information("Schema migration V3 applied (or already present).");
     }
     catch (Exception ex)

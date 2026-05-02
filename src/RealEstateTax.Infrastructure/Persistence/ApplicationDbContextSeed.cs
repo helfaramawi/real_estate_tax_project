@@ -6,6 +6,12 @@ namespace RealEstateTax.Infrastructure.Persistence;
 
 public static class ApplicationDbContextSeed
 {
+    public static async Task ApplySchemaMigrationsAsync(ApplicationDbContext context)
+    {
+        await context.Database.ExecuteSqlRawAsync(
+            "ALTER TABLE tax_assessments ADD COLUMN IF NOT EXISTS prepared_at TIMESTAMPTZ;");
+    }
+
     public static async Task SeedAsync(ApplicationDbContext context)
     {
         await SeedRolesAsync(context);
