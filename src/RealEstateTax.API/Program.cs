@@ -100,6 +100,21 @@ try
 
     var app = builder.Build();
 
+    // ─── Apply schema migrations not covered by docker-entrypoint-initdb.d ─────
+    // (initdb scripts only run on first container start; this is idempotent)
+    try
+    {
+        using var scope = app.Services.CreateScope();
+        var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+        await db.Database.ExecuteSqlRawAsync(
+            "ALTER TABLE tax_assessments ADD COLUMN IF NOT EXISTS prepared_at TIMESTAMPTZ;");
+        Log.Information("Schema migration V3 applied (or already present).");
+    }
+    catch (Exception ex)
+    {
+        Log.Error(ex, "Schema migration V3 failed: {Message}", ex.Message);
+    }
+
     // ─── Seed reference data (schema created by V1__InitialSchema.sql) ────────
     try
     {

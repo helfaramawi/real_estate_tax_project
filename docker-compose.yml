@@ -14,6 +14,7 @@ services:
       # Both migration scripts run in order on first start (alphabetical)
       - ./src/RealEstateTax.Infrastructure/Migrations/V1__InitialSchema.sql:/docker-entrypoint-initdb.d/01_V1__InitialSchema.sql:ro
       - ./src/RealEstateTax.Infrastructure/Migrations/V2__Intelligence_Schema.sql:/docker-entrypoint-initdb.d/02_V2__Intelligence_Schema.sql:ro
+      - ./src/RealEstateTax.Infrastructure/Migrations/V3__FixTaxAssessmentsSchema.sql:/docker-entrypoint-initdb.d/03_V3__FixTaxAssessmentsSchema.sql:ro
     expose:
       - "5432"
     healthcheck:
