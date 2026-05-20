@@ -1,3 +1,4 @@
+using System.Reflection;
 using Microsoft.EntityFrameworkCore;
 using RealEstateTax.Domain.Entities;
 using RealEstateTax.Domain.Enums;
@@ -6,6 +7,29 @@ namespace RealEstateTax.Infrastructure.Persistence;
 
 public static class ApplicationDbContextSeed
 {
+    public static async Task ApplySchemaMigrationsAsync(ApplicationDbContext context)
+    {
+        // V3: add prepared_at column missing from V1 (MUST succeed — fixes the 500 on property detail)
+        await context.Database.ExecuteSqlRawAsync(
+            "ALTER TABLE tax_assessments ADD COLUMN IF NOT EXISTS prepared_at TIMESTAMPTZ;");
+
+        // V2: intelligence schema — creates intel schema, all 9 intel tables, and adds ML score
+        // columns to public.properties / property_locations / field_surveys.
+        // All statements use IF NOT EXISTS so this is fully idempotent on every startup.
+        await ApplyEmbeddedSqlAsync(context,
+            "RealEstateTax.Infrastructure.Migrations.V2__Intelligence_Schema.sql");
+    }
+
+    private static async Task ApplyEmbeddedSqlAsync(ApplicationDbContext context, string resourceName)
+    {
+        var assembly = Assembly.GetExecutingAssembly();
+        await using var stream = assembly.GetManifestResourceStream(resourceName);
+        if (stream is null) return;
+        using var reader = new StreamReader(stream);
+        var sql = await reader.ReadToEndAsync();
+        await context.Database.ExecuteSqlRawAsync(sql);
+    }
+
     public static async Task SeedAsync(ApplicationDbContext context)
     {
         await SeedRolesAsync(context);

@@ -70,6 +70,11 @@ public class PropertyConfiguration : IEntityTypeConfiguration<Property>
         builder.Property(x => x.LandArea).HasPrecision(12, 2);
         builder.Property(x => x.CreatedBy).HasMaxLength(100);
         builder.Property(x => x.UpdatedBy).HasMaxLength(100);
+        builder.Property(x => x.MlRiskScore).HasColumnName("ml_risk_score");
+        builder.Property(x => x.MlFraudProbability).HasColumnName("ml_fraud_probability");
+        builder.Property(x => x.MlDuplicateScore).HasColumnName("ml_duplicate_score");
+        builder.Property(x => x.MlLastScoredAt).HasColumnName("ml_last_scored_at");
+        builder.Property(x => x.MlModelVersion).HasMaxLength(20).HasColumnName("ml_model_version");
 
         builder.HasIndex(x => x.PropertyCode).IsUnique();
         builder.HasIndex(x => x.ParcelNumber);

@@ -59,14 +59,15 @@ public class PropertyAppService : IPropertyService
     public async Task<Result<PropertyDetailDto>> GetByIdAsync(Guid id, CancellationToken ct = default)
     {
         var property = await _db.Properties.AsNoTracking()
+            .AsSplitQuery()
             .Include(p => p.Location)
-            .Include(p => p.Units.Where(u => !u.IsDeleted))
-            .Include(p => p.Ownerships.Where(o => !o.IsDeleted))
+            .Include(p => p.Units)
+            .Include(p => p.Ownerships)
                 .ThenInclude(o => o.Taxpayer)
-            .Include(p => p.Valuations.Where(v => !v.IsDeleted))
-            .Include(p => p.TaxAssessments.Where(a => !a.IsDeleted))
-            .Include(p => p.TaxBills.Where(b => !b.IsDeleted))
-            .Include(p => p.RiskScores.Where(r => !r.IsDeleted))
+            .Include(p => p.Valuations)
+            .Include(p => p.TaxAssessments)
+            .Include(p => p.TaxBills)
+            .Include(p => p.RiskScores)
             .FirstOrDefaultAsync(p => p.Id == id, ct);
 
         if (property == null) return Result<PropertyDetailDto>.NotFound();
@@ -258,6 +259,42 @@ public class PropertyAppService : IPropertyService
         }).OrderBy(d => d.DistanceMeters);
 
         return Result<IEnumerable<NearbyPropertyDto>>.Success(dtos);
+    }
+
+    public async Task<Result<bool>> DeleteAsync(Guid id, string reason, CancellationToken ct = default)
+    {
+        var property = await _db.Properties.FirstOrDefaultAsync(p => p.Id == id, ct);
+        if (property is null) return Result<bool>.NotFound();
+
+        property.DeletedBy = _currentUser.Username ?? "system";
+        property.DeletedAt = DateTime.UtcNow;
+        property.UpdatedAt = DateTime.UtcNow;
+        property.UpdatedBy = _currentUser.Username ?? "system";
+
+        _db.Properties.Remove(property); // triggers soft-delete interceptor in DbContext
+        await _db.SaveChangesAsync(ct);
+
+        await _audit.LogAsync("Delete", "Property", id, property.PropertyCode,
+            null, new { reason }, ct: ct);
+
+        return Result<bool>.Success(true);
+    }
+
+    public async Task<Result<BulkImportResult>> BulkImportAsync(List<CreatePropertyRequest> requests, CancellationToken ct = default)
+    {
+        var result = new BulkImportResult();
+        for (int i = 0; i < requests.Count; i++)
+        {
+            var r = await CreateAsync(requests[i], ct);
+            if (r.IsSuccess)
+                result.Succeeded++;
+            else
+            {
+                result.Failed++;
+                result.Errors.Add(new BulkImportRowError { Row = i + 1, Message = r.Error ?? "خطأ غير معروف" });
+            }
+        }
+        return Result<BulkImportResult>.Success(result);
     }
 
     private async Task<string> GeneratePropertyCodeAsync(CancellationToken ct)

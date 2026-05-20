@@ -8,7 +8,9 @@ public class PropertyDto
     public string PropertyCode { get; set; } = string.Empty;
     public string? ParcelNumber { get; set; }
     public PropertyType Type { get; set; }
+    public string TypeName { get; set; } = string.Empty;
     public PropertyStatus Status { get; set; }
+    public string StatusName { get; set; } = string.Empty;
     public decimal BuiltUpArea { get; set; }
     public decimal? LandArea { get; set; }
     public int? YearBuilt { get; set; }
@@ -23,6 +25,8 @@ public class PropertyDto
     public bool HasDuplicateSuspicion { get; set; }
     public DateTime CreatedAt { get; set; }
     public string? PrimaryOwnerName { get; set; }
+    public decimal? CurrentAssessedValue { get; set; }
+    public decimal? CurrentTaxAmount { get; set; }
 }
 
 public class PropertyDetailDto : PropertyDto
@@ -47,6 +51,12 @@ public class PropertyDetailDto : PropertyDto
     public TaxAssessmentSummaryDto? LatestAssessment { get; set; }
     public TaxBillSummaryDto? LatestBill { get; set; }
     public RiskScoreSummaryDto? RiskScore { get; set; }
+    // ML Intelligence scores from the nightly batch inference pipeline
+    public double? MlRiskScore { get; set; }
+    public double? MlFraudProbability { get; set; }
+    public double? MlDuplicateScore { get; set; }
+    public DateTime? MlLastScoredAt { get; set; }
+    public string? MlModelVersion { get; set; }
 }
 
 public class CreatePropertyRequest
@@ -192,4 +202,22 @@ public class RiskScoreSummaryDto
     public double Score { get; set; }
     public string Level { get; set; } = string.Empty;
     public DateTime CalculatedAt { get; set; }
+}
+
+public class DeletePropertyRequest
+{
+    public string Reason { get; set; } = string.Empty;
+}
+
+public class BulkImportRowError
+{
+    public int Row { get; set; }
+    public string Message { get; set; } = string.Empty;
+}
+
+public class BulkImportResult
+{
+    public int Succeeded { get; set; }
+    public int Failed { get; set; }
+    public List<BulkImportRowError> Errors { get; set; } = [];
 }

@@ -1,0 +1,16 @@
+FEATURE_COLUMNS = [
+    "lat", "lon",
+    "built_up_area", "land_area", "property_type_code", "year_built",
+    "declared_annual_value", "market_value_per_sqm", "capitalization_rate",
+    "paid_on_time_rate", "overdue_count", "bills_count",
+    "total_paid_egp", "total_outstanding_egp",
+    "nearest_neighbor_distance_m", "neighbors_within100m", "neighbors_within500m",
+    "surveys_count", "days_since_last_survey", "gps_accuracy_avg",
+    "existing_risk_score", "geo_verification_score",
+    "fraud_flags_count", "appeals_count", "exemptions_count",
+    "source_records_count", "matched_records_count", "max_match_confidence",
+    "ownership_chain_length", "days_since_last_transfer",
+    "corporate_owner_flag", "multiple_owners_flag",
+    "value_vs_cluster_median_pct", "value_vs_district_median_pct",
+    "has_boundary_polygon",
+]

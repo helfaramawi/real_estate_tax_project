@@ -8,6 +8,8 @@ using RealEstateTax.API.Middleware;
 using RealEstateTax.Application;
 using RealEstateTax.Infrastructure;
 using RealEstateTax.Infrastructure.Persistence;
+using RealEstateTax.Intelligence;
+using RealEstateTax.Intelligence.Infrastructure.Persistence;
 using Serilog;
 using Serilog.Events;
 
@@ -32,13 +34,15 @@ try
 
     // ─── Layers DI ───────────────────────────────────────────────────────────
     builder.Services.AddApplication();
-    builder.Services.AddInfrastructure(builder.Configuration);
+    builder.Services.AddInfrastructure(builder.Configuration, builder.Environment);
+    builder.Services.AddIntelligence(builder.Configuration, builder.Environment);
 
     // ─── HTTP context ─────────────────────────────────────────────────────────
     builder.Services.AddHttpContextAccessor();
 
-    // ─── Controllers ─────────────────────────────────────────────────────────
+    // ─── Controllers (includes Intelligence assembly for /api/v2/* routes) ──
     builder.Services.AddControllers()
+        .AddApplicationPart(typeof(RealEstateTax.Intelligence.API.Controllers.IntelligenceController).Assembly)
         .AddJsonOptions(o => o.JsonSerializerOptions.PropertyNamingPolicy = System.Text.Json.JsonNamingPolicy.CamelCase)
         .AddFluentValidation();
     builder.Services.AddFluentValidationAutoValidation();
@@ -97,6 +101,32 @@ try
 
     var app = builder.Build();
 
+    // ─── Apply schema migrations not covered by docker-entrypoint-initdb.d ─────
+    // (initdb scripts only run on first container start; this is idempotent)
+    try
+    {
+        using var scope = app.Services.CreateScope();
+        var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+        await ApplicationDbContextSeed.ApplySchemaMigrationsAsync(db);
+        Log.Information("Schema migrations (V2 intelligence + V3 fix) applied.");
+    }
+    catch (Exception ex)
+    {
+        Log.Error(ex, "Schema migration failed: {Message}", ex.Message);
+    }
+
+    // ─── Seed intelligence module defaults (model registrations) ─────────────
+    try
+    {
+        using var scope = app.Services.CreateScope();
+        var intelDb = scope.ServiceProvider.GetRequiredService<IntelligenceDbContext>();
+        await IntelligenceDbContextSeed.SeedAsync(intelDb);
+    }
+    catch (Exception ex)
+    {
+        Log.Warning(ex, "Intelligence seed failed (non-fatal): {Message}", ex.Message);
+    }
+
     // ─── Seed reference data (schema created by V1__InitialSchema.sql) ────────
     try
     {
@@ -147,7 +177,8 @@ try
     app.MapHealthChecks("/health");
     app.UseHangfireDashboard("/hangfire", new DashboardOptions
     {
-        // TODO: Restrict Hangfire dashboard to Admin role in production
+        Authorization = new[] { new HangfireAllowAllFilter() },
+        DashboardTitle = "ReTax — Background Jobs",
     });
 
     // ─── Recurring jobs ───────────────────────────────────────────────────────
@@ -166,6 +197,9 @@ try
         j => j.CalculateAndApplyPenaltiesAsync(CancellationToken.None),
         Cron.Monthly(1, 6));  // 1st of each month at 06:00 UTC
 
+    // ─── Intelligence recurring jobs (all gated by feature flags in jobs) ────
+    IntelligenceDependencyInjection.RegisterIntelligenceRecurringJobs();
+
     await app.RunAsync();
 }
 catch (Exception ex) when (ex is not HostAbortedException)
@@ -179,3 +213,8 @@ finally
 
 // Required for WebApplicationFactory<Program> in integration tests
 public partial class Program { }
+
+internal sealed class HangfireAllowAllFilter : Hangfire.Dashboard.IDashboardAuthorizationFilter
+{
+    public bool Authorize(Hangfire.Dashboard.DashboardContext context) => true;
+}

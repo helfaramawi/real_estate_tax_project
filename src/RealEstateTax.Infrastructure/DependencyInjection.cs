@@ -1,10 +1,13 @@
 using System.Text;
 using Hangfire;
+using Hangfire.InMemory;
 using Hangfire.PostgreSql;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 using Microsoft.IdentityModel.Tokens;
 using RealEstateTax.Application.Common.Interfaces;
 using RealEstateTax.Application.Services;
@@ -19,7 +22,7 @@ namespace RealEstateTax.Infrastructure;
 
 public static class DependencyInjection
 {
-    public static IServiceCollection AddInfrastructure(this IServiceCollection services, IConfiguration configuration)
+    public static IServiceCollection AddInfrastructure(this IServiceCollection services, IConfiguration configuration, IWebHostEnvironment environment)
     {
         var connectionString = configuration.GetConnectionString("DefaultConnection")
             ?? throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");
@@ -52,9 +55,16 @@ public static class DependencyInjection
                 };
             });
 
-        // Hangfire
-        services.AddHangfire(config =>
-            config.UsePostgreSqlStorage(opts => opts.UseNpgsqlConnection(connectionString)));
+        // Hangfire — use in-memory storage in Development to avoid requiring a configured DB at startup
+        if (environment.IsDevelopment())
+        {
+            services.AddHangfire(config => config.UseInMemoryStorage());
+        }
+        else
+        {
+            services.AddHangfire(config =>
+                config.UsePostgreSqlStorage(opts => opts.UseNpgsqlConnection(connectionString)));
+        }
         services.AddHangfireServer();
 
         // Background job classes (resolved by Hangfire's IoC activator)

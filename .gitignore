@@ -43,11 +43,13 @@ appsettings.Staging.json
 *.p12
 .env
 .env.*
+!.env.example
 secrets.json
 *secrets*.json
 
 ## Docker
 .dockerignore
+!**/.dockerignore
 
 ## OS
 .DS_Store

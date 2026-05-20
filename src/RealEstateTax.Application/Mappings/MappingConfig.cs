@@ -35,19 +35,52 @@ public static class MappingConfig
 
         // Property
         TypeAdapterConfig<Property, PropertyDto>.NewConfig()
+            .Map(dest => dest.TypeName, src => src.Type.ToString())
+            .Map(dest => dest.StatusName, src => src.Status.ToString())
             .Map(dest => dest.Latitude, src => src.Location != null ? src.Location.Latitude : null)
             .Map(dest => dest.Longitude, src => src.Location != null ? src.Location.Longitude : null)
             .Map(dest => dest.PrimaryOwnerName, src => src.Ownerships
                 .Where(o => o.IsCurrent)
                 .OrderByDescending(o => o.OwnershipPercentage)
-                .Select(o => o.Taxpayer.FullName)
+                .Select(o => o.Taxpayer != null ? o.Taxpayer.FullName : null)
+                .FirstOrDefault())
+            .Map(dest => dest.CurrentAssessedValue, src => src.Valuations
+                .Where(v => !v.IsDeleted)
+                .OrderByDescending(v => v.TaxYear)
+                .Select(v => (decimal?)v.NetValue)
+                .FirstOrDefault())
+            .Map(dest => dest.CurrentTaxAmount, src => src.TaxAssessments
+                .Where(a => !a.IsDeleted)
+                .OrderByDescending(a => a.TaxYear)
+                .Select(a => (decimal?)a.NetTaxAmount)
+                .FirstOrDefault());
+
+        TypeAdapterConfig<Property, PropertyDetailDto>.NewConfig()
+            .Map(dest => dest.TypeName, src => src.Type.ToString())
+            .Map(dest => dest.StatusName, src => src.Status.ToString())
+            .Map(dest => dest.Latitude, src => src.Location != null ? src.Location.Latitude : null)
+            .Map(dest => dest.Longitude, src => src.Location != null ? src.Location.Longitude : null)
+            .Map(dest => dest.PrimaryOwnerName, src => src.Ownerships
+                .Where(o => o.IsCurrent)
+                .OrderByDescending(o => o.OwnershipPercentage)
+                .Select(o => o.Taxpayer != null ? o.Taxpayer.FullName : null)
+                .FirstOrDefault())
+            .Map(dest => dest.CurrentAssessedValue, src => src.Valuations
+                .Where(v => !v.IsDeleted)
+                .OrderByDescending(v => v.TaxYear)
+                .Select(v => (decimal?)v.NetValue)
+                .FirstOrDefault())
+            .Map(dest => dest.CurrentTaxAmount, src => src.TaxAssessments
+                .Where(a => !a.IsDeleted)
+                .OrderByDescending(a => a.TaxYear)
+                .Select(a => (decimal?)a.NetTaxAmount)
                 .FirstOrDefault());
 
         TypeAdapterConfig<PropertyLocation, PropertyLocationDto>.NewConfig();
 
         TypeAdapterConfig<PropertyOwnership, PropertyOwnershipDto>.NewConfig()
-            .Map(dest => dest.TaxpayerName, src => src.Taxpayer.FullName)
-            .Map(dest => dest.TaxpayerNationalId, src => src.Taxpayer.NationalId);
+            .Map(dest => dest.TaxpayerName, src => src.Taxpayer != null ? src.Taxpayer.FullName : string.Empty)
+            .Map(dest => dest.TaxpayerNationalId, src => src.Taxpayer != null ? src.Taxpayer.NationalId : string.Empty);
 
         TypeAdapterConfig<PropertyUnit, PropertyUnitDto>.NewConfig();
 

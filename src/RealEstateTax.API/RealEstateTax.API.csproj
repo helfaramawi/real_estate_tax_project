@@ -9,6 +9,7 @@
   <ItemGroup>
     <ProjectReference Include="..\RealEstateTax.Application\RealEstateTax.Application.csproj" />
     <ProjectReference Include="..\RealEstateTax.Infrastructure\RealEstateTax.Infrastructure.csproj" />
+    <ProjectReference Include="..\RealEstateTax.Intelligence\RealEstateTax.Intelligence.csproj" />
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Swashbuckle.AspNetCore" Version="6.6.2" />

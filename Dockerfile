@@ -30,7 +30,9 @@ WORKDIR /app
 
 COPY --from=publish /app/publish .
 
-RUN mkdir -p /var/retax/uploads && chmod 755 /var/retax/uploads
+RUN apt-get update && apt-get install -y --no-install-recommends curl \
+    && rm -rf /var/lib/apt/lists/* \
+    && mkdir -p /var/retax/uploads && chmod 755 /var/retax/uploads
 
 ENV ASPNETCORE_ENVIRONMENT=Production
 ENV ASPNETCORE_URLS=http://+:8080

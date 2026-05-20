@@ -40,6 +40,13 @@ public class Property : BaseEntity
     public bool HasDuplicateSuspicion { get; set; }
     public Guid? MergedIntoPropertyId { get; set; }
 
+    // ML Intelligence scores — written nightly by the Intelligence batch inference jobs
+    public double? MlRiskScore { get; set; }
+    public double? MlFraudProbability { get; set; }
+    public double? MlDuplicateScore { get; set; }
+    public DateTime? MlLastScoredAt { get; set; }
+    public string? MlModelVersion { get; set; }
+
     // Approval workflow (Maker-Checker)
     public string? VerifiedBy { get; set; }
     public DateTime? VerifiedAt { get; set; }
