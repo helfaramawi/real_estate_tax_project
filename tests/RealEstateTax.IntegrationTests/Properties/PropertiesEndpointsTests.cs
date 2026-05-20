@@ -1,7 +1,10 @@
 using System.Net;
 using System.Net.Http.Json;
 using FluentAssertions;
+using Microsoft.EntityFrameworkCore;
+using RealEstateTax.Domain.Entities;
 using RealEstateTax.Domain.Enums;
+using RealEstateTax.Infrastructure.Persistence;
 using RealEstateTax.IntegrationTests.Helpers;
 
 namespace RealEstateTax.IntegrationTests.Properties;
@@ -33,6 +36,58 @@ public class PropertiesEndpointsTests : IAsyncLifetime
     }
 
     public Task DisposeAsync() => Task.CompletedTask;
+
+    private async Task<HttpClient> CreateUserClientAsync(string username, params string[] roles)
+    {
+        const string password = "Admin@12345";
+        roles.Should().NotBeEmpty("integration test users must have at least one role");
+
+        using var scope = _factory.Services.CreateScope();
+        var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+        var normalizedRoles = roles.Distinct(StringComparer.OrdinalIgnoreCase).ToArray();
+        var availableRoles = await db.Roles
+            .Where(r => normalizedRoles.Contains(r.Name))
+            .ToListAsync();
+
+        availableRoles.Select(r => r.Name)
+            .Should()
+            .BeEquivalentTo(normalizedRoles, "all requested roles must exist in seeded data");
+
+        var user = await db.Users.FirstOrDefaultAsync(u => u.Username == username);
+        if (user == null)
+        {
+            user = new User
+            {
+                Id = Guid.NewGuid(),
+                Username = username,
+                Email = $"{username}@test.com",
+                PasswordHash = BCrypt.Net.BCrypt.HashPassword(password),
+                FirstName = "Integration",
+                LastName = "Tester",
+                IsActive = true,
+                CreatedBy = "tests"
+            };
+            db.Users.Add(user);
+        }
+
+        var existingRoleIds = await db.UserRoles
+            .Where(ur => ur.UserId == user.Id)
+            .Select(ur => ur.RoleId)
+            .ToListAsync();
+
+        foreach (var role in availableRoles.Where(r => !existingRoleIds.Contains(r.Id)))
+        {
+            db.UserRoles.Add(new UserRole
+            {
+                UserId = user.Id,
+                RoleId = role.Id,
+                CreatedBy = "tests"
+            });
+        }
+
+        await db.SaveChangesAsync();
+        return await AuthenticatedHttpClient.CreateAsync(_factory, username, password);
+    }
 
     // ── GET /api/properties ────────────────────────────────────────────────────
 
@@ -191,6 +246,54 @@ public class PropertiesEndpointsTests : IAsyncLifetime
         });
 
         verifyResponse.StatusCode.Should().Be(HttpStatusCode.Forbidden);
+    }
+
+    [Fact]
+    public async Task Verify_ByUserWithoutVerifierRole_Returns403()
+    {
+        var inspectorClient = await CreateUserClientAsync("fieldinspector1", "FieldInspector");
+
+        var createResponse = await _creatorClient.PostAsJsonAsync("/api/properties", new
+        {
+            type = (int)PropertyType.Residential,
+            builtUpArea = 112.0,
+            city = "Cairo",
+            governorate = "Cairo"
+        });
+
+        createResponse.StatusCode.Should().Be(HttpStatusCode.Created);
+        var created = await createResponse.Content.ReadFromJsonAsync<CreatedEnvelope>();
+
+        var verifyResponse = await inspectorClient.PostAsJsonAsync($"/api/properties/{created!.Data.Id}/verify", new
+        {
+            verificationNotes = "Inspector should not verify"
+        });
+
+        verifyResponse.StatusCode.Should().Be(HttpStatusCode.Forbidden);
+    }
+
+    [Fact]
+    public async Task Verify_ByMultiRoleUser_NotCreator_Returns200()
+    {
+        var multiRoleVerifier = await CreateUserClientAsync("multiroleofficer", "TaxOfficer", "Citizen");
+
+        var createResponse = await _creatorClient.PostAsJsonAsync("/api/properties", new
+        {
+            type = (int)PropertyType.Residential,
+            builtUpArea = 115.0,
+            city = "Cairo",
+            governorate = "Cairo"
+        });
+
+        createResponse.StatusCode.Should().Be(HttpStatusCode.Created);
+        var created = await createResponse.Content.ReadFromJsonAsync<CreatedEnvelope>();
+
+        var verifyResponse = await multiRoleVerifier.PostAsJsonAsync($"/api/properties/{created!.Data.Id}/verify", new
+        {
+            verificationNotes = "Multi-role verifier test"
+        });
+
+        verifyResponse.StatusCode.Should().Be(HttpStatusCode.OK);
     }
 
     // ── Helper records ────────────────────────────────────────────────────────
