@@ -10,7 +10,8 @@ namespace RealEstateTax.IntegrationTests.Properties;
 public class PropertiesEndpointsTests : IAsyncLifetime
 {
     private readonly CustomWebApplicationFactory _factory;
-    private HttpClient _client = null!;
+    private HttpClient _creatorClient = null!;
+    private HttpClient _verifierClient = null!;
 
     public PropertiesEndpointsTests(CustomWebApplicationFactory factory)
     {
@@ -20,10 +21,15 @@ public class PropertiesEndpointsTests : IAsyncLifetime
     public async Task InitializeAsync()
     {
         await _factory.InitialiseDatabaseAsync();
-        _client = await AuthenticatedHttpClient.CreateAsync(
+        _creatorClient = await AuthenticatedHttpClient.CreateAsync(
             _factory,
             CustomWebApplicationFactory.AdminUsername,
             CustomWebApplicationFactory.AdminPassword);
+
+        _verifierClient = await AuthenticatedHttpClient.CreateAsync(
+            _factory,
+            "superadmin",
+            "Admin@12345");
     }
 
     public Task DisposeAsync() => Task.CompletedTask;
@@ -33,7 +39,7 @@ public class PropertiesEndpointsTests : IAsyncLifetime
     [Fact]
     public async Task GetAll_Authenticated_Returns200()
     {
-        var response = await _client.GetAsync("/api/properties");
+        var response = await _creatorClient.GetAsync("/api/properties");
         response.StatusCode.Should().Be(HttpStatusCode.OK);
     }
 
@@ -61,7 +67,7 @@ public class PropertiesEndpointsTests : IAsyncLifetime
             yearBuilt = 2010
         };
 
-        var response = await _client.PostAsJsonAsync("/api/properties", request);
+        var response = await _creatorClient.PostAsJsonAsync("/api/properties", request);
 
         response.StatusCode.Should().Be(HttpStatusCode.Created);
         var body = await response.Content.ReadFromJsonAsync<CreatedEnvelope>();
@@ -80,8 +86,60 @@ public class PropertiesEndpointsTests : IAsyncLifetime
             governorate = "Cairo"
         };
 
-        var response = await _client.PostAsJsonAsync("/api/properties", request);
+        var response = await _creatorClient.PostAsJsonAsync("/api/properties", request);
         response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+    }
+
+
+    [Fact]
+    public async Task Verify_FromDraft_Returns200()
+    {
+        var createResponse = await _creatorClient.PostAsJsonAsync("/api/properties", new
+        {
+            type = (int)PropertyType.Residential,
+            builtUpArea = 140.0,
+            city = "Cairo",
+            governorate = "Cairo"
+        });
+
+        createResponse.StatusCode.Should().Be(HttpStatusCode.Created);
+        var created = await createResponse.Content.ReadFromJsonAsync<CreatedEnvelope>();
+
+        var verifyResponse = await _verifierClient.PostAsJsonAsync($"/api/properties/{created!.Data.Id}/verify", new
+        {
+            verificationNotes = "Wave1 verification test"
+        });
+
+        verifyResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+    }
+
+    [Fact]
+    public async Task Verify_FromVerified_Returns400()
+    {
+        var createResponse = await _creatorClient.PostAsJsonAsync("/api/properties", new
+        {
+            type = (int)PropertyType.Residential,
+            builtUpArea = 140.0,
+            city = "Cairo",
+            governorate = "Cairo"
+        });
+
+        createResponse.StatusCode.Should().Be(HttpStatusCode.Created);
+        var created = await createResponse.Content.ReadFromJsonAsync<CreatedEnvelope>();
+        var id = created!.Data.Id;
+
+        var firstVerify = await _verifierClient.PostAsJsonAsync($"/api/properties/{id}/verify", new
+        {
+            verificationNotes = "First verification"
+        });
+        firstVerify.StatusCode.Should().Be(HttpStatusCode.OK);
+
+        var secondVerify = await _verifierClient.PostAsJsonAsync($"/api/properties/{id}/verify", new
+        {
+            verificationNotes = "Second verification should fail"
+        });
+
+        secondVerify.StatusCode.Should().Be(HttpStatusCode.BadRequest);
     }
 
     // ── GET /api/properties/{id} ───────────────────────────────────────────────
@@ -89,7 +147,7 @@ public class PropertiesEndpointsTests : IAsyncLifetime
     [Fact]
     public async Task GetById_AfterCreate_Returns200()
     {
-        var createResponse = await _client.PostAsJsonAsync("/api/properties", new
+        var createResponse = await _creatorClient.PostAsJsonAsync("/api/properties", new
         {
             type = (int)PropertyType.Commercial,
             builtUpArea = 200.0,
@@ -101,15 +159,38 @@ public class PropertiesEndpointsTests : IAsyncLifetime
         var created = await createResponse.Content.ReadFromJsonAsync<CreatedEnvelope>();
         var id = created!.Data.Id;
 
-        var getResponse = await _client.GetAsync($"/api/properties/{id}");
+        var getResponse = await _creatorClient.GetAsync($"/api/properties/{id}");
         getResponse.StatusCode.Should().Be(HttpStatusCode.OK);
     }
 
     [Fact]
     public async Task GetById_UnknownId_Returns404()
     {
-        var response = await _client.GetAsync($"/api/properties/{Guid.NewGuid()}");
+        var response = await _creatorClient.GetAsync($"/api/properties/{Guid.NewGuid()}");
         response.StatusCode.Should().Be(HttpStatusCode.NotFound);
+    }
+
+
+    [Fact]
+    public async Task Verify_BySameUserWhoCreatedProperty_Returns403()
+    {
+        var createResponse = await _creatorClient.PostAsJsonAsync("/api/properties", new
+        {
+            type = (int)PropertyType.Residential,
+            builtUpArea = 110.0,
+            city = "Cairo",
+            governorate = "Cairo"
+        });
+
+        createResponse.StatusCode.Should().Be(HttpStatusCode.Created);
+        var created = await createResponse.Content.ReadFromJsonAsync<CreatedEnvelope>();
+
+        var verifyResponse = await _creatorClient.PostAsJsonAsync($"/api/properties/{created!.Data.Id}/verify", new
+        {
+            verificationNotes = "Creator cannot self-verify"
+        });
+
+        verifyResponse.StatusCode.Should().Be(HttpStatusCode.Forbidden);
     }
 
     // ── Helper records ────────────────────────────────────────────────────────

@@ -153,6 +153,10 @@ public class PropertyAppService : IPropertyService
         if (property.Status != PropertyStatus.Draft && property.Status != PropertyStatus.NeedsReview)
             return Result<PropertyDto>.Failure("Only Draft or NeedsReview properties can be verified.");
 
+        if (!string.IsNullOrWhiteSpace(property.CreatedBy) &&
+            string.Equals(property.CreatedBy, _currentUser.Username, StringComparison.OrdinalIgnoreCase))
+            return Result<PropertyDto>.Forbidden("Verifier must be different from the property creator.");
+
         var old = property.Adapt<PropertyDto>();
         property.Status = PropertyStatus.Verified;
         property.VerifiedBy = _currentUser.Username;
