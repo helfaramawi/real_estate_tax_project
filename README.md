@@ -185,6 +185,12 @@ dotnet run
 
 ---
 
+## Professional Readiness
+
+Before expanding scope, use `docs/PROFESSIONAL_WORK_PREP.md` as the baseline deep-study checklist and maturity framework for all modules and features.
+
+---
+
 ## Business Rules (TODO Items)
 
 The following require verification with Egyptian Tax Authority:
