@@ -88,6 +88,9 @@ Every story/change should include:
 3. Field survey assignment/submission approval workflow
 4. Integration retry and reconciliation behavior
 
+## 4.1) Execution Artifact: Traceability Matrix
+Use `docs/FEATURE_TRACEABILITY_MATRIX.md` as the live mapping sheet from feature to endpoint, code ownership, and test evidence.
+
 ## 5) Immediate Next Steps (First Professional Sprint)
 1. Build a **traceability matrix** in docs (module-by-module, endpoint-by-endpoint).
 2. Tag each module with maturity level L0-L4.

@@ -205,6 +205,10 @@ The following require verification with Egyptian Tax Authority:
 
 ---
 
+## Documentation
+
+- Documentation index: `docs/DOCS_INDEX.md`
+
 ## Project Structure
 
 ```

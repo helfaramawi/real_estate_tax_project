@@ -84,6 +84,58 @@ public class PropertiesEndpointsTests : IAsyncLifetime
         response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
     }
 
+
+    [Fact]
+    public async Task Verify_FromDraft_Returns200()
+    {
+        var createResponse = await _client.PostAsJsonAsync("/api/properties", new
+        {
+            type = (int)PropertyType.Residential,
+            builtUpArea = 140.0,
+            city = "Cairo",
+            governorate = "Cairo"
+        });
+
+        createResponse.StatusCode.Should().Be(HttpStatusCode.Created);
+        var created = await createResponse.Content.ReadFromJsonAsync<CreatedEnvelope>();
+
+        var verifyResponse = await _client.PostAsJsonAsync($"/api/properties/{created!.Data.Id}/verify", new
+        {
+            verificationNotes = "Wave1 verification test"
+        });
+
+        verifyResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+    }
+
+    [Fact]
+    public async Task Verify_FromVerified_Returns400()
+    {
+        var createResponse = await _client.PostAsJsonAsync("/api/properties", new
+        {
+            type = (int)PropertyType.Residential,
+            builtUpArea = 140.0,
+            city = "Cairo",
+            governorate = "Cairo"
+        });
+
+        createResponse.StatusCode.Should().Be(HttpStatusCode.Created);
+        var created = await createResponse.Content.ReadFromJsonAsync<CreatedEnvelope>();
+        var id = created!.Data.Id;
+
+        var firstVerify = await _client.PostAsJsonAsync($"/api/properties/{id}/verify", new
+        {
+            verificationNotes = "First verification"
+        });
+        firstVerify.StatusCode.Should().Be(HttpStatusCode.OK);
+
+        var secondVerify = await _client.PostAsJsonAsync($"/api/properties/{id}/verify", new
+        {
+            verificationNotes = "Second verification should fail"
+        });
+
+        secondVerify.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+    }
+
     // ── GET /api/properties/{id} ───────────────────────────────────────────────
 
     [Fact]
