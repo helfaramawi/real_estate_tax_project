@@ -40,13 +40,23 @@ public class PropertiesEndpointsTests : IAsyncLifetime
     private async Task<HttpClient> CreateUserClientAsync(string username, params string[] roles)
     {
         const string password = "Admin@12345";
+        roles.Should().NotBeEmpty("integration test users must have at least one role");
 
         using var scope = _factory.Services.CreateScope();
         var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+        var normalizedRoles = roles.Distinct(StringComparer.OrdinalIgnoreCase).ToArray();
+        var availableRoles = await db.Roles
+            .Where(r => normalizedRoles.Contains(r.Name))
+            .ToListAsync();
 
-        if (!await db.Users.AnyAsync(u => u.Username == username))
+        availableRoles.Select(r => r.Name)
+            .Should()
+            .BeEquivalentTo(normalizedRoles, "all requested roles must exist in seeded data");
+
+        var user = await db.Users.FirstOrDefaultAsync(u => u.Username == username);
+        if (user == null)
         {
-            var user = new User
+            user = new User
             {
                 Id = Guid.NewGuid(),
                 Username = username,
@@ -57,22 +67,25 @@ public class PropertiesEndpointsTests : IAsyncLifetime
                 IsActive = true,
                 CreatedBy = "tests"
             };
-
             db.Users.Add(user);
-            var assignedRoles = await db.Roles.Where(r => roles.Contains(r.Name)).ToListAsync();
-            foreach (var role in assignedRoles)
-            {
-                db.UserRoles.Add(new UserRole
-                {
-                    UserId = user.Id,
-                    RoleId = role.Id,
-                    CreatedBy = "tests"
-                });
-            }
-
-            await db.SaveChangesAsync();
         }
 
+        var existingRoleIds = await db.UserRoles
+            .Where(ur => ur.UserId == user.Id)
+            .Select(ur => ur.RoleId)
+            .ToListAsync();
+
+        foreach (var role in availableRoles.Where(r => !existingRoleIds.Contains(r.Id)))
+        {
+            db.UserRoles.Add(new UserRole
+            {
+                UserId = user.Id,
+                RoleId = role.Id,
+                CreatedBy = "tests"
+            });
+        }
+
+        await db.SaveChangesAsync();
         return await AuthenticatedHttpClient.CreateAsync(_factory, username, password);
     }
 
