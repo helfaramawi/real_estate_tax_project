@@ -59,4 +59,14 @@ public class BillsEndpointsTests : IAsyncLifetime
         var response = await citizenClient.PostAsJsonAsync("/api/bills/generate", new { taxAssessmentId = Guid.NewGuid() });
         response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
     }
+    [Fact]
+    public async Task Issue_WithCitizenRole_Returns403()
+    {
+        var creds = await _factory.CreateUserWithRoleAsync("Citizen");
+        var citizenClient = await AuthenticatedHttpClient.CreateAsync(_factory, creds.Username, creds.Password);
+
+        var response = await citizenClient.PostAsync($"/api/bills/{Guid.NewGuid()}/issue", content: null);
+        response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
+    }
+
 }
