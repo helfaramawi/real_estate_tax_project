@@ -112,6 +112,47 @@ public class PropertiesEndpointsTests : IAsyncLifetime
         response.StatusCode.Should().Be(HttpStatusCode.NotFound);
     }
 
+
+    [Fact]
+    public async Task Verify_WithFieldInspectorRole_Returns403()
+    {
+        var creds = await _factory.CreateUserWithRoleAsync("FieldInspector");
+        var fieldInspectorClient = await AuthenticatedHttpClient.CreateAsync(_factory, creds.Username, creds.Password);
+
+        var response = await fieldInspectorClient.PostAsJsonAsync($"/api/properties/{Guid.NewGuid()}/verify", new
+        {
+            verificationNotes = "role check"
+        });
+
+        response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
+    }
+
+    [Fact]
+    public async Task Delete_WithTaxOfficerRole_Returns403()
+    {
+        var createResponse = await _client.PostAsJsonAsync("/api/properties", new
+        {
+            type = (int)PropertyType.Residential,
+            builtUpArea = 99.0,
+            city = "Cairo",
+            governorate = "Cairo"
+        });
+        createResponse.StatusCode.Should().Be(HttpStatusCode.Created);
+
+        var created = await createResponse.Content.ReadFromJsonAsync<CreatedEnvelope>();
+        var propertyId = created!.Data.Id;
+
+        var creds = await _factory.CreateUserWithRoleAsync("TaxOfficer");
+        var taxOfficerClient = await AuthenticatedHttpClient.CreateAsync(_factory, creds.Username, creds.Password);
+
+        var response = await taxOfficerClient.DeleteAsJsonAsync($"/api/properties/{propertyId}", new
+        {
+            reason = "not authorized role"
+        });
+
+        response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
+    }
+
     // ── Helper records ────────────────────────────────────────────────────────
 
     private record PropertySummary(Guid Id, string PropertyCode);
