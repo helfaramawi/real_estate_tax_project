@@ -76,3 +76,6 @@ Add/extend integration tests for:
 
 ## 6) End-of-Sprint Exit Review
 Use `docs/WAVE2_COMPLETION_CHECKLIST.md` and proceed to Wave 3 only if all mandatory gates are met.
+
+## 7) Live Tracking
+- Daily execution status is maintained in `docs/WAVE2_EXECUTION_BOARD.md`.
