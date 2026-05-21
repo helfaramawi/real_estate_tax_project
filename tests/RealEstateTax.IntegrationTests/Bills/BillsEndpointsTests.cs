@@ -1,4 +1,5 @@
 using System.Net;
+using System.Net.Http.Json;
 using FluentAssertions;
 using RealEstateTax.IntegrationTests.Helpers;
 
@@ -46,5 +47,16 @@ public class BillsEndpointsTests : IAsyncLifetime
     {
         var response = await _client.GetAsync($"/api/bills/{Guid.NewGuid()}");
         response.StatusCode.Should().Be(HttpStatusCode.NotFound);
+    }
+
+
+    [Fact]
+    public async Task Generate_WithCitizenRole_Returns403()
+    {
+        var creds = await _factory.CreateUserWithRoleAsync("Citizen");
+        var citizenClient = await AuthenticatedHttpClient.CreateAsync(_factory, creds.Username, creds.Password);
+
+        var response = await citizenClient.PostAsJsonAsync("/api/bills/generate", new { taxAssessmentId = Guid.NewGuid() });
+        response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
     }
 }
