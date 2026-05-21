@@ -17,7 +17,7 @@
 | Integration test expansion | QA Automation | Backend Lead | 5 workflow tests added + deterministic setup notes | 2026-05-30 |
 | Authorization/audit verification | Security Reviewer | Backend Lead | Endpoint permission matrix + negative auth evidence + audit evidence | 2026-05-30 |
 | Data consistency controls | Backend Lead | DBA | Ownership %, status transition, soft-delete, concurrency evidence | 2026-06-02 |
-| Legal placeholders governance | Product + Legal | Eng Lead | Owner/date/ticket for every placeholder | 2026-06-03 |
+| Legal placeholders governance | Product + Legal | Eng Lead | Owner/date/ticket for every placeholder + `docs/LEGAL_DECISION_LOG.md` updated | 2026-06-03 |
 | Quality gate execution | QA Lead | DevOps | Build/unit/integration/lint/smoke runbook with run logs | 2026-06-04 |
 
 ## 3) Story Backlog (Sprint-ready)
@@ -55,7 +55,7 @@ Add/extend integration tests for:
 - **Acceptance:** Wave 2 section A3 and B row complete with sign-off notes.
 
 ### SP-05 Legal-Rule Placeholder Closure
-- For each placeholder in `README.md` business-rule TODO list, record:
+- For each placeholder in `README.md` business-rule TODO list, record in `docs/LEGAL_DECISION_LOG.md`:
   - decision owner,
   - due date,
   - tracking ticket,
