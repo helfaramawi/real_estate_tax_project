@@ -1,4 +1,5 @@
 using System.Net;
+using System.Net.Http.Json;
 using FluentAssertions;
 using RealEstateTax.IntegrationTests.Helpers;
 
@@ -41,6 +42,22 @@ public class RiskEndpointsTests : IAsyncLifetime
         var citizenClient = await AuthenticatedHttpClient.CreateAsync(_factory, creds.Username, creds.Password);
 
         var response = await citizenClient.GetAsync("/api/fraud-flags");
+        response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
+    }
+
+    [Fact]
+    public async Task CreateFraudFlag_WithCitizenRole_Returns403()
+    {
+        var creds = await _factory.CreateUserWithRoleAsync("Citizen");
+        var citizenClient = await AuthenticatedHttpClient.CreateAsync(_factory, creds.Username, creds.Password);
+
+        var response = await citizenClient.PostAsJsonAsync("/api/fraud-flags", new
+        {
+            propertyId = Guid.NewGuid(),
+            flagType = 0,
+            reason = "role guard check"
+        });
+
         response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
     }
 
