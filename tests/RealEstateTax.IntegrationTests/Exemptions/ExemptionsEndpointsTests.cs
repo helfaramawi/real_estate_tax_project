@@ -26,6 +26,20 @@ public class ExemptionsEndpointsTests : IAsyncLifetime
         response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
     }
 
+
+    [Fact]
+    public async Task Submit_WithoutToken_Returns401()
+    {
+        var unauthenticated = _factory.CreateClient();
+        var response = await unauthenticated.PostAsJsonAsync("/api/exemptions", new
+        {
+            propertyId = Guid.NewGuid(),
+            exemptionType = 0,
+            reason = "test"
+        });
+        response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
+    }
+
     [Fact]
     public async Task Approve_WithCitizenRole_Returns403()
     {
