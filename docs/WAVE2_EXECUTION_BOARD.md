@@ -31,7 +31,7 @@ This board tracks day-by-day execution against `docs/NEXT_SPRINT_PLAN.md` and Wa
 
 ## 3) Immediate Next 3 Working Sessions
 
-1. **Session 1 (2026-05-22):** finalize A2 mapping by reconciling endpoint permissions against controllers and update `docs/ENDPOINT_PERMISSION_MATRIX.md` with policy truth source.
+1. **Session 1 (2026-05-22):** ✅ Completed in docs — A2 mapping reconciled against controller `[Authorize]` attributes and source-of-truth references added to `docs/ENDPOINT_PERMISSION_MATRIX.md`.
 2. **Session 2 (2026-05-23):** draft/implement SP-02 test case skeletons in integration test project and document deterministic seed/reset strategy.
 3. **Session 3 (2026-05-24):** fill A3 evidence draft (ownership %, transitions, soft delete, concurrency) and map to checklist rows.
 
