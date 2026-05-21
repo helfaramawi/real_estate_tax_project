@@ -35,6 +35,15 @@ public class AdminEndpointsTests : IAsyncLifetime
         response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
     }
 
+
+    [Fact]
+    public async Task GetDashboardKpis_WithoutToken_Returns401()
+    {
+        var unauthenticated = _factory.CreateClient();
+        var response = await unauthenticated.GetAsync("/api/dashboard/kpis");
+        response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
+    }
+
     [Fact]
     public async Task GetDashboardKpis_WithCitizenRole_Returns403()
     {
