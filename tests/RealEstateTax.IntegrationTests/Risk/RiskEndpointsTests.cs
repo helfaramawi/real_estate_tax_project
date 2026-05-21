@@ -34,4 +34,14 @@ public class RiskEndpointsTests : IAsyncLifetime
         var response = await citizenClient.PostAsync($"/api/risk/recalculate/{Guid.NewGuid()}", content: null);
         response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
     }
+    [Fact]
+    public async Task GetFraudFlags_WithCitizenRole_Returns403()
+    {
+        var creds = await _factory.CreateUserWithRoleAsync("Citizen");
+        var citizenClient = await AuthenticatedHttpClient.CreateAsync(_factory, creds.Username, creds.Password);
+
+        var response = await citizenClient.GetAsync("/api/fraud-flags");
+        response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
+    }
+
 }
