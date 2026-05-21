@@ -10,6 +10,7 @@ This index consolidates all documentation files under the `docs/` folder so pull
 - `docs/ARABIC_USER_GUIDE.md`
 
 ## Professional Readiness Docs (new)
+- `docs/NEXT_SPRINT_PLAN.md`
 - `docs/PROFESSIONAL_WORK_PREP.md`
 - `docs/FEATURE_TRACEABILITY_MATRIX.md`
 - `docs/WAVE1_COMPLETION_CHECKLIST.md`
