@@ -36,6 +36,15 @@ public class TaxpayersEndpointsTests : IAsyncLifetime
         response.StatusCode.Should().Be(HttpStatusCode.OK);
     }
 
+
+    [Fact]
+    public async Task GetAll_WithoutToken_Returns401()
+    {
+        var unauthenticated = _factory.CreateClient();
+        var response = await unauthenticated.GetAsync("/api/taxpayers");
+        response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
+    }
+
     // ── POST /api/taxpayers ───────────────────────────────────────────────────
 
     [Fact]
