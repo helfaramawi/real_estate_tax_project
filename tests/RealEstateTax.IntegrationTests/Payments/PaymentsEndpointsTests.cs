@@ -61,4 +61,14 @@ public class PaymentsEndpointsTests : IAsyncLifetime
         var response = await citizenClient.PostAsJsonAsync("/api/payments", new { taxBillId = Guid.NewGuid(), amount = 100m });
         response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
     }
+    [Fact]
+    public async Task Register_WithFieldInspectorRole_Returns403()
+    {
+        var creds = await _factory.CreateUserWithRoleAsync("FieldInspector");
+        var inspectorClient = await AuthenticatedHttpClient.CreateAsync(_factory, creds.Username, creds.Password);
+
+        var response = await inspectorClient.PostAsJsonAsync("/api/payments", new { taxBillId = Guid.NewGuid(), amount = 100m });
+        response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
+    }
+
 }
