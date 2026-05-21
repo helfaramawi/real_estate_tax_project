@@ -41,4 +41,14 @@ public class FieldSurveysEndpointsTests : IAsyncLifetime
 
         response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
     }
+    [Fact]
+    public async Task Submit_WithCitizenRole_Returns403()
+    {
+        var creds = await _factory.CreateUserWithRoleAsync("Citizen");
+        var citizenClient = await AuthenticatedHttpClient.CreateAsync(_factory, creds.Username, creds.Password);
+
+        var response = await citizenClient.PostAsync($"/api/field-surveys/{Guid.NewGuid()}/submit", content: null);
+        response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
+    }
+
 }
