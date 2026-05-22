@@ -51,6 +51,18 @@ public class TaxAssessmentsEndpointsTests : IAsyncLifetime
 
         response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
     }
+
+    [Fact]
+    public async Task Approve_WithoutToken_Returns401()
+    {
+        var unauthenticated = _factory.CreateClient();
+        var response = await unauthenticated.PostAsJsonAsync($"/api/tax-assessments/{Guid.NewGuid()}/approve", new
+        {
+            notes = "unauthenticated"
+        });
+        response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
+    }
+
     [Fact]
     public async Task Approve_WithCitizenRole_Returns403()
     {
