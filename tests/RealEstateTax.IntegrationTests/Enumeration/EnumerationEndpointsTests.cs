@@ -39,6 +39,16 @@ public class EnumerationEndpointsTests : IAsyncLifetime
 
         response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
     }
+
+
+    [Fact]
+    public async Task GetDataQualityIssues_WithoutToken_Returns401()
+    {
+        var unauthenticated = _factory.CreateClient();
+        var response = await unauthenticated.GetAsync("/api/enumeration/data-quality-issues");
+        response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
+    }
+
     [Fact]
     public async Task GetDataQualityIssues_WithCitizenRole_Returns403()
     {
