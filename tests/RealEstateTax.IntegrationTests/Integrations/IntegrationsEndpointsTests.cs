@@ -26,6 +26,15 @@ public class IntegrationsEndpointsTests : IAsyncLifetime
         response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
     }
 
+
+    [Fact]
+    public async Task Retry_WithoutToken_Returns401()
+    {
+        var unauthenticated = _factory.CreateClient();
+        var response = await unauthenticated.PostAsync($"/api/integrations/requests/{Guid.NewGuid()}/retry", content: null);
+        response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
+    }
+
     [Fact]
     public async Task Receive_WithCitizenRole_Returns403()
     {
