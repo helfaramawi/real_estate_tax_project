@@ -48,6 +48,22 @@ public class AppealsEndpointsTests : IAsyncLifetime
         response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
     }
 
+
+
+    [Fact]
+    public async Task Assign_WithoutToken_Returns401()
+    {
+        var unauthenticated = _factory.CreateClient();
+
+        var response = await unauthenticated.PostAsJsonAsync($"/api/appeals/{Guid.NewGuid()}/assign", new
+        {
+            assignedToUserId = Guid.NewGuid(),
+            notes = "unauthenticated"
+        });
+
+        response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
+    }
+
     [Fact]
     public async Task Assign_WithCitizenRole_Returns403()
     {
