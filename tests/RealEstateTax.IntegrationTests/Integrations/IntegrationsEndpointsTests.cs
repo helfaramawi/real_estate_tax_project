@@ -35,6 +35,19 @@ public class IntegrationsEndpointsTests : IAsyncLifetime
         response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
     }
 
+
+    [Fact]
+    public async Task Receive_WithoutToken_Returns401()
+    {
+        var unauthenticated = _factory.CreateClient();
+        var response = await unauthenticated.PostAsJsonAsync("/api/integrations/NUCA/receive", new
+        {
+            sourceSystem = "NUCA",
+            records = Array.Empty<object>()
+        });
+        response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
+    }
+
     [Fact]
     public async Task Receive_WithCitizenRole_Returns403()
     {
