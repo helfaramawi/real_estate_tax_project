@@ -98,6 +98,25 @@ public class TaxpayersEndpointsTests : IAsyncLifetime
     }
 
 
+
+
+    [Fact]
+    public async Task Create_WithoutToken_Returns401()
+    {
+        var unauthenticated = _factory.CreateClient();
+
+        var request = new
+        {
+            nationalId = "29901011234567",
+            firstName = "Anon",
+            lastName = "User",
+            isCorporate = false
+        };
+
+        var response = await unauthenticated.PostAsJsonAsync("/api/taxpayers", request);
+        response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
+    }
+
     [Fact]
     public async Task Create_WithCitizenRole_Returns403()
     {
