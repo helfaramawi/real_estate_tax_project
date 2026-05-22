@@ -1,0 +1,67 @@
+using System.Net;
+using FluentAssertions;
+using RealEstateTax.IntegrationTests.Helpers;
+
+namespace RealEstateTax.IntegrationTests.Admin;
+
+[Collection("Integration")]
+public class AdminEndpointsTests : IAsyncLifetime
+{
+    private readonly CustomWebApplicationFactory _factory;
+
+    public AdminEndpointsTests(CustomWebApplicationFactory factory)
+    {
+        _factory = factory;
+    }
+
+    public async Task InitializeAsync() => await _factory.InitialiseDatabaseAsync();
+    public Task DisposeAsync() => Task.CompletedTask;
+
+    [Fact]
+    public async Task GetAuditLogs_WithoutToken_Returns401()
+    {
+        var unauthenticated = _factory.CreateClient();
+        var response = await unauthenticated.GetAsync("/api/audit-logs");
+        response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
+    }
+
+    [Fact]
+    public async Task GetAuditLogs_WithCitizenRole_Returns403()
+    {
+        var creds = await _factory.CreateUserWithRoleAsync("Citizen");
+        var citizenClient = await AuthenticatedHttpClient.CreateAsync(_factory, creds.Username, creds.Password);
+
+        var response = await citizenClient.GetAsync("/api/audit-logs");
+        response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
+    }
+
+
+
+    [Fact]
+    public async Task GetAuditLogs_WithFieldInspectorRole_Returns403()
+    {
+        var creds = await _factory.CreateUserWithRoleAsync("FieldInspector");
+        var inspectorClient = await AuthenticatedHttpClient.CreateAsync(_factory, creds.Username, creds.Password);
+
+        var response = await inspectorClient.GetAsync("/api/audit-logs");
+        response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
+    }
+
+    [Fact]
+    public async Task GetDashboardKpis_WithoutToken_Returns401()
+    {
+        var unauthenticated = _factory.CreateClient();
+        var response = await unauthenticated.GetAsync("/api/dashboard/kpis");
+        response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
+    }
+
+    [Fact]
+    public async Task GetDashboardKpis_WithCitizenRole_Returns403()
+    {
+        var creds = await _factory.CreateUserWithRoleAsync("Citizen");
+        var citizenClient = await AuthenticatedHttpClient.CreateAsync(_factory, creds.Username, creds.Password);
+
+        var response = await citizenClient.GetAsync("/api/dashboard/kpis");
+        response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
+    }
+}
