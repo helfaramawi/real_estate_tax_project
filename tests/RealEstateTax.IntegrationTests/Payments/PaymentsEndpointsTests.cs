@@ -42,6 +42,15 @@ public class PaymentsEndpointsTests : IAsyncLifetime
         response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
     }
 
+
+    [Fact]
+    public async Task Register_WithoutToken_Returns401()
+    {
+        var unauthenticated = _factory.CreateClient();
+        var response = await unauthenticated.PostAsJsonAsync("/api/payments", new { taxBillId = Guid.NewGuid(), amount = 100m });
+        response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
+    }
+
     [Fact]
     public async Task Register_InvalidPayload_Returns400()
     {
