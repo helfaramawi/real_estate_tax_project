@@ -62,6 +62,20 @@ public class AppealsEndpointsTests : IAsyncLifetime
 
         response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
     }
+
+
+    [Fact]
+    public async Task Decision_WithoutToken_Returns401()
+    {
+        var unauthenticated = _factory.CreateClient();
+        var response = await unauthenticated.PostAsJsonAsync($"/api/appeals/{Guid.NewGuid()}/decision", new
+        {
+            decision = "Rejected",
+            reason = "unauthenticated"
+        });
+        response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
+    }
+
     [Fact]
     public async Task Decision_WithCitizenRole_Returns403()
     {
