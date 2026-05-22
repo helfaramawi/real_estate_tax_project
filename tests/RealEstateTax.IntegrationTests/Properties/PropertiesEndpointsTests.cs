@@ -113,6 +113,19 @@ public class PropertiesEndpointsTests : IAsyncLifetime
     }
 
 
+
+    [Fact]
+    public async Task Verify_WithoutToken_Returns401()
+    {
+        var unauthenticated = _factory.CreateClient();
+        var response = await unauthenticated.PostAsJsonAsync($"/api/properties/{Guid.NewGuid()}/verify", new
+        {
+            verificationNotes = "unauthenticated"
+        });
+
+        response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
+    }
+
     [Fact]
     public async Task Verify_WithFieldInspectorRole_Returns403()
     {
