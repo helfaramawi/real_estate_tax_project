@@ -64,6 +64,23 @@ public class RiskEndpointsTests : IAsyncLifetime
         response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
     }
 
+
+
+    [Fact]
+    public async Task CreateFraudFlag_WithoutToken_Returns401()
+    {
+        var unauthenticated = _factory.CreateClient();
+
+        var response = await unauthenticated.PostAsJsonAsync("/api/fraud-flags", new
+        {
+            propertyId = Guid.NewGuid(),
+            flagType = 0,
+            reason = "unauthenticated"
+        });
+
+        response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
+    }
+
     [Fact]
     public async Task CreateFraudFlag_WithCitizenRole_Returns403()
     {
