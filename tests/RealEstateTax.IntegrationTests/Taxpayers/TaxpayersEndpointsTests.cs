@@ -36,6 +36,15 @@ public class TaxpayersEndpointsTests : IAsyncLifetime
         response.StatusCode.Should().Be(HttpStatusCode.OK);
     }
 
+
+    [Fact]
+    public async Task GetAll_WithoutToken_Returns401()
+    {
+        var unauthenticated = _factory.CreateClient();
+        var response = await unauthenticated.GetAsync("/api/taxpayers");
+        response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
+    }
+
     // ── POST /api/taxpayers ───────────────────────────────────────────────────
 
     [Fact]
@@ -86,6 +95,44 @@ public class TaxpayersEndpointsTests : IAsyncLifetime
 
         var response = await _client.PostAsJsonAsync("/api/taxpayers", request);
         response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+    }
+
+
+
+
+    [Fact]
+    public async Task Create_WithoutToken_Returns401()
+    {
+        var unauthenticated = _factory.CreateClient();
+
+        var request = new
+        {
+            nationalId = "29901011234567",
+            firstName = "Anon",
+            lastName = "User",
+            isCorporate = false
+        };
+
+        var response = await unauthenticated.PostAsJsonAsync("/api/taxpayers", request);
+        response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
+    }
+
+    [Fact]
+    public async Task Create_WithCitizenRole_Returns403()
+    {
+        var creds = await _factory.CreateUserWithRoleAsync("Citizen");
+        var citizenClient = await AuthenticatedHttpClient.CreateAsync(_factory, creds.Username, creds.Password);
+
+        var request = new
+        {
+            nationalId = "29901011234567",
+            firstName = "Citizen",
+            lastName = "User",
+            isCorporate = false
+        };
+
+        var response = await citizenClient.PostAsJsonAsync("/api/taxpayers", request);
+        response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
     }
 
     // ── GET /api/taxpayers/{id} ───────────────────────────────────────────────
