@@ -64,4 +64,15 @@ public class AdminEndpointsTests : IAsyncLifetime
         var response = await citizenClient.GetAsync("/api/dashboard/kpis");
         response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
     }
+
+    [Fact]
+    public async Task GetDashboardKpis_WithFieldInspectorRole_Returns403()
+    {
+        var creds = await _factory.CreateUserWithRoleAsync("FieldInspector");
+        var inspectorClient = await AuthenticatedHttpClient.CreateAsync(_factory, creds.Username, creds.Password);
+
+        var response = await inspectorClient.GetAsync("/api/dashboard/kpis");
+        response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
+    }
+
 }
