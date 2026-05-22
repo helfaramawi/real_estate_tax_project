@@ -167,6 +167,22 @@ public class PropertiesEndpointsTests : IAsyncLifetime
     }
 
 
+
+
+    [Fact]
+    public async Task LinkOwner_WithoutToken_Returns401()
+    {
+        var unauthenticated = _factory.CreateClient();
+
+        var response = await unauthenticated.PostAsJsonAsync($"/api/properties/{Guid.NewGuid()}/link-owner", new
+        {
+            taxpayerId = Guid.NewGuid(),
+            ownershipPercentage = 50
+        });
+
+        response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
+    }
+
     [Fact]
     public async Task LinkOwner_WithFieldInspectorRole_Returns403()
     {
