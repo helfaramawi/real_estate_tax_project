@@ -59,6 +59,22 @@ public class EnumerationEndpointsTests : IAsyncLifetime
         response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
     }
 
+
+
+    [Fact]
+    public async Task ImportSourceRecords_WithoutToken_Returns401()
+    {
+        var unauthenticated = _factory.CreateClient();
+
+        var response = await unauthenticated.PostAsJsonAsync("/api/enumeration/import-source-records", new
+        {
+            source = "NUCA",
+            records = Array.Empty<object>()
+        });
+
+        response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
+    }
+
     [Fact]
     public async Task ImportSourceRecords_WithCitizenRole_Returns403()
     {
