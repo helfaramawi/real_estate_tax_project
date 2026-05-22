@@ -26,6 +26,21 @@ public class FieldSurveysEndpointsTests : IAsyncLifetime
         response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
     }
 
+
+    [Fact]
+    public async Task Create_WithoutToken_Returns401()
+    {
+        var unauthenticated = _factory.CreateClient();
+        var response = await unauthenticated.PostAsJsonAsync("/api/field-surveys", new
+        {
+            propertyId = Guid.NewGuid(),
+            assignedToUserId = Guid.NewGuid(),
+            notes = "unauthenticated"
+        });
+
+        response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
+    }
+
     [Fact]
     public async Task Create_WithCitizenRole_Returns403()
     {
