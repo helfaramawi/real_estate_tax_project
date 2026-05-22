@@ -26,6 +26,15 @@ public class RiskEndpointsTests : IAsyncLifetime
         response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
     }
 
+
+    [Fact]
+    public async Task Recalculate_WithoutToken_Returns401()
+    {
+        var unauthenticated = _factory.CreateClient();
+        var response = await unauthenticated.PostAsync($"/api/risk/recalculate/{Guid.NewGuid()}", content: null);
+        response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
+    }
+
     [Fact]
     public async Task Recalculate_WithCitizenRole_Returns403()
     {
