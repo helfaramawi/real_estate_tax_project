@@ -42,6 +42,27 @@ public class PaymentsEndpointsTests : IAsyncLifetime
         response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
     }
 
+
+
+
+    [Fact]
+    public async Task GetByBill_WithCitizenRole_Returns403()
+    {
+        var creds = await _factory.CreateUserWithRoleAsync("Citizen");
+        var citizenClient = await AuthenticatedHttpClient.CreateAsync(_factory, creds.Username, creds.Password);
+
+        var response = await citizenClient.GetAsync($"/api/payments/bill/{Guid.NewGuid()}");
+        response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
+    }
+
+    [Fact]
+    public async Task Register_WithoutToken_Returns401()
+    {
+        var unauthenticated = _factory.CreateClient();
+        var response = await unauthenticated.PostAsJsonAsync("/api/payments", new { taxBillId = Guid.NewGuid(), amount = 100m });
+        response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
+    }
+
     [Fact]
     public async Task Register_InvalidPayload_Returns400()
     {
@@ -50,4 +71,25 @@ public class PaymentsEndpointsTests : IAsyncLifetime
         var response = await _client.PostAsJsonAsync("/api/payments", request);
         response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
     }
+
+
+    [Fact]
+    public async Task Register_WithCitizenRole_Returns403()
+    {
+        var creds = await _factory.CreateUserWithRoleAsync("Citizen");
+        var citizenClient = await AuthenticatedHttpClient.CreateAsync(_factory, creds.Username, creds.Password);
+
+        var response = await citizenClient.PostAsJsonAsync("/api/payments", new { taxBillId = Guid.NewGuid(), amount = 100m });
+        response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
+    }
+    [Fact]
+    public async Task Register_WithFieldInspectorRole_Returns403()
+    {
+        var creds = await _factory.CreateUserWithRoleAsync("FieldInspector");
+        var inspectorClient = await AuthenticatedHttpClient.CreateAsync(_factory, creds.Username, creds.Password);
+
+        var response = await inspectorClient.PostAsJsonAsync("/api/payments", new { taxBillId = Guid.NewGuid(), amount = 100m });
+        response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
+    }
+
 }
