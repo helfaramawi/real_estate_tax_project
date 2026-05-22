@@ -27,6 +27,19 @@ public class AppealsEndpointsTests : IAsyncLifetime
     }
 
 
+
+    [Fact]
+    public async Task Submit_WithoutToken_Returns401()
+    {
+        var unauthenticated = _factory.CreateClient();
+        var response = await unauthenticated.PostAsJsonAsync("/api/appeals", new
+        {
+            taxAssessmentId = Guid.NewGuid(),
+            reason = "test"
+        });
+        response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
+    }
+
     [Fact]
     public async Task GetById_WithoutToken_Returns401()
     {
