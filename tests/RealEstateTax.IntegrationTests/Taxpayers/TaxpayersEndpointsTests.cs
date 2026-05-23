@@ -57,6 +57,18 @@ public class TaxpayersEndpointsTests : IAsyncLifetime
         response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
     }
 
+
+
+    [Fact]
+    public async Task GetAll_WithFieldInspectorRole_Returns403()
+    {
+        var creds = await _factory.CreateUserWithRoleAsync("FieldInspector");
+        var inspectorClient = await AuthenticatedHttpClient.CreateAsync(_factory, creds.Username, creds.Password);
+
+        var response = await inspectorClient.GetAsync("/api/taxpayers");
+        response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
+    }
+
     // ── POST /api/taxpayers ───────────────────────────────────────────────────
 
     [Fact]
