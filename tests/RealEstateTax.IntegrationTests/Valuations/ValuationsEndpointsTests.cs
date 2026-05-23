@@ -27,6 +27,17 @@ public class ValuationsEndpointsTests : IAsyncLifetime
     }
 
 
+
+    [Fact]
+    public async Task GetByProperty_WithCitizenRole_Returns403()
+    {
+        var creds = await _factory.CreateUserWithRoleAsync("Citizen");
+        var citizenClient = await AuthenticatedHttpClient.CreateAsync(_factory, creds.Username, creds.Password);
+
+        var response = await citizenClient.GetAsync($"/api/valuations/property/{Guid.NewGuid()}");
+        response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
+    }
+
     [Fact]
     public async Task Approve_WithoutToken_Returns401()
     {
