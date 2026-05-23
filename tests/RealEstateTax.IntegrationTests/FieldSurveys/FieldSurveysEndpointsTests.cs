@@ -138,4 +138,18 @@ public class FieldSurveysEndpointsTests : IAsyncLifetime
         response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
     }
 
+
+    [Fact]
+    public async Task Submit_WithTaxOfficerRole_Returns403()
+    {
+        var creds = await _factory.CreateUserWithRoleAsync("TaxOfficer");
+        var officerClient = await AuthenticatedHttpClient.CreateAsync(_factory, creds.Username, creds.Password);
+
+        var response = await officerClient.PostAsync($"/api/field-surveys/{Guid.NewGuid()}/submit", content: null);
+        response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
+    }
+
+}
+
+
 }
