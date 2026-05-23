@@ -140,6 +140,21 @@ public class PropertiesEndpointsTests : IAsyncLifetime
         response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
     }
 
+
+
+    [Fact]
+    public async Task Delete_WithoutToken_Returns401()
+    {
+        var unauthenticated = _factory.CreateClient();
+
+        var response = await unauthenticated.DeleteAsJsonAsync($"/api/properties/{Guid.NewGuid()}", new
+        {
+            reason = "unauthenticated"
+        });
+
+        response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
+    }
+
     [Fact]
     public async Task Delete_WithTaxOfficerRole_Returns403()
     {
