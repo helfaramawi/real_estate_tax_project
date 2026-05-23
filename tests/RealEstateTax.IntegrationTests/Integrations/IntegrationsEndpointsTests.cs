@@ -97,6 +97,23 @@ public class IntegrationsEndpointsTests : IAsyncLifetime
         response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
     }
 
+
+
+    [Fact]
+    public async Task Receive_WithTaxAssessorRole_Returns403()
+    {
+        var creds = await _factory.CreateUserWithRoleAsync("TaxAssessor");
+        var assessorClient = await AuthenticatedHttpClient.CreateAsync(_factory, creds.Username, creds.Password);
+
+        var response = await assessorClient.PostAsJsonAsync("/api/integrations/NUCA/receive", new
+        {
+            sourceSystem = "NUCA",
+            records = Array.Empty<object>()
+        });
+
+        response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
+    }
+
     [Fact]
     public async Task GetRequests_WithCitizenRole_Returns403()
     {
