@@ -27,6 +27,17 @@ public class RiskEndpointsTests : IAsyncLifetime
     }
 
 
+
+    [Fact]
+    public async Task GetRiskScore_WithCitizenRole_Returns403()
+    {
+        var creds = await _factory.CreateUserWithRoleAsync("Citizen");
+        var citizenClient = await AuthenticatedHttpClient.CreateAsync(_factory, creds.Username, creds.Password);
+
+        var response = await citizenClient.GetAsync($"/api/risk/property/{Guid.NewGuid()}");
+        response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
+    }
+
     [Fact]
     public async Task Recalculate_WithoutToken_Returns401()
     {
