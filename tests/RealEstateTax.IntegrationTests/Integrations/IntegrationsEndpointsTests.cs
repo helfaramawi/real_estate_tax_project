@@ -158,6 +158,17 @@ public class IntegrationsEndpointsTests : IAsyncLifetime
         response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
     }
 
+
+    [Fact]
+    public async Task Retry_WithTaxAssessorRole_Returns403()
+    {
+        var creds = await _factory.CreateUserWithRoleAsync("TaxAssessor");
+        var assessorClient = await AuthenticatedHttpClient.CreateAsync(_factory, creds.Username, creds.Password);
+
+        var response = await assessorClient.PostAsync($"/api/integrations/requests/{Guid.NewGuid()}/retry", content: null);
+        response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
+    }
+
     [Fact]
     public async Task GetRequests_WithFieldInspectorRole_Returns403()
     {
@@ -175,6 +186,16 @@ public class IntegrationsEndpointsTests : IAsyncLifetime
         var officerClient = await AuthenticatedHttpClient.CreateAsync(_factory, creds.Username, creds.Password);
 
         var response = await officerClient.GetAsync("/api/integrations/requests");
+        response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
+    }
+
+    [Fact]
+    public async Task GetRequests_WithTaxAssessorRole_Returns403()
+    {
+        var creds = await _factory.CreateUserWithRoleAsync("TaxAssessor");
+        var assessorClient = await AuthenticatedHttpClient.CreateAsync(_factory, creds.Username, creds.Password);
+
+        var response = await assessorClient.GetAsync("/api/integrations/requests");
         response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
     }
 
