@@ -45,6 +45,17 @@ public class PropertiesEndpointsTests : IAsyncLifetime
         response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
     }
 
+
+    [Fact]
+    public async Task GetAll_WithCitizenRole_Returns403()
+    {
+        var creds = await _factory.CreateUserWithRoleAsync("Citizen");
+        var citizenClient = await AuthenticatedHttpClient.CreateAsync(_factory, creds.Username, creds.Password);
+
+        var response = await citizenClient.GetAsync("/api/properties");
+        response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
+    }
+
     // ── POST /api/properties ───────────────────────────────────────────────────
 
     [Fact]
