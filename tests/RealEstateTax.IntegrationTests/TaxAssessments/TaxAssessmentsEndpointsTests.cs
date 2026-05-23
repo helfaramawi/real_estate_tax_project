@@ -52,6 +52,22 @@ public class TaxAssessmentsEndpointsTests : IAsyncLifetime
         response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
     }
 
+
+
+    [Fact]
+    public async Task Generate_WithFieldInspectorRole_Returns403()
+    {
+        var creds = await _factory.CreateUserWithRoleAsync("FieldInspector");
+        var inspectorClient = await AuthenticatedHttpClient.CreateAsync(_factory, creds.Username, creds.Password);
+
+        var response = await inspectorClient.PostAsJsonAsync("/api/tax-assessments/generate", new
+        {
+            valuationId = Guid.NewGuid()
+        });
+
+        response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
+    }
+
     [Fact]
     public async Task Approve_WithoutToken_Returns401()
     {
