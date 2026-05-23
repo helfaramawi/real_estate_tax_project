@@ -99,6 +99,7 @@ For each Wave 2 workflow, provide:
 - [ ] Maturity level updated with evidence
 - [ ] Compliance reviewer notes linked
 - [ ] Gaps assigned owner + target date
+- [ ] Legal decision log updated (`docs/LEGAL_DECISION_LOG.md`)
 
 **Go rule:** No unresolved `TBD` in critical Wave 2 rows without owner/date.
 
