@@ -1,0 +1,18 @@
+# Endpoint-to-Permission Matrix (Wave 2 Evidence Draft)
+
+This document is the working evidence artifact for Wave 2 A2/B checks.
+
+## Scope
+Critical protected API areas used in Wave 1 + Wave 2 readiness gates.
+
+| Area | Endpoint(s) | Effective Access (from controller attributes) | Negative Test Evidence | Source of Truth | Status |
+|---|---|---|---|---|---|
+| Auth | `POST /api/auth/refresh-token` | Anonymous endpoint (no `[Authorize]`) | `AuthEndpointsTests` invalid/expired token paths | `src/RealEstateTax.API/Controllers/AuthController.cs` | In Progress |
+| Properties | `GET/POST/PUT /api/properties` + workflow actions | Controller requires authenticated users; create/update allow `Admin,SuperAdmin,TaxOfficer,FieldInspector`; verify/link-owner allow `Admin,SuperAdmin,TaxOfficer`; delete only `Admin,SuperAdmin` | `PropertiesEndpointsTests` unauthorized/forbidden coverage | `src/RealEstateTax.API/Controllers/PropertiesController.cs` | In Progress |
+| Taxpayers | `GET/POST/PUT /api/taxpayers` | Controller requires authenticated users; create/update allow `Admin,SuperAdmin,TaxOfficer` | `TaxpayersEndpointsTests` unauthorized/forbidden coverage | `src/RealEstateTax.API/Controllers/TaxpayersController.cs` | In Progress |
+| Bills | `GET /api/bills*`, `POST /api/bills/generate|issue|cancel` | Controller requires authenticated users; generate/issue/cancel allow `Admin,SuperAdmin,TaxOfficer` | `BillsEndpointsTests` unauthorized/forbidden coverage | `src/RealEstateTax.API/Controllers/BillsController.cs` | In Progress |
+| Payments | `POST /api/payments`, `GET /api/payments/bill/{billId}` | Controller requires authenticated users; create allows `Admin,SuperAdmin,CollectionOfficer,TaxOfficer` | `PaymentsEndpointsTests` unauthorized/forbidden coverage | `src/RealEstateTax.API/Controllers/PaymentsController.cs` | In Progress |
+
+## Notes
+- Matrix values above are reconciled directly to current controller annotations and should be updated immediately when authorization attributes change.
+- Replace “In Progress” with “Done” only after both positive and negative path integration tests are linked with test-case names.
