@@ -80,6 +80,23 @@ public class AppealsEndpointsTests : IAsyncLifetime
     }
 
 
+
+
+    [Fact]
+    public async Task Assign_WithFieldInspectorRole_Returns403()
+    {
+        var creds = await _factory.CreateUserWithRoleAsync("FieldInspector");
+        var inspectorClient = await AuthenticatedHttpClient.CreateAsync(_factory, creds.Username, creds.Password);
+
+        var response = await inspectorClient.PostAsJsonAsync($"/api/appeals/{Guid.NewGuid()}/assign", new
+        {
+            assignedToUserId = Guid.NewGuid(),
+            notes = "role guard check"
+        });
+
+        response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
+    }
+
     [Fact]
     public async Task Decision_WithoutToken_Returns401()
     {
