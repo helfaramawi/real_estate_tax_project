@@ -28,6 +28,17 @@ public class AppealsEndpointsTests : IAsyncLifetime
 
 
 
+
+    [Fact]
+    public async Task GetAll_WithCitizenRole_Returns403()
+    {
+        var creds = await _factory.CreateUserWithRoleAsync("Citizen");
+        var citizenClient = await AuthenticatedHttpClient.CreateAsync(_factory, creds.Username, creds.Password);
+
+        var response = await citizenClient.GetAsync("/api/appeals");
+        response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
+    }
+
     [Fact]
     public async Task Submit_WithoutToken_Returns401()
     {
