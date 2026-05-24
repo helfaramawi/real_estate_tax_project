@@ -155,6 +155,16 @@ public class BillsEndpointsTests : IAsyncLifetime
         response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
     }
 
+    [Fact]
+    public async Task Generate_WithTaxOfficerRole_Returns403()
+    {
+        var creds = await _factory.CreateUserWithRoleAsync("TaxOfficer");
+        var officerClient = await AuthenticatedHttpClient.CreateAsync(_factory, creds.Username, creds.Password);
+
+        var response = await officerClient.PostAsJsonAsync("/api/bills/generate", new { taxAssessmentId = Guid.NewGuid() });
+        response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
+    }
+
 
     [Fact]
     public async Task Issue_WithoutToken_Returns401()
