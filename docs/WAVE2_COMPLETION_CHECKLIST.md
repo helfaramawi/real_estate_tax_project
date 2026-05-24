@@ -127,6 +127,7 @@ For each Wave 2 workflow, provide:
 - [ ] Integration test TRX artifact is attached.
 - [ ] Any unresolved Wave 2 blocker has owner and due date.
 - [ ] Final endpoint-permission matrix diff review is attached (expected role vs tested role coverage).
+- [ ] Decision meeting outcome note is posted (GO or NO-GO) with timestamp and approver names.
 
 ### If NO-GO, list blockers
 1. ______________________________________________
