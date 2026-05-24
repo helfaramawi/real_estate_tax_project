@@ -140,3 +140,9 @@ For each Wave 2 workflow, provide:
 - [ ] GO decision note is posted and approved.
 - [ ] Wave 3 kickoff ticket/epic is created and linked.
 - [ ] Wave 2 evidence package is archived in the release notes.
+
+## Immediate Next Steps (Execution Order)
+1. Run CI for the release-candidate commit and attach run URL + TRX artifacts.
+2. Attach endpoint-permission matrix diff review and confirm no unowned gaps.
+3. Hold the decision meeting and record GO/NO-GO note with approvers.
+4. If GO, open Wave 3 kickoff epic and link it in this checklist.
