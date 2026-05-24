@@ -126,6 +126,7 @@ For each Wave 2 workflow, provide:
 - [ ] Unit test TRX artifact is attached.
 - [ ] Integration test TRX artifact is attached.
 - [ ] Any unresolved Wave 2 blocker has owner and due date.
+- [ ] Final endpoint-permission matrix diff review is attached (expected role vs tested role coverage).
 
 ### If NO-GO, list blockers
 1. ______________________________________________
