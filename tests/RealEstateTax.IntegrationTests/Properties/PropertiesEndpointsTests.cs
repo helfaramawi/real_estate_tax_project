@@ -269,6 +269,32 @@ public class PropertiesEndpointsTests : IAsyncLifetime
         response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
     }
 
+    [Fact]
+    public async Task Delete_WithTaxAssessorRole_Returns403()
+    {
+        var createResponse = await _client.PostAsJsonAsync("/api/properties", new
+        {
+            type = (int)PropertyType.Residential,
+            builtUpArea = 100.0,
+            city = "Giza",
+            governorate = "Giza"
+        });
+        createResponse.StatusCode.Should().Be(HttpStatusCode.Created);
+
+        var created = await createResponse.Content.ReadFromJsonAsync<CreatedEnvelope>();
+        var propertyId = created!.Data.Id;
+
+        var creds = await _factory.CreateUserWithRoleAsync("TaxAssessor");
+        var assessorClient = await AuthenticatedHttpClient.CreateAsync(_factory, creds.Username, creds.Password);
+
+        var response = await assessorClient.DeleteAsJsonAsync($"/api/properties/{propertyId}", new
+        {
+            reason = "not authorized role"
+        });
+
+        response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
+    }
+
 
 
 
