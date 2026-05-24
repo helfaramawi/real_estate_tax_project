@@ -337,6 +337,58 @@ public class PropertiesEndpointsTests : IAsyncLifetime
         response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
     }
 
+    [Fact]
+    public async Task Delete_WithCitizenRole_Returns403()
+    {
+        var createResponse = await _client.PostAsJsonAsync("/api/properties", new
+        {
+            type = (int)PropertyType.Residential,
+            builtUpArea = 101.0,
+            city = "Cairo",
+            governorate = "Cairo"
+        });
+        createResponse.StatusCode.Should().Be(HttpStatusCode.Created);
+
+        var created = await createResponse.Content.ReadFromJsonAsync<CreatedEnvelope>();
+        var propertyId = created!.Data.Id;
+
+        var creds = await _factory.CreateUserWithRoleAsync("Citizen");
+        var citizenClient = await AuthenticatedHttpClient.CreateAsync(_factory, creds.Username, creds.Password);
+
+        var response = await citizenClient.DeleteAsJsonAsync($"/api/properties/{propertyId}", new
+        {
+            reason = "not authorized role"
+        });
+
+        response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
+    }
+
+    [Fact]
+    public async Task Delete_WithFieldInspectorRole_Returns403()
+    {
+        var createResponse = await _client.PostAsJsonAsync("/api/properties", new
+        {
+            type = (int)PropertyType.Residential,
+            builtUpArea = 102.0,
+            city = "Alexandria",
+            governorate = "Alexandria"
+        });
+        createResponse.StatusCode.Should().Be(HttpStatusCode.Created);
+
+        var created = await createResponse.Content.ReadFromJsonAsync<CreatedEnvelope>();
+        var propertyId = created!.Data.Id;
+
+        var creds = await _factory.CreateUserWithRoleAsync("FieldInspector");
+        var inspectorClient = await AuthenticatedHttpClient.CreateAsync(_factory, creds.Username, creds.Password);
+
+        var response = await inspectorClient.DeleteAsJsonAsync($"/api/properties/{propertyId}", new
+        {
+            reason = "not authorized role"
+        });
+
+        response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
+    }
+
 
 
 
