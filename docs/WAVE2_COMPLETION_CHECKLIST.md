@@ -121,6 +121,12 @@ For each Wave 2 workflow, provide:
 - QA lead: ________________________ Date: __________
 - Compliance/legal reviewer: _______ Date: __________
 
+### Final evidence package for decision meeting
+- [ ] CI run URL for release-candidate commit is attached.
+- [ ] Unit test TRX artifact is attached.
+- [ ] Integration test TRX artifact is attached.
+- [ ] Any unresolved Wave 2 blocker has owner and due date.
+
 ### If NO-GO, list blockers
 1. ______________________________________________
 2. ______________________________________________
