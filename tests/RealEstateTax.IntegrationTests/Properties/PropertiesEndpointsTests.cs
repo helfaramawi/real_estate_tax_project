@@ -45,6 +45,28 @@ public class PropertiesEndpointsTests : IAsyncLifetime
         response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
     }
 
+
+    [Fact]
+    public async Task GetAll_WithCitizenRole_Returns403()
+    {
+        var creds = await _factory.CreateUserWithRoleAsync("Citizen");
+        var citizenClient = await AuthenticatedHttpClient.CreateAsync(_factory, creds.Username, creds.Password);
+
+        var response = await citizenClient.GetAsync("/api/properties");
+        response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
+    }
+
+
+    [Fact]
+    public async Task GetAll_WithFieldInspectorRole_Returns403()
+    {
+        var creds = await _factory.CreateUserWithRoleAsync("FieldInspector");
+        var inspectorClient = await AuthenticatedHttpClient.CreateAsync(_factory, creds.Username, creds.Password);
+
+        var response = await inspectorClient.GetAsync("/api/properties");
+        response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
+    }
+
     // ── POST /api/properties ───────────────────────────────────────────────────
 
     [Fact]
@@ -110,6 +132,107 @@ public class PropertiesEndpointsTests : IAsyncLifetime
     {
         var response = await _client.GetAsync($"/api/properties/{Guid.NewGuid()}");
         response.StatusCode.Should().Be(HttpStatusCode.NotFound);
+    }
+
+
+
+    [Fact]
+    public async Task Verify_WithoutToken_Returns401()
+    {
+        var unauthenticated = _factory.CreateClient();
+        var response = await unauthenticated.PostAsJsonAsync($"/api/properties/{Guid.NewGuid()}/verify", new
+        {
+            verificationNotes = "unauthenticated"
+        });
+
+        response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
+    }
+
+    [Fact]
+    public async Task Verify_WithFieldInspectorRole_Returns403()
+    {
+        var creds = await _factory.CreateUserWithRoleAsync("FieldInspector");
+        var fieldInspectorClient = await AuthenticatedHttpClient.CreateAsync(_factory, creds.Username, creds.Password);
+
+        var response = await fieldInspectorClient.PostAsJsonAsync($"/api/properties/{Guid.NewGuid()}/verify", new
+        {
+            verificationNotes = "role check"
+        });
+
+        response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
+    }
+
+
+
+    [Fact]
+    public async Task Delete_WithoutToken_Returns401()
+    {
+        var unauthenticated = _factory.CreateClient();
+
+        var response = await unauthenticated.DeleteAsJsonAsync($"/api/properties/{Guid.NewGuid()}", new
+        {
+            reason = "unauthenticated"
+        });
+
+        response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
+    }
+
+    [Fact]
+    public async Task Delete_WithTaxOfficerRole_Returns403()
+    {
+        var createResponse = await _client.PostAsJsonAsync("/api/properties", new
+        {
+            type = (int)PropertyType.Residential,
+            builtUpArea = 99.0,
+            city = "Cairo",
+            governorate = "Cairo"
+        });
+        createResponse.StatusCode.Should().Be(HttpStatusCode.Created);
+
+        var created = await createResponse.Content.ReadFromJsonAsync<CreatedEnvelope>();
+        var propertyId = created!.Data.Id;
+
+        var creds = await _factory.CreateUserWithRoleAsync("TaxOfficer");
+        var taxOfficerClient = await AuthenticatedHttpClient.CreateAsync(_factory, creds.Username, creds.Password);
+
+        var response = await taxOfficerClient.DeleteAsJsonAsync($"/api/properties/{propertyId}", new
+        {
+            reason = "not authorized role"
+        });
+
+        response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
+    }
+
+
+
+
+    [Fact]
+    public async Task LinkOwner_WithoutToken_Returns401()
+    {
+        var unauthenticated = _factory.CreateClient();
+
+        var response = await unauthenticated.PostAsJsonAsync($"/api/properties/{Guid.NewGuid()}/link-owner", new
+        {
+            taxpayerId = Guid.NewGuid(),
+            ownershipPercentage = 50
+        });
+
+        response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
+    }
+
+    [Fact]
+    public async Task LinkOwner_WithFieldInspectorRole_Returns403()
+    {
+        var creds = await _factory.CreateUserWithRoleAsync("FieldInspector");
+        var inspectorClient = await AuthenticatedHttpClient.CreateAsync(_factory, creds.Username, creds.Password);
+
+        var response = await inspectorClient.PostAsJsonAsync($"/api/properties/{Guid.NewGuid()}/link-owner", new
+        {
+            taxpayerId = Guid.NewGuid(),
+            ownershipPercentage = 50
+        });
+
+        response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
     }
 
     // ── Helper records ────────────────────────────────────────────────────────
