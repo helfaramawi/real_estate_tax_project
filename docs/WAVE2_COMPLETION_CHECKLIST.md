@@ -133,3 +133,10 @@ For each Wave 2 workflow, provide:
 1. ______________________________________________
 2. ______________________________________________
 3. ______________________________________________
+
+---
+
+## Wave 3 Kickoff Trigger (Only after GO)
+- [ ] GO decision note is posted and approved.
+- [ ] Wave 3 kickoff ticket/epic is created and linked.
+- [ ] Wave 2 evidence package is archived in the release notes.
