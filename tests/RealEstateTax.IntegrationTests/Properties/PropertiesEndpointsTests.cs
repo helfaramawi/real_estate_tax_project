@@ -180,6 +180,17 @@ public class PropertiesEndpointsTests : IAsyncLifetime
         response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
     }
 
+
+    [Fact]
+    public async Task GetById_WithTaxOfficerRole_Returns403()
+    {
+        var creds = await _factory.CreateUserWithRoleAsync("TaxOfficer");
+        var officerClient = await AuthenticatedHttpClient.CreateAsync(_factory, creds.Username, creds.Password);
+
+        var response = await officerClient.GetAsync($"/api/properties/{Guid.NewGuid()}");
+        response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
+    }
+
     [Fact]
     public async Task Verify_WithoutToken_Returns401()
     {
