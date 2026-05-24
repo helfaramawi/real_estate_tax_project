@@ -195,6 +195,16 @@ public class BillsEndpointsTests : IAsyncLifetime
     }
 
     [Fact]
+    public async Task Issue_WithFieldInspectorRole_Returns403()
+    {
+        var creds = await _factory.CreateUserWithRoleAsync("FieldInspector");
+        var inspectorClient = await AuthenticatedHttpClient.CreateAsync(_factory, creds.Username, creds.Password);
+
+        var response = await inspectorClient.PostAsync($"/api/bills/{Guid.NewGuid()}/issue", content: null);
+        response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
+    }
+
+    [Fact]
     public async Task Issue_WithTaxOfficerRole_Returns403()
     {
         var creds = await _factory.CreateUserWithRoleAsync("TaxOfficer");
@@ -231,6 +241,16 @@ public class BillsEndpointsTests : IAsyncLifetime
         var citizenClient = await AuthenticatedHttpClient.CreateAsync(_factory, creds.Username, creds.Password);
 
         var response = await citizenClient.PostAsync($"/api/bills/{Guid.NewGuid()}/cancel", content: null);
+        response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
+    }
+
+    [Fact]
+    public async Task Cancel_WithFieldInspectorRole_Returns403()
+    {
+        var creds = await _factory.CreateUserWithRoleAsync("FieldInspector");
+        var inspectorClient = await AuthenticatedHttpClient.CreateAsync(_factory, creds.Username, creds.Password);
+
+        var response = await inspectorClient.PostAsync($"/api/bills/{Guid.NewGuid()}/cancel", content: null);
         response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
     }
 
