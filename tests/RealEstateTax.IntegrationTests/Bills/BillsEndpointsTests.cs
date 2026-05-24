@@ -54,6 +54,28 @@ public class BillsEndpointsTests : IAsyncLifetime
         response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
     }
 
+
+    [Fact]
+    public async Task GetAll_WithFieldInspectorRole_Returns403()
+    {
+        var creds = await _factory.CreateUserWithRoleAsync("FieldInspector");
+        var inspectorClient = await AuthenticatedHttpClient.CreateAsync(_factory, creds.Username, creds.Password);
+
+        var response = await inspectorClient.GetAsync("/api/bills");
+        response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
+    }
+
+
+    [Fact]
+    public async Task GetAll_WithTaxOfficerRole_Returns403()
+    {
+        var creds = await _factory.CreateUserWithRoleAsync("TaxOfficer");
+        var officerClient = await AuthenticatedHttpClient.CreateAsync(_factory, creds.Username, creds.Password);
+
+        var response = await officerClient.GetAsync("/api/bills");
+        response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
+    }
+
     [Fact]
     public async Task GetById_WithoutToken_Returns401()
     {
