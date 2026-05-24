@@ -204,6 +204,16 @@ public class BillsEndpointsTests : IAsyncLifetime
         response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
     }
 
+    [Fact]
+    public async Task Issue_WithTaxAssessorRole_Returns403()
+    {
+        var creds = await _factory.CreateUserWithRoleAsync("TaxAssessor");
+        var assessorClient = await AuthenticatedHttpClient.CreateAsync(_factory, creds.Username, creds.Password);
+
+        var response = await assessorClient.PostAsync($"/api/bills/{Guid.NewGuid()}/issue", content: null);
+        response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
+    }
+
 
 
     [Fact]
@@ -221,6 +231,26 @@ public class BillsEndpointsTests : IAsyncLifetime
         var citizenClient = await AuthenticatedHttpClient.CreateAsync(_factory, creds.Username, creds.Password);
 
         var response = await citizenClient.PostAsync($"/api/bills/{Guid.NewGuid()}/cancel", content: null);
+        response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
+    }
+
+    [Fact]
+    public async Task Cancel_WithTaxOfficerRole_Returns403()
+    {
+        var creds = await _factory.CreateUserWithRoleAsync("TaxOfficer");
+        var officerClient = await AuthenticatedHttpClient.CreateAsync(_factory, creds.Username, creds.Password);
+
+        var response = await officerClient.PostAsync($"/api/bills/{Guid.NewGuid()}/cancel", content: null);
+        response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
+    }
+
+    [Fact]
+    public async Task Cancel_WithTaxAssessorRole_Returns403()
+    {
+        var creds = await _factory.CreateUserWithRoleAsync("TaxAssessor");
+        var assessorClient = await AuthenticatedHttpClient.CreateAsync(_factory, creds.Username, creds.Password);
+
+        var response = await assessorClient.PostAsync($"/api/bills/{Guid.NewGuid()}/cancel", content: null);
         response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
     }
 
