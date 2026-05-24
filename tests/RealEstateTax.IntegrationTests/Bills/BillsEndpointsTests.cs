@@ -194,6 +194,16 @@ public class BillsEndpointsTests : IAsyncLifetime
         response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
     }
 
+    [Fact]
+    public async Task Issue_WithTaxOfficerRole_Returns403()
+    {
+        var creds = await _factory.CreateUserWithRoleAsync("TaxOfficer");
+        var officerClient = await AuthenticatedHttpClient.CreateAsync(_factory, creds.Username, creds.Password);
+
+        var response = await officerClient.PostAsync($"/api/bills/{Guid.NewGuid()}/issue", content: null);
+        response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
+    }
+
 
 
     [Fact]
