@@ -224,6 +224,17 @@ public class TaxpayersEndpointsTests : IAsyncLifetime
         response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
     }
 
+
+    [Fact]
+    public async Task GetById_WithTaxOfficerRole_Returns403()
+    {
+        var creds = await _factory.CreateUserWithRoleAsync("TaxOfficer");
+        var officerClient = await AuthenticatedHttpClient.CreateAsync(_factory, creds.Username, creds.Password);
+
+        var response = await officerClient.GetAsync($"/api/taxpayers/{Guid.NewGuid()}");
+        response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
+    }
+
     [Fact]
     public async Task GetById_UnknownId_Returns404()
     {
