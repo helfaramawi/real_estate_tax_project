@@ -99,6 +99,7 @@ For each Wave 2 workflow, provide:
 - [ ] Maturity level updated with evidence
 - [ ] Compliance reviewer notes linked
 - [ ] Gaps assigned owner + target date
+- [ ] Legal decision log updated (`docs/LEGAL_DECISION_LOG.md`)
 
 **Go rule:** No unresolved `TBD` in critical Wave 2 rows without owner/date.
 
@@ -107,6 +108,11 @@ For each Wave 2 workflow, provide:
 ## Final Go/No-Go Decision
 - [ ] **GO to Wave 3**
 - [ ] **NO-GO (remain in Wave 2)**
+
+## Wave 2 Closeout Snapshot (2026-05-24)
+- Authorization role-symmetry integration tests are being closed endpoint-by-endpoint; remaining gaps should be batched into one final closeout verification pass.
+- Do not mark **GO to Wave 3** until required CI evidence (build + unit + integration + artifacts) is attached to the review record for the exact release candidate commit.
+- Target closeout cadence: finalize remaining Wave 2 gaps and complete the formal GO/NO-GO review by **May 27, 2026**.
 
 ### Required sign-off
 - Product owner: __________________ Date: __________
