@@ -327,6 +327,21 @@ public class PropertiesEndpointsTests : IAsyncLifetime
         response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
     }
 
+    [Fact]
+    public async Task LinkOwner_WithCitizenRole_Returns403()
+    {
+        var creds = await _factory.CreateUserWithRoleAsync("Citizen");
+        var citizenClient = await AuthenticatedHttpClient.CreateAsync(_factory, creds.Username, creds.Password);
+
+        var response = await citizenClient.PostAsJsonAsync($"/api/properties/{Guid.NewGuid()}/link-owner", new
+        {
+            taxpayerId = Guid.NewGuid(),
+            ownershipPercentage = 50
+        });
+
+        response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
+    }
+
     // ── Helper records ────────────────────────────────────────────────────────
 
     private record PropertySummary(Guid Id, string PropertyCode);
