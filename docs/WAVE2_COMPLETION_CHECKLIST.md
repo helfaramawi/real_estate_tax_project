@@ -109,6 +109,10 @@ For each Wave 2 workflow, provide:
 - [ ] **GO to Wave 3**
 - [ ] **NO-GO (remain in Wave 2)**
 
+## Wave 2 Closeout Snapshot (2026-05-24)
+- Authorization role-symmetry integration tests are being closed endpoint-by-endpoint; remaining gaps should be batched into one final closeout verification pass.
+- Do not mark **GO to Wave 3** until required CI evidence (build + unit + integration + artifacts) is attached to the review record for the exact release candidate commit.
+
 ### Required sign-off
 - Product owner: __________________ Date: __________
 - Engineering lead: _______________ Date: __________
