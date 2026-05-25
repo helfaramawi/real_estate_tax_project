@@ -113,6 +113,18 @@ This document marks the immediate start of Wave 3 after Wave 2 closeout review.
 - [ ] Monitoring/alert thresholds are reviewed for new feature paths.
 - [ ] On-call handoff note is published with known risks.
 
+## Production Experience Vision
+- API access behaves predictably by role (unauthenticated users get `401`; unauthorized roles get `403` on protected operations).
+- Core flows (taxpayer, property, billing, payment) are observable with clear operational evidence and release notes.
+- CI evidence (unit/integration + smoke checks) is attached to each release candidate before promotion.
+
+## Candidate Features After Current Wave 3 Baseline
+1. Taxpayer self-service dashboard for bill/payment status history.
+2. Property ownership timeline and change audit viewer.
+3. Appeals workflow SLA tracking and escalation notifications.
+4. Risk insights panel with rule explanations and reviewer actions.
+5. Operations release dashboard (traceability, artifacts, and rollback readiness in one view).
+
 ## Project Completion Path (Estimate from 2026-05-25)
 1. **Wave 2 final decision closeout** (1–2 days)
    - Final evidence package attached
