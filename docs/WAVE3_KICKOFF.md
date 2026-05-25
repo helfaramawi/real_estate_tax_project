@@ -108,6 +108,11 @@ This document marks the immediate start of Wave 3 after Wave 2 closeout review.
 - [ ] Release notes are complete with evidence links and rollback instructions.
 - [ ] Final stakeholder sign-off is recorded.
 
+## Release Readiness Gate (Pre-Production)
+- [ ] Deployment checklist is completed and approved.
+- [ ] Monitoring/alert thresholds are reviewed for new feature paths.
+- [ ] On-call handoff note is published with known risks.
+
 ## Project Completion Path (Estimate from 2026-05-25)
 1. **Wave 2 final decision closeout** (1–2 days)
    - Final evidence package attached
