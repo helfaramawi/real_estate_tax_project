@@ -113,6 +113,11 @@ This document marks the immediate start of Wave 3 after Wave 2 closeout review.
 - [ ] Monitoring/alert thresholds are reviewed for new feature paths.
 - [ ] On-call handoff note is published with known risks.
 
+## Post-Release Validation Window (48h)
+- [ ] No Sev-1/Sev-2 incidents linked to Wave 3 scope.
+- [ ] Key endpoint error-rate and latency metrics remain within baseline thresholds.
+- [ ] Any rollback-trigger conditions are reviewed and closed.
+
 ## Production Experience Vision
 - API access behaves predictably by role (unauthenticated users get `401`; unauthorized roles get `403` on protected operations).
 - Core flows (taxpayer, property, billing, payment) are observable with clear operational evidence and release notes.
