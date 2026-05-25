@@ -77,3 +77,9 @@ This document marks the immediate start of Wave 3 after Wave 2 closeout review.
 - [ ] Create feature branch and link kickoff epic.
 - [ ] Publish acceptance criteria and API contract draft.
 - [ ] Add initial unit test skeleton and integration test placeholders.
+
+## Day-3 Checkpoint (Wave 3)
+- [ ] Scope is still within Sprint 1 freeze (no unapproved expansion).
+- [ ] Core implementation is merged or in review-ready state.
+- [ ] Unit tests are passing for the implemented slice.
+- [ ] Integration test placeholders are converted to executable cases.
