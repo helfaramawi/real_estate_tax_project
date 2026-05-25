@@ -84,6 +84,12 @@ This document marks the immediate start of Wave 3 after Wave 2 closeout review.
 - [ ] Unit tests are passing for the implemented slice.
 - [ ] Integration test placeholders are converted to executable cases.
 
+## Day-5 Checkpoint (Wave 3)
+- [ ] PR is in final review state with blocking comments resolved.
+- [ ] Traceability links are updated for delivered scope.
+- [ ] Release notes draft is prepared with evidence links.
+- [ ] Sprint review agenda is prepared and shared.
+
 ## Project Completion Path (Estimate from 2026-05-25)
 1. **Wave 2 final decision closeout** (1–2 days)
    - Final evidence package attached
