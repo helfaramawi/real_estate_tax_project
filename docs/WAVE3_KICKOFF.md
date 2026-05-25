@@ -83,3 +83,16 @@ This document marks the immediate start of Wave 3 after Wave 2 closeout review.
 - [ ] Core implementation is merged or in review-ready state.
 - [ ] Unit tests are passing for the implemented slice.
 - [ ] Integration test placeholders are converted to executable cases.
+
+## Project Completion Path (Estimate from 2026-05-25)
+1. **Wave 2 final decision closeout** (1–2 days)
+   - Final evidence package attached
+   - GO/NO-GO decision note recorded
+2. **Wave 3 Sprint 1 delivery** (2 weeks)
+   - First feature slice implemented and released with evidence
+3. **Wave 3 Sprint 2 delivery** (2 weeks)
+   - Second prioritized feature slice and hardening pass
+4. **Release stabilization + sign-off** (3–5 days)
+   - Regression run, rollback check, documentation finalization
+
+**Total remaining estimate:** ~5 to 7 weeks to project end (assuming no major scope expansion).
