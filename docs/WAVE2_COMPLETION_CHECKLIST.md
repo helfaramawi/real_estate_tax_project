@@ -99,6 +99,7 @@ For each Wave 2 workflow, provide:
 - [ ] Maturity level updated with evidence
 - [ ] Compliance reviewer notes linked
 - [ ] Gaps assigned owner + target date
+- [ ] Legal decision log updated (`docs/LEGAL_DECISION_LOG.md`)
 
 **Go rule:** No unresolved `TBD` in critical Wave 2 rows without owner/date.
 
@@ -108,13 +109,46 @@ For each Wave 2 workflow, provide:
 - [ ] **GO to Wave 3**
 - [ ] **NO-GO (remain in Wave 2)**
 
+## Wave 2 Closeout Snapshot (2026-05-25)
+- Authorization role-symmetry integration tests are being closed endpoint-by-endpoint; remaining gaps should be batched into one final closeout verification pass.
+- Do not mark **GO to Wave 3** until required CI evidence (build + unit + integration + artifacts) is attached to the review record for the exact release candidate commit.
+- Target closeout cadence: finalize remaining Wave 2 gaps and complete the formal GO/NO-GO review by **May 27, 2026**.
+- Current status: closeout is in the final verification phase; next action is a single evidence review meeting to either mark **GO to Wave 3** or list explicit blockers.
+- Planning assumption: if decision meeting confirms evidence completeness, Wave 3 kickoff should begin on **May 28, 2026**.
+
 ### Required sign-off
 - Product owner: __________________ Date: __________
 - Engineering lead: _______________ Date: __________
 - QA lead: ________________________ Date: __________
 - Compliance/legal reviewer: _______ Date: __________
 
+### Final evidence package for decision meeting
+- [ ] CI run URL for release-candidate commit is attached.
+- [ ] Unit test TRX artifact is attached.
+- [ ] Integration test TRX artifact is attached.
+- [ ] Any unresolved Wave 2 blocker has owner and due date.
+- [ ] Final endpoint-permission matrix diff review is attached (expected role vs tested role coverage).
+- [ ] Decision meeting outcome note is posted (GO or NO-GO) with timestamp and approver names.
+
 ### If NO-GO, list blockers
 1. ______________________________________________
 2. ______________________________________________
 3. ______________________________________________
+
+---
+
+## Wave 3 Kickoff Trigger (Only after GO)
+- [ ] GO decision note is posted and approved.
+- [ ] Wave 3 kickoff ticket/epic is created and linked.
+- [ ] Wave 2 evidence package is archived in the release notes.
+
+## Immediate Next Steps (Execution Order)
+1. Run CI for the release-candidate commit and attach run URL + TRX artifacts.
+2. Attach endpoint-permission matrix diff review and confirm no unowned gaps.
+3. Hold the decision meeting and record GO/NO-GO note with approvers.
+4. If GO, open Wave 3 kickoff epic and link it in this checklist.
+
+## Transition Ready Definition (Wave 2 -> Wave 3)
+- [ ] All items in **Final evidence package for decision meeting** are checked.
+- [ ] Required sign-offs are completed (Product, Engineering, QA, Compliance/Legal).
+- [ ] GO decision note references the exact release-candidate commit SHA.
