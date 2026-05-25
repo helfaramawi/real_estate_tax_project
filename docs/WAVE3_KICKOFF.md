@@ -41,3 +41,11 @@ This document marks the immediate start of Wave 3 after Wave 2 closeout review.
 - CI run URL with unit/integration evidence.
 - Updated `FEATURE_TRACEABILITY_MATRIX.md` entry link.
 - Short retrospective note: what blocked delivery and what to improve in Sprint 2.
+
+## Sprint 1 Risks and Mitigations
+- Risk: Scope creep from carrying unresolved Wave 2 items into Wave 3 delivery.
+  - Mitigation: Keep a strict sprint scope freeze after acceptance criteria approval.
+- Risk: Regression in authorization guard behavior while adding new feature slice.
+  - Mitigation: Keep role-based integration tests updated for touched endpoints in same PR.
+- Risk: Merge conflicts on high-churn docs/test files.
+  - Mitigation: Apply `docs/MERGE_CONFLICT_PLAYBOOK.md` ownership and batching rules.
