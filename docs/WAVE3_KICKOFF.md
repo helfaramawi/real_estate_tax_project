@@ -49,3 +49,13 @@ This document marks the immediate start of Wave 3 after Wave 2 closeout review.
   - Mitigation: Keep role-based integration tests updated for touched endpoints in same PR.
 - Risk: Merge conflicts on high-churn docs/test files.
   - Mitigation: Apply `docs/MERGE_CONFLICT_PLAYBOOK.md` ownership and batching rules.
+
+## Two-Week Delivery Cadence (Wave 3)
+- Week 1:
+  - Finalize Sprint 1 scope and contract.
+  - Implement first feature slice + unit tests.
+  - Open draft PR early for review.
+- Week 2:
+  - Complete integration tests and traceability updates.
+  - Close review comments and merge.
+  - Publish sprint review evidence package and retrospective note.
