@@ -35,3 +35,9 @@ This document marks the immediate start of Wave 3 after Wave 2 closeout review.
 - Feature ticket has approved acceptance criteria.
 - CI build, unit tests, and integration tests are green for merge commit.
 - Evidence links (tests + traceability update) are attached to the sprint review note.
+
+## Sprint 1 Exit Artifacts
+- Pull request link for selected Wave 3 feature slice.
+- CI run URL with unit/integration evidence.
+- Updated `FEATURE_TRACEABILITY_MATRIX.md` entry link.
+- Short retrospective note: what blocked delivery and what to improve in Sprint 2.
