@@ -71,3 +71,9 @@ This document marks the immediate start of Wave 3 after Wave 2 closeout review.
 - Authorization/regression notes:
 - Rollback and monitoring readiness:
 - Decisions for Sprint 2:
+
+## Day-1 Execution Checklist (Wave 3)
+- [ ] Confirm Sprint 1 feature owner and reviewer.
+- [ ] Create feature branch and link kickoff epic.
+- [ ] Publish acceptance criteria and API contract draft.
+- [ ] Add initial unit test skeleton and integration test placeholders.
