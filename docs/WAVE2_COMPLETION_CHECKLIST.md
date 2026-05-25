@@ -146,3 +146,8 @@ For each Wave 2 workflow, provide:
 2. Attach endpoint-permission matrix diff review and confirm no unowned gaps.
 3. Hold the decision meeting and record GO/NO-GO note with approvers.
 4. If GO, open Wave 3 kickoff epic and link it in this checklist.
+
+## Transition Ready Definition (Wave 2 -> Wave 3)
+- [ ] All items in **Final evidence package for decision meeting** are checked.
+- [ ] Required sign-offs are completed (Product, Engineering, QA, Compliance/Legal).
+- [ ] GO decision note references the exact release-candidate commit SHA.
