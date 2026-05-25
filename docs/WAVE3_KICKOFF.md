@@ -59,3 +59,8 @@ This document marks the immediate start of Wave 3 after Wave 2 closeout review.
   - Complete integration tests and traceability updates.
   - Close review comments and merge.
   - Publish sprint review evidence package and retrospective note.
+
+## Sprint 1 Communication Cadence
+- Daily async status update in team channel (scope, blockers, next 24h plan).
+- Mid-sprint checkpoint with Product + QA to confirm acceptance criteria alignment.
+- End-of-sprint review includes demo, evidence links, and rollback notes.
