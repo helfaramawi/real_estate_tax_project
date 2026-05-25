@@ -64,3 +64,10 @@ This document marks the immediate start of Wave 3 after Wave 2 closeout review.
 - Daily async status update in team channel (scope, blockers, next 24h plan).
 - Mid-sprint checkpoint with Product + QA to confirm acceptance criteria alignment.
 - End-of-sprint review includes demo, evidence links, and rollback notes.
+
+## Sprint 1 Review Template (Required)
+- Delivered scope vs planned scope:
+- CI evidence links (build, unit, integration):
+- Authorization/regression notes:
+- Rollback and monitoring readiness:
+- Decisions for Sprint 2:
