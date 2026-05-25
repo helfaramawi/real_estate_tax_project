@@ -102,6 +102,12 @@ This document marks the immediate start of Wave 3 after Wave 2 closeout review.
 - [ ] Sprint 2 scope is validated against capacity and risk.
 - [ ] Sprint 2 kickoff note is published with dependencies and timeline.
 
+## Project Endgame Checklist
+- [ ] All planned Wave 3 feature slices are delivered or formally deferred.
+- [ ] Final regression and smoke checks are green.
+- [ ] Release notes are complete with evidence links and rollback instructions.
+- [ ] Final stakeholder sign-off is recorded.
+
 ## Project Completion Path (Estimate from 2026-05-25)
 1. **Wave 2 final decision closeout** (1–2 days)
    - Final evidence package attached
