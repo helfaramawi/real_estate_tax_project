@@ -19,6 +19,7 @@ This index consolidates all documentation files under the `docs/` folder so pull
 - `docs/WAVE1_COMPLETION_CHECKLIST.md`
 - `docs/WAVE2_COMPLETION_CHECKLIST.md`
 - `docs/WAVE3_KICKOFF.md`
+- `docs/MERGE_CONFLICT_PLAYBOOK.md`
 
 ## Usage Rule
 For any documentation-focused pull request, include all new files added under `docs/` and update this index in the same PR.
