@@ -38,3 +38,10 @@ Use this playbook to reduce conflicts immediately.
   4) docs/checklist closeout
 
 Following this order usually removes most recurring conflicts.
+
+## 7) 10-Minute Conflict Triage
+- If a PR hits conflicts, do this immediately:
+  1) Rebase branch on latest `main`.
+  2) Resolve conflicts in hot files first (`ci.yml`, checklist, high-churn test files).
+  3) Run focused smoke validation for touched domain.
+  4) Push once and request re-review (avoid repeated partial pushes).
