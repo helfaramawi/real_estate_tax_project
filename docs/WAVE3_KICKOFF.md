@@ -96,6 +96,12 @@ This document marks the immediate start of Wave 3 after Wave 2 closeout review.
 - [ ] Post-merge smoke verification is complete.
 - [ ] Sprint 2 candidate scope is drafted and prioritized.
 
+## Sprint 2 Preparation Gate
+- [ ] Sprint 1 retrospective actions are captured and assigned.
+- [ ] Outstanding defects are triaged (must-fix vs defer) with owners.
+- [ ] Sprint 2 scope is validated against capacity and risk.
+- [ ] Sprint 2 kickoff note is published with dependencies and timeline.
+
 ## Project Completion Path (Estimate from 2026-05-25)
 1. **Wave 2 final decision closeout** (1–2 days)
    - Final evidence package attached
