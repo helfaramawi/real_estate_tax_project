@@ -90,6 +90,12 @@ This document marks the immediate start of Wave 3 after Wave 2 closeout review.
 - [ ] Release notes draft is prepared with evidence links.
 - [ ] Sprint review agenda is prepared and shared.
 
+## Day-10 Checkpoint (Wave 3)
+- [ ] Sprint 1 deliverable is merged to main.
+- [ ] CI artifacts are attached to sprint review record.
+- [ ] Post-merge smoke verification is complete.
+- [ ] Sprint 2 candidate scope is drafted and prioritized.
+
 ## Project Completion Path (Estimate from 2026-05-25)
 1. **Wave 2 final decision closeout** (1–2 days)
    - Final evidence package attached
