@@ -77,6 +77,32 @@ public class AuthEndpointsTests : IAsyncLifetime
         response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
     }
 
+
+    // ── POST /api/auth/refresh-token ─────────────────────────────────────────
+
+    [Fact]
+    public async Task RefreshToken_InvalidToken_Returns400()
+    {
+        var response = await _client.PostAsJsonAsync("/api/auth/refresh-token", new
+        {
+            refreshToken = "invalid-refresh-token"
+        });
+
+        response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+    }
+
+    [Fact]
+    public async Task ChangePassword_WithoutToken_Returns401()
+    {
+        var response = await _client.PostAsJsonAsync("/api/auth/change-password", new
+        {
+            oldPassword = "OldPass@123",
+            newPassword = "NewPass@123"
+        });
+
+        response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
+    }
+
     // ── Protected endpoint without token ─────────────────────────────────────
 
     [Fact]
