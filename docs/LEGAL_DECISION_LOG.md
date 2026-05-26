@@ -24,3 +24,8 @@ This log tracks legal/business-rule placeholders that must be confirmed with aut
 1. No row can move to `Implemented` without legal approval artifact reference.
 2. Any row still `Open` after due date must include escalation note and revised date.
 3. Wave 2 cannot be marked GO if any critical row lacks owner or due date.
+
+## Speed-Up Decision Handling
+- Batch legal review into one 45-minute weekly decision session with pre-read notes.
+- Any unresolved item after session gets an explicit interim default plus expiration date.
+- Do not reopen already `Approved` rows unless source law/decree reference changes.
