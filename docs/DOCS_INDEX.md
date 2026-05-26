@@ -23,3 +23,10 @@ This index consolidates all documentation files under the `docs/` folder so pull
 
 ## Usage Rule
 For any documentation-focused pull request, include all new files added under `docs/` and update this index in the same PR.
+
+## Fast Closeout Reading Order (Speed-Up)
+1. `docs/WAVE2_COMPLETION_CHECKLIST.md` (decision gate source of truth)
+2. `docs/WAVE2_EXECUTION_BOARD.md` (daily status + blockers)
+3. `docs/NEXT_SPRINT_PLAN.md` (scope, owners, due dates)
+4. `docs/MERGE_CONFLICT_PLAYBOOK.md` (conflict prevention defaults)
+5. `docs/WAVE3_KICKOFF.md` (post-GO execution path)
