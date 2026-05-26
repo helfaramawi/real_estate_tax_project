@@ -140,6 +140,11 @@ This document marks the immediate start of Wave 3 after Wave 2 closeout review.
 - [ ] Planned follow-up improvements are tracked with owners and dates.
 - [ ] Stakeholder review confirms outcomes match expected business value.
 
+## Repetition Check (Team Health)
+- Feeling repeated work during closeout is normal when quality gates require evidence updates.
+- If the same update appears 3+ times, convert it into a template/checklist item and stop ad-hoc repetition.
+- Track repetitive tasks in sprint retrospective and assign one owner to automate or standardize them.
+
 ## Production Experience Vision
 - API access behaves predictably by role (unauthenticated users get `401`; unauthorized roles get `403` on protected operations).
 - Core flows (taxpayer, property, billing, payment) are observable with clear operational evidence and release notes.
