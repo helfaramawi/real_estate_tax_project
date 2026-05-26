@@ -145,6 +145,11 @@ This document marks the immediate start of Wave 3 after Wave 2 closeout review.
 - If the same update appears 3+ times, convert it into a template/checklist item and stop ad-hoc repetition.
 - Track repetitive tasks in sprint retrospective and assign one owner to automate or standardize them.
 
+## Fast-Track Rule (When Team Is Fatigued)
+- Prefer one consolidated weekly planning/docs update instead of many micro-updates.
+- Batch related checklist edits into a single PR with one reviewer owner.
+- Defer non-critical wording refinements until after the sprint review.
+
 ## Production Experience Vision
 - API access behaves predictably by role (unauthenticated users get `401`; unauthorized roles get `403` on protected operations).
 - Core flows (taxpayer, property, billing, payment) are observable with clear operational evidence and release notes.
@@ -169,3 +174,9 @@ This document marks the immediate start of Wave 3 after Wave 2 closeout review.
    - Regression run, rollback check, documentation finalization
 
 **Total remaining estimate:** ~5 to 7 weeks to project end (assuming no major scope expansion).
+
+## Speed-Up Execution Mode (Immediate)
+- Freeze documentation changes to one owner update every Friday unless a blocker appears.
+- For each sprint, allow only one scope change request after Day-3 checkpoint.
+- Merge policy: no parallel edits to `WAVE3_KICKOFF.md`; all updates via one coordinator PR.
+- Keep PR size target under 400 changed lines for feature work to reduce review and conflict time.
