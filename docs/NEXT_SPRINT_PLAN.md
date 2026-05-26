@@ -79,3 +79,9 @@ Use `docs/WAVE2_COMPLETION_CHECKLIST.md` and proceed to Wave 3 only if all manda
 
 ## 7) Live Tracking
 - Daily execution status is maintained in `docs/WAVE2_EXECUTION_BOARD.md`.
+
+## 8) Speed-Up Plan (No-Churn Mode)
+- Cap in-progress work to 2 items per owner to reduce context switching.
+- Convert any task blocked for more than 24h into an escalation item with named resolver.
+- Bundle evidence updates once per day at end-of-day instead of continuous micro-edits.
+- Stop adding new scope after 2026-05-29 mid-sprint checkpoint unless it is a release blocker.
