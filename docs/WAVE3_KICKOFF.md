@@ -130,6 +130,11 @@ This document marks the immediate start of Wave 3 after Wave 2 closeout review.
 - [ ] Key endpoint error-rate and latency metrics remain within baseline thresholds.
 - [ ] Any rollback-trigger conditions are reviewed and closed.
 
+## 30-Day Success Criteria
+- [ ] User-facing defect rate is below agreed threshold.
+- [ ] Operational metrics remain stable versus pre-release baseline.
+- [ ] Top three improvement actions for next wave are documented and approved.
+
 ## Production Experience Vision
 - API access behaves predictably by role (unauthenticated users get `401`; unauthorized roles get `403` on protected operations).
 - Core flows (taxpayer, property, billing, payment) are observable with clear operational evidence and release notes.
