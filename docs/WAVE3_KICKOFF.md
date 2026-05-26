@@ -102,6 +102,12 @@ This document marks the immediate start of Wave 3 after Wave 2 closeout review.
 - [ ] Sprint 2 scope is validated against capacity and risk.
 - [ ] Sprint 2 kickoff note is published with dependencies and timeline.
 
+## Sprint 2 Day-1 Checklist
+- [ ] Confirm Sprint 2 feature owner and reviewer.
+- [ ] Reconfirm scope boundaries based on Sprint 1 learnings.
+- [ ] Publish updated acceptance criteria and delivery risks.
+- [ ] Create/refresh test plan for changed endpoints and workflows.
+
 ## Project Endgame Checklist
 - [ ] All planned Wave 3 feature slices are delivered or formally deferred.
 - [ ] Final regression and smoke checks are green.
