@@ -135,6 +135,11 @@ This document marks the immediate start of Wave 3 after Wave 2 closeout review.
 - [ ] Operational metrics remain stable versus pre-release baseline.
 - [ ] Top three improvement actions for next wave are documented and approved.
 
+## 60-Day Sustainability Check
+- [ ] No recurring high-severity incidents tied to Wave 3 release scope.
+- [ ] Planned follow-up improvements are tracked with owners and dates.
+- [ ] Stakeholder review confirms outcomes match expected business value.
+
 ## Production Experience Vision
 - API access behaves predictably by role (unauthenticated users get `401`; unauthorized roles get `403` on protected operations).
 - Core flows (taxpayer, property, billing, payment) are observable with clear operational evidence and release notes.
