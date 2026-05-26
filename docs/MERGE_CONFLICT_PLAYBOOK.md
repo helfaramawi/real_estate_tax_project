@@ -45,3 +45,9 @@ Following this order usually removes most recurring conflicts.
   2) Resolve conflicts in hot files first (`ci.yml`, checklist, high-churn test files).
   3) Run focused smoke validation for touched domain.
   4) Push once and request re-review (avoid repeated partial pushes).
+
+## 8) Fast Conflict-Prevention Defaults (Use Immediately)
+- Default branch lifetime target: under 24 hours for docs-only and test-only PRs.
+- Run `git fetch origin && git rebase origin/main` before requesting review, not after review starts.
+- If a file is modified by 2+ open PRs, pause the newer PR and re-scope to non-overlapping files.
+- Prefer additive test files over repeatedly editing the same large endpoint test file.
