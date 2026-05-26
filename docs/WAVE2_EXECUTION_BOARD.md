@@ -39,3 +39,9 @@ This board tracks day-by-day execution against `docs/NEXT_SPRINT_PLAN.md` and Wa
 - If any legal placeholder remains `Open` after **2026-06-03**, escalate to product owner and set revised due date same day.
 - If deterministic integration suite is not stable by **2026-05-31**, freeze non-critical scope and prioritize gate D completion.
 - If A2 permission matrix is still partial by **2026-05-30**, block Wave 2 GO recommendation.
+
+## 5) Fast-Lane Daily Control (Speed-Up)
+- Daily 15-minute blocker triage at start of day; unresolved blockers get a named resolver same day.
+- No more than one docs-only PR per day for Wave 2 artifacts.
+- If any workstream misses ETA by >1 day, auto-drop lowest-priority non-blocking task from scope.
+- Maintain one-line status per story at end of day: `Done / At Risk / Blocked`.
