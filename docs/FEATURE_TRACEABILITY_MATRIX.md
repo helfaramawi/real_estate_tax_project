@@ -30,3 +30,8 @@ This matrix is the immediate next execution step after the deep-study baseline. 
 1. Update maturity levels with evidence links.
 2. Confirm failing gaps have assigned owners and target dates.
 3. Promote only features that meet DoD and quality gates.
+
+## Speed-Up Update Rule
+- Update this matrix once daily in a single batched edit window.
+- If a row has no material evidence change, do not edit wording-only fields.
+- Any `In Progress` row older than 7 days must include one blocker and one next action.
