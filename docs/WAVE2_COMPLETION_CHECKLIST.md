@@ -153,3 +153,8 @@ For each Wave 2 workflow, provide:
 - [ ] All items in **Final evidence package for decision meeting** are checked.
 - [ ] Required sign-offs are completed (Product, Engineering, QA, Compliance/Legal).
 - [ ] GO decision note references the exact release-candidate commit SHA.
+
+## Fast Closeout Mode (Speed-Up)
+- Use one final "Wave 2 closeout" PR only (no additional micro-PRs touching this checklist).
+- Limit final review meeting to 30 minutes with pre-read evidence links shared beforehand.
+- If an item is blocked, record owner + due date immediately and mark NO-GO without reopening debate.
