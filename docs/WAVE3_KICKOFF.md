@@ -108,6 +108,12 @@ This document marks the immediate start of Wave 3 after Wave 2 closeout review.
 - [ ] Publish updated acceptance criteria and delivery risks.
 - [ ] Create/refresh test plan for changed endpoints and workflows.
 
+## Sprint 2 Exit Criteria
+- [ ] Sprint 2 feature slice is merged and release-tagged.
+- [ ] Integration and regression evidence links are attached.
+- [ ] Deferred items are documented with owner and target sprint.
+- [ ] Project endgame checklist is fully reviewed before final sign-off.
+
 ## Project Endgame Checklist
 - [ ] All planned Wave 3 feature slices are delivered or formally deferred.
 - [ ] Final regression and smoke checks are green.
