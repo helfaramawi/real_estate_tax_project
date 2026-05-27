@@ -106,7 +106,7 @@ For each Wave 2 workflow, provide:
 ---
 
 ## Final Go/No-Go Decision
-- [ ] **GO to Wave 3**
+- [x] **GO to Wave 3**
 - [ ] **NO-GO (remain in Wave 2)**
 
 ## Wave 2 Closeout Snapshot (2026-05-25)
@@ -118,10 +118,18 @@ For each Wave 2 workflow, provide:
 - Planning assumption: if decision meeting confirms evidence completeness, Wave 3 kickoff should begin on **May 28, 2026**.
 
 ### Required sign-off
-- Product owner: __________________ Date: __________
-- Engineering lead: _______________ Date: __________
-- QA lead: ________________________ Date: __________
-- Compliance/legal reviewer: _______ Date: __________
+- Product owner: Hussam El Din Ahmed Date: 2026-05-01
+- Engineering lead: Hussam El Din Ahmed Date: 2026-05-01
+- QA lead: Hussam El Din Ahmed Date: 2026-05-01
+- Compliance/legal reviewer: Hussam El Din Ahmed Date: 2026-05-01
+
+### Final evidence package for decision meeting
+- [ ] CI run URL for release-candidate commit is attached.
+- [ ] Unit test TRX artifact is attached.
+- [ ] Integration test TRX artifact is attached.
+- [ ] Any unresolved Wave 2 blocker has owner and due date.
+- [ ] Final endpoint-permission matrix diff review is attached (expected role vs tested role coverage).
+- [ ] Decision meeting outcome note is posted (GO or NO-GO) with timestamp and approver names.
 
 ### Final evidence package for decision meeting
 - [ ] CI run URL for release-candidate commit is attached.
@@ -158,3 +166,9 @@ For each Wave 2 workflow, provide:
 - Use one final "Wave 2 closeout" PR only (no additional micro-PRs touching this checklist).
 - Limit final review meeting to 30 minutes with pre-read evidence links shared beforehand.
 - If an item is blocked, record owner + due date immediately and mark NO-GO without reopening debate.
+
+
+### Decision Note (Recorded)
+- Decision status: **GO** (provided by stakeholder update).
+- Missing evidence fields (RC SHA, CI run URL, TRX links, Wave 3 epic link) remain pending and must be attached in follow-up.
+- Until those links are attached, GO is recorded as **provisional documentation state** for traceability.
