@@ -198,3 +198,8 @@ This document marks the immediate start of Wave 3 after Wave 2 closeout review.
 - Day 3-4: implement first backend slice with unit tests and draft integration cases.
 - Day 5: complete integration tests + traceability updates and open review-ready PR.
 - Day 6-7: resolve review comments, merge, and publish sprint evidence links.
+
+## Wave 3 Start Criteria (Post-GO Practical Gate)
+- GO decision is recorded (done) and sign-offs are captured.
+- Wave 3 epic link, release-candidate SHA, and CI evidence URLs are attached before Sprint 1 code merge.
+- First Sprint 1 feature must include one measurable business KPI target in its acceptance criteria.
