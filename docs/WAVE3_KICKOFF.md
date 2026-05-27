@@ -227,3 +227,9 @@ This document marks the immediate start of Wave 3 after Wave 2 closeout review.
 - [ ] Unit + integration evidence links are attached in PR description.
 - [ ] Rollback note includes exact feature flag/config toggle steps.
 - [ ] Release note draft reviewed by Product + QA before merge.
+
+## Final Pre-Merge Evidence Check (Sprint 1)
+- [ ] RC SHA, CI run URL, and both TRX artifact links are present in one evidence block.
+- [ ] Endpoint-permission matrix delta for touched endpoints is linked in PR.
+- [ ] GO decision note + approver sign-offs are referenced in release note.
+- [ ] Rollback owner and on-call contact are explicitly named.
