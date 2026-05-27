@@ -185,3 +185,16 @@ This document marks the immediate start of Wave 3 after Wave 2 closeout review.
 - Current position: Wave 2 closeout verification and GO/NO-GO evidence packaging.
 - If GO decision is confirmed by 2026-05-27, expected completion window is **4 to 6 weeks** from 2026-05-26.
 - If GO slips by more than 3 business days, expected completion shifts to **5 to 7 weeks**.
+
+## App Capability Snapshot (What It Does in Production)
+- Maintains a full property-tax lifecycle: property registry, taxpayer ownership, valuation/assessment, billing, payment, appeals, exemptions, and audit trail.
+- Enforces role-based secure operations (`401/403` boundaries) with maker-checker approvals for sensitive decisions.
+- Supports spatial and operational intelligence via PostGIS-backed data, risk scoring, and integration workflows with background jobs.
+- Provides release evidence discipline: CI build/test artifacts, traceability updates, and controlled rollout/rollback checkpoints.
+
+## Next 7-Day Forward Plan (Starting 2026-05-27)
+- Day 1: finalize Wave 2 GO/NO-GO evidence package and decision note.
+- Day 2: select Sprint 1 Wave 3 feature and freeze acceptance criteria.
+- Day 3-4: implement first backend slice with unit tests and draft integration cases.
+- Day 5: complete integration tests + traceability updates and open review-ready PR.
+- Day 6-7: resolve review comments, merge, and publish sprint evidence links.
