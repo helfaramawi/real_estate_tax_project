@@ -180,3 +180,8 @@ This document marks the immediate start of Wave 3 after Wave 2 closeout review.
 - For each sprint, allow only one scope change request after Day-3 checkpoint.
 - Merge policy: no parallel edits to `WAVE3_KICKOFF.md`; all updates via one coordinator PR.
 - Keep PR size target under 400 changed lines for feature work to reduce review and conflict time.
+
+## Timeline Refresh (As of 2026-05-26)
+- Current position: Wave 2 closeout verification and GO/NO-GO evidence packaging.
+- If GO decision is confirmed by 2026-05-27, expected completion window is **4 to 6 weeks** from 2026-05-26.
+- If GO slips by more than 3 business days, expected completion shifts to **5 to 7 weeks**.
