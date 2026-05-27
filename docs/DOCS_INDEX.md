@@ -21,6 +21,8 @@ This index consolidates all documentation files under the `docs/` folder so pull
 - `docs/WAVE3_KICKOFF.md`
 - `docs/MERGE_CONFLICT_PLAYBOOK.md`
 
+- `docs/RUNNABLE_PROJECT_HANDOFF.md`
+
 ## Usage Rule
 For any documentation-focused pull request, include all new files added under `docs/` and update this index in the same PR.
 
