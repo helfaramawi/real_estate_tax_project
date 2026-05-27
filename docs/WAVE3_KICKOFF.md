@@ -203,3 +203,9 @@ This document marks the immediate start of Wave 3 after Wave 2 closeout review.
 - GO decision is recorded (done) and sign-offs are captured.
 - Wave 3 epic link, release-candidate SHA, and CI evidence URLs are attached before Sprint 1 code merge.
 - First Sprint 1 feature must include one measurable business KPI target in its acceptance criteria.
+
+## Immediate Owner Actions (Next 24 Hours)
+- Product owner: publish Wave 3 epic link and Sprint 1 KPI target.
+- Engineering lead: attach release-candidate SHA and CI evidence URLs to closeout checklist.
+- QA lead: confirm integration evidence references and note any flaky tests.
+- Compliance/legal: confirm no blocking legal-placeholder item remains open for Sprint 1 scope.
