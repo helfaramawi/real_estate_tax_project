@@ -209,3 +209,9 @@ This document marks the immediate start of Wave 3 after Wave 2 closeout review.
 - Engineering lead: attach release-candidate SHA and CI evidence URLs to closeout checklist.
 - QA lead: confirm integration evidence references and note any flaky tests.
 - Compliance/legal: confirm no blocking legal-placeholder item remains open for Sprint 1 scope.
+
+## Week-1 Exit Conditions (Wave 3 Sprint 1)
+- Wave 3 epic link is published and referenced in checklist + sprint board.
+- RC SHA and CI evidence links are attached to the closeout record.
+- Sprint 1 feature branch has passing unit tests and review-ready integration tests.
+- One KPI baseline is captured so post-release impact can be measured.
