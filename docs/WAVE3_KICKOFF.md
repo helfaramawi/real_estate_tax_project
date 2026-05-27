@@ -215,3 +215,9 @@ This document marks the immediate start of Wave 3 after Wave 2 closeout review.
 - RC SHA and CI evidence links are attached to the closeout record.
 - Sprint 1 feature branch has passing unit tests and review-ready integration tests.
 - One KPI baseline is captured so post-release impact can be measured.
+
+## Sprint 1 Delivery Guardrails (Execution)
+- No new feature scope accepted after Day-3 unless tied to Sev-1 risk reduction.
+- Every code PR in Sprint 1 must attach at least one test evidence link before merge.
+- If integration tests fail twice consecutively, pause merges and run focused stabilization for 24h.
+- End-of-week review must include KPI delta snapshot vs baseline.
