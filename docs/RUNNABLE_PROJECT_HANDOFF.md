@@ -49,3 +49,9 @@ dotnet test tests/RealEstateTax.IntegrationTests/RealEstateTax.IntegrationTests.
    ```bash
    docker compose up -d --build api
    ```
+
+## 7) Final Completion Gate (Before Project Close)
+- [ ] Wave 3 epic link is present in release notes.
+- [ ] RC SHA + CI run URL + TRX links are archived in one final evidence note.
+- [ ] Post-release 48h validation checks are marked complete.
+- [ ] 30-day success criteria owner is assigned with review date.
