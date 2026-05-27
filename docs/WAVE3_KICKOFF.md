@@ -221,3 +221,9 @@ This document marks the immediate start of Wave 3 after Wave 2 closeout review.
 - Every code PR in Sprint 1 must attach at least one test evidence link before merge.
 - If integration tests fail twice consecutively, pause merges and run focused stabilization for 24h.
 - End-of-week review must include KPI delta snapshot vs baseline.
+
+## Week-2 Merge Readiness Checklist
+- [ ] All Sprint 1 PR comments resolved with no open blocking thread.
+- [ ] Unit + integration evidence links are attached in PR description.
+- [ ] Rollback note includes exact feature flag/config toggle steps.
+- [ ] Release note draft reviewed by Product + QA before merge.
