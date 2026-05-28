@@ -73,3 +73,20 @@ The project is considered finished when all of the following are true at the sam
 - Wave 2 decision is recorded as GO with captured sign-offs in checklist.
 - Remaining finish work is evidence completion: RC SHA, CI URL, TRX URLs, epic URL, and final release-note linkage.
 - Wave 3 planning guardrails are documented; execution should proceed using the week-1/week-2 checkpoints.
+
+## 11) Last-Step Closure Command Set
+Use this exact sequence when closing the project handoff:
+```bash
+# 1) Confirm clean branch state
+git status
+
+# 2) Record final evidence note links in docs
+# (RC SHA, CI URL, TRX URLs, epic URL)
+
+# 3) Tag release candidate
+git tag -a wave3-rc -m "Wave 3 release candidate"
+
+# 4) Push commits + tag
+git push origin <branch>
+git push origin wave3-rc
+```
