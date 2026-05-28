@@ -61,3 +61,10 @@ The project is considered finished when all of the following are true at the sam
 - Wave 3 scope is either delivered or explicitly deferred with owner/date.
 - Final evidence note contains RC SHA, CI URL, unit/integration TRX links, and rollback ownership.
 - Post-release 48h and 30-day checks are completed and signed off.
+
+## 9) Final Handover Package (Required Attachments)
+- [ ] Final release note URL
+- [ ] Wave 3 epic URL
+- [ ] RC SHA + CI run URL bundle
+- [ ] Unit + integration TRX artifact URLs
+- [ ] Rollback owner, on-call contact, and escalation channel
