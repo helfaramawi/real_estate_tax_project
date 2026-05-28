@@ -90,3 +90,9 @@ git tag -a wave3-rc -m "Wave 3 release candidate"
 git push origin <branch>
 git push origin wave3-rc
 ```
+
+## 12) Finalization Checklist (Project Close)
+- [ ] All Wave 2/Wave 3 required docs are updated and linked from `docs/DOCS_INDEX.md`.
+- [ ] GO decision evidence block is complete (RC SHA, CI URL, TRX links, epic URL).
+- [ ] Release tag is created and pushed.
+- [ ] Final handoff note is shared with Product, Engineering, QA, and Compliance stakeholders.
