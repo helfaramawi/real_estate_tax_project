@@ -55,3 +55,9 @@ dotnet test tests/RealEstateTax.IntegrationTests/RealEstateTax.IntegrationTests.
 - [ ] RC SHA + CI run URL + TRX links are archived in one final evidence note.
 - [ ] Post-release 48h validation checks are marked complete.
 - [ ] 30-day success criteria owner is assigned with review date.
+
+## 8) Project Finish Signal (Definition)
+The project is considered finished when all of the following are true at the same time:
+- Wave 3 scope is either delivered or explicitly deferred with owner/date.
+- Final evidence note contains RC SHA, CI URL, unit/integration TRX links, and rollback ownership.
+- Post-release 48h and 30-day checks are completed and signed off.
