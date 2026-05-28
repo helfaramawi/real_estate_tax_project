@@ -110,6 +110,7 @@ For each Wave 2 workflow, provide:
 - [ ] **NO-GO (remain in Wave 2)**
 
 ## Wave 2 Closeout Snapshot (2026-05-25)
+## Wave 2 Closeout Snapshot (2026-05-24)
 - Authorization role-symmetry integration tests are being closed endpoint-by-endpoint; remaining gaps should be batched into one final closeout verification pass.
 - Do not mark **GO to Wave 3** until required CI evidence (build + unit + integration + artifacts) is attached to the review record for the exact release candidate commit.
 - Target closeout cadence: finalize remaining Wave 2 gaps and complete the formal GO/NO-GO review by **May 27, 2026**.
@@ -121,6 +122,14 @@ For each Wave 2 workflow, provide:
 - Engineering lead: Hussam El Din Ahmed Date: 2026-05-01
 - QA lead: Hussam El Din Ahmed Date: 2026-05-01
 - Compliance/legal reviewer: Hussam El Din Ahmed Date: 2026-05-01
+
+### Final evidence package for decision meeting
+- [ ] CI run URL for release-candidate commit is attached.
+- [ ] Unit test TRX artifact is attached.
+- [ ] Integration test TRX artifact is attached.
+- [ ] Any unresolved Wave 2 blocker has owner and due date.
+- [ ] Final endpoint-permission matrix diff review is attached (expected role vs tested role coverage).
+- [ ] Decision meeting outcome note is posted (GO or NO-GO) with timestamp and approver names.
 
 ### Final evidence package for decision meeting
 - [ ] CI run URL for release-candidate commit is attached.
