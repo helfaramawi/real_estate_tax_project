@@ -68,3 +68,8 @@ The project is considered finished when all of the following are true at the sam
 - [ ] RC SHA + CI run URL bundle
 - [ ] Unit + integration TRX artifact URLs
 - [ ] Rollback owner, on-call contact, and escalation channel
+
+## 10) Current Status (As of 2026-05-28)
+- Wave 2 decision is recorded as GO with captured sign-offs in checklist.
+- Remaining finish work is evidence completion: RC SHA, CI URL, TRX URLs, epic URL, and final release-note linkage.
+- Wave 3 planning guardrails are documented; execution should proceed using the week-1/week-2 checkpoints.
