@@ -8,6 +8,7 @@ This index consolidates all documentation files under the `docs/` folder so pull
 - `docs/MIGRATIONS.md`
 - `docs/API_EXAMPLES.md`
 - `docs/ARABIC_USER_GUIDE.md`
+- `docs/FRONTEND_TROUBLESHOOTING.md`
 
 ## Professional Readiness Docs (new)
 - `docs/WAVE2_EXECUTION_BOARD.md`
