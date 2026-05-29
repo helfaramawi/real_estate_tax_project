@@ -70,6 +70,12 @@ function HeatmapCellMarker({
     </CircleMarker>
   )
 }
+const fallbackHeatmap: HeatmapCell[] = [
+  { centerLat: 30.0475, centerLon: 31.2124, avgRiskScore: 0.82, propertyCount: 18 },
+  { centerLat: 30.0586, centerLon: 31.2357, avgRiskScore: 0.64, propertyCount: 31 },
+  { centerLat: 30.0328, centerLon: 31.2442, avgRiskScore: 0.41, propertyCount: 24 },
+  { centerLat: 30.0219, centerLon: 31.2015, avgRiskScore: 0.18, propertyCount: 12 },
+]
 
 export default function IntelligencePage() {
   const qc = useQueryClient()
@@ -188,6 +194,14 @@ export default function IntelligencePage() {
           zoom={11}
           style={mapContainerStyle}
         >
+            {heatmapError
+              ? 'تعذر تحميل بيانات خريطة المخاطر من الخادم. تظهر الآن نقاط توضيحية قابلة للنقر؛ تأكد من إعادة تشغيل API ومن توافر بيانات المواقع والمخاطر.'
+              ? 'تعذر تحميل بيانات خريطة المخاطر من الخادم. تظهر الآن نقاط توضيحية قابلة للنقر حتى يتم تفعيل GeoClusteringDashboard وتوفير بيانات المواقع.'
+              : 'لا توجد خلايا مخاطر مرجعة من الخادم لهذه المنطقة. تظهر الآن نقاط توضيحية قابلة للنقر؛ أضف مواقع عقارات أو فعّل بيانات المخاطر لإظهار البيانات الفعلية.'}
+          </div>
+        )}
+
+        <MapContainer center={[30.0444, 31.2357]} zoom={11} style={{ height: '100%', width: '100%' }}>
           <TileLayer
             url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
             attribution={osmAttribution}
@@ -200,6 +214,17 @@ export default function IntelligencePage() {
               index={i}
               onSelect={setSelectedHeatmapCell}
             />
+            <CircleMarker key={i} center={[cell.centerLat, cell.centerLon]}
+              radius={14} fillOpacity={0.55} weight={1} color="#fff"
+              fillColor={RISK_COLOR(cell.avgRiskScore)}
+              eventHandlers={{ click: () => setSelectedHeatmapCell(cell) }}>
+              <Tooltip sticky direction="top" opacity={1}>
+                <div className="text-xs">
+                  <div>متوسط الخطر: <strong>{(cell.avgRiskScore * 100).toFixed(0)}%</strong></div>
+                  <div>العقارات: {cell.propertyCount}</div>
+                </div>
+              </Tooltip>
+            </CircleMarker>
           ))}
 
           {tab === 'anomalies' && anomalies?.filter(a => a.lat && a.lon).map(a => (
