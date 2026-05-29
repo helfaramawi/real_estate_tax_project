@@ -1,6 +1,9 @@
 import { createElement, useMemo, useState } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import * as ReactLeaflet from 'react-leaflet'
+import { useMemo, useState } from 'react'
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
+import { MapContainer as LeafletMapContainer, TileLayer, CircleMarker, Tooltip } from 'react-leaflet'
 import 'leaflet/dist/leaflet.css'
 import { AlertTriangle, Map, TrendingUp } from 'lucide-react'
 import api from '../../lib/api'
@@ -37,6 +40,9 @@ const MapView = ReactLeaflet.MapContainer
 const MapTiles = ReactLeaflet.TileLayer
 const MapCircle = ReactLeaflet.CircleMarker
 const MapTooltip = ReactLeaflet.Tooltip
+const defaultMapCenter: [number, number] = [30.0444, 31.2357]
+const mapContainerStyle = { height: '100%', width: '100%' }
+const osmAttribution = '© <a href="https://openstreetmap.org">OpenStreetMap</a>'
 
 const fallbackHeatmap: HeatmapCell[] = [
   { centerLat: 30.0475, centerLon: 31.2124, avgRiskScore: 0.82, propertyCount: 18 },
@@ -50,6 +56,19 @@ function HeatmapCellMarker({ cell, index, onSelect }: { cell: HeatmapCell; index
 
   return createElement(
     MapCircle,
+function HeatmapCellMarker({
+  cell,
+  index,
+  onSelect,
+}: {
+  cell: HeatmapCell
+  index: number
+  onSelect: (cell: HeatmapCell) => void
+}) {
+  const markerCenter: [number, number] = [cell.centerLat, cell.centerLon]
+
+  return createElement(
+    CircleMarker,
     {
       key: index,
       center: markerCenter,
@@ -62,6 +81,11 @@ function HeatmapCellMarker({ cell, index, onSelect }: { cell: HeatmapCell; index
     },
     createElement(
       MapTooltip,
+      fillColor: RISK_COLOR(cell.avgRiskScore),
+      eventHandlers: { click: () => onSelect(cell) },
+    },
+    createElement(
+      Tooltip,
       { sticky: true, direction: 'top', opacity: 1 },
       createElement(
         'div',
@@ -72,6 +96,32 @@ function HeatmapCellMarker({ cell, index, onSelect }: { cell: HeatmapCell; index
     ),
   )
 }
+  return (
+    <CircleMarker
+      key={index}
+      center={markerCenter}
+      radius={14}
+      fillOpacity={0.55}
+      weight={1}
+      color="#fff"
+      fillColor={RISK_COLOR(cell.avgRiskScore)}
+      eventHandlers={{ click: () => onSelect(cell) }}
+    >
+      <Tooltip sticky direction="top" opacity={1}>
+        <div className="text-xs">
+          <div>متوسط الخطر: <strong>{(cell.avgRiskScore * 100).toFixed(0)}%</strong></div>
+          <div>العقارات: {cell.propertyCount}</div>
+        </div>
+      </Tooltip>
+    </CircleMarker>
+  )
+}
+const fallbackHeatmap: HeatmapCell[] = [
+  { centerLat: 30.0475, centerLon: 31.2124, avgRiskScore: 0.82, propertyCount: 18 },
+  { centerLat: 30.0586, centerLon: 31.2357, avgRiskScore: 0.64, propertyCount: 31 },
+  { centerLat: 30.0328, centerLon: 31.2442, avgRiskScore: 0.41, propertyCount: 24 },
+  { centerLat: 30.0219, centerLon: 31.2015, avgRiskScore: 0.18, propertyCount: 12 },
+]
 
 export default function IntelligencePage() {
   const qc = useQueryClient()
@@ -125,6 +175,20 @@ export default function IntelligencePage() {
       {
         key: item.id,
         center: [item.lat!, item.lon!] as [number, number],
+    ? displayedHeatmap.map((cell, i) => createElement(HeatmapCellMarker, {
+      key: i,
+      cell,
+      index: i,
+      onSelect: setSelectedHeatmapCell,
+    }))
+    : null
+
+  const anomalyMarkers = tab === 'anomalies'
+    ? anomalies?.filter(a => a.lat && a.lon).map(a => createElement(
+      CircleMarker,
+      {
+        key: a.id,
+        center: [a.lat!, a.lon!] as [number, number],
         radius: 9,
         fillOpacity: 0.9,
         weight: 2,
@@ -134,12 +198,19 @@ export default function IntelligencePage() {
       },
       createElement(
         MapTooltip,
+        fillColor: SEVERITY_COLOR[a.severity] ?? '#94a3b8',
+        eventHandlers: { click: () => setSelectedAnomaly(a) },
+      },
+      createElement(
+        Tooltip,
         null,
         createElement(
           'div',
           { className: 'text-xs' },
           createElement('div', { className: 'font-semibold' }, anomalyTypeAr[item.anomalyType] ?? item.anomalyType),
           createElement('div', null, severityAr[item.severity] ?? item.severity),
+          createElement('div', { className: 'font-semibold' }, anomalyTypeAr[a.anomalyType] ?? a.anomalyType),
+          createElement('div', null, severityAr[a.severity] ?? a.severity),
         ),
       ),
     ))
@@ -152,6 +223,12 @@ export default function IntelligencePage() {
         key: item.id,
         center: [item.centroidLat!, item.centroidLon!] as [number, number],
         radius: Math.min(6 + Math.log(item.propertyCount + 1) * 3, 24),
+    ? clusters?.filter(c => c.centroidLat && c.centroidLon).map(c => createElement(
+      CircleMarker,
+      {
+        key: c.id,
+        center: [c.centroidLat!, c.centroidLon!] as [number, number],
+        radius: Math.min(6 + Math.log(c.propertyCount + 1) * 3, 24),
         fillOpacity: 0.7,
         weight: 1,
         color: '#3b82f6',
@@ -159,6 +236,7 @@ export default function IntelligencePage() {
       },
       createElement(
         MapTooltip,
+        Tooltip,
         null,
         createElement(
           'div',
@@ -167,6 +245,10 @@ export default function IntelligencePage() {
           createElement('div', null, `العقارات: ${item.propertyCount}`),
           item.medianValueSqm
             ? createElement('div', null, `متوسط القيمة: ${Number(item.medianValueSqm).toLocaleString()} ج.م/م²`)
+          createElement('div', { className: 'font-semibold' }, c.governorate ?? `تجمع رقم ${c.clusterLabel}`),
+          createElement('div', null, `العقارات: ${c.propertyCount}`),
+          c.medianValueSqm
+            ? createElement('div', null, `متوسط القيمة: ${Number(c.medianValueSqm).toLocaleString()} ج.م/م²`)
             : null,
         ),
       ),
@@ -177,6 +259,10 @@ export default function IntelligencePage() {
     MapView,
     { center: defaultMapCenter, zoom: 11, style: mapContainerStyle },
     createElement(MapTiles, {
+    LeafletMapContainer,
+    MapContainer,
+    { center: defaultMapCenter, zoom: 11, style: mapContainerStyle },
+    createElement(TileLayer, {
       url: 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
       attribution: osmAttribution,
     }),
@@ -235,6 +321,9 @@ export default function IntelligencePage() {
       </div>
 
       <div className="relative rounded-xl overflow-hidden border border-slate-200 shadow-sm" style={{ height: 520 }}>
+      {/* Map */}
+      <div className="relative rounded-xl overflow-hidden border border-slate-200 shadow-sm" style={{ height: 520 }}>
+
         {tab === 'heatmap' && heatmapLoading && (
           <div className="absolute inset-x-4 top-4 z-[1000] rounded-lg border border-blue-100 bg-white/95 p-3 text-sm text-slate-700 shadow-sm">
             جارٍ تحميل بيانات خريطة المخاطر...
@@ -250,6 +339,68 @@ export default function IntelligencePage() {
         {mapElement}
       </div>
 
+
+        {tab === 'heatmap' && isFallbackHeatmap && (
+          <div className="absolute inset-x-4 top-4 z-[1000] rounded-lg border border-amber-200 bg-amber-50/95 p-3 text-sm text-amber-900 shadow-sm">
+            {fallbackHeatmapMessage}
+          </div>
+        )}
+
+        <MapContainer
+          center={defaultMapCenter}
+          zoom={11}
+          style={mapContainerStyle}
+        >
+            {heatmapError
+              ? 'تعذر تحميل بيانات خريطة المخاطر من الخادم. تظهر الآن نقاط توضيحية قابلة للنقر؛ تأكد من إعادة تشغيل API ومن توافر بيانات المواقع والمخاطر.'
+              ? 'تعذر تحميل بيانات خريطة المخاطر من الخادم. تظهر الآن نقاط توضيحية قابلة للنقر حتى يتم تفعيل GeoClusteringDashboard وتوفير بيانات المواقع.'
+              : 'لا توجد خلايا مخاطر مرجعة من الخادم لهذه المنطقة. تظهر الآن نقاط توضيحية قابلة للنقر؛ أضف مواقع عقارات أو فعّل بيانات المخاطر لإظهار البيانات الفعلية.'}
+          </div>
+        )}
+
+        <MapContainer center={[30.0444, 31.2357]} zoom={11} style={{ height: '100%', width: '100%' }}>
+          <TileLayer
+            url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+            attribution={osmAttribution}
+          />
+
+          {tab === 'heatmap' && displayedHeatmap.map((cell, i) => (
+            <HeatmapCellMarker
+              key={i}
+              cell={cell}
+              index={i}
+              onSelect={setSelectedHeatmapCell}
+            />
+            <CircleMarker key={i} center={[cell.centerLat, cell.centerLon]}
+              radius={14} fillOpacity={0.55} weight={1} color="#fff"
+              fillColor={RISK_COLOR(cell.avgRiskScore)}
+              eventHandlers={{ click: () => setSelectedHeatmapCell(cell) }}>
+              <Tooltip sticky direction="top" opacity={1}>
+                <div className="text-xs">
+                  <div>متوسط الخطر: <strong>{(cell.avgRiskScore * 100).toFixed(0)}%</strong></div>
+                  <div>العقارات: {cell.propertyCount}</div>
+                </div>
+              </Tooltip>
+            </CircleMarker>
+          ))}
+
+        {tab === 'heatmap' && heatmapLoading && (
+          <div className="absolute inset-x-4 top-4 z-[1000] rounded-lg border border-blue-100 bg-white/95 p-3 text-sm text-slate-700 shadow-sm">
+            جارٍ تحميل بيانات خريطة المخاطر...
+          </div>
+        )}
+
+        {tab === 'heatmap' && isFallbackHeatmap && (
+          <div className="absolute inset-x-4 top-4 z-[1000] rounded-lg border border-amber-200 bg-amber-50/95 p-3 text-sm text-amber-900 shadow-sm">
+            {fallbackHeatmapMessage}
+          </div>
+        )}
+
+        {mapElement}
+      </div>
+
+
+      {/* Heatmap detail panel */}
       {tab === 'heatmap' && selectedHeatmapCell && (
         <div className="mt-4 bg-white rounded-xl border border-slate-200 p-5">
           <div className="flex items-start justify-between mb-3">
@@ -280,6 +431,7 @@ export default function IntelligencePage() {
         </div>
       )}
 
+      {/* Severity legend for anomalies */}
       {tab === 'anomalies' && (
         <div className="mt-4 flex gap-4 flex-wrap">
           {Object.entries(SEVERITY_COLOR).map(([sev, color]) => (
