@@ -33,6 +33,7 @@ export default function IntelligencePage() {
   const qc = useQueryClient()
   const [tab, setTab] = useState<'heatmap' | 'anomalies' | 'clusters'>('heatmap')
   const [selectedAnomaly, setSelectedAnomaly] = useState<Anomaly | null>(null)
+  const [selectedHeatmapCell, setSelectedHeatmapCell] = useState<HeatmapCell | null>(null)
 
   // Cairo bounding box default
   const bounds = '29.5,30.5,30.5,31.5'
@@ -125,9 +126,10 @@ export default function IntelligencePage() {
 
           {tab === 'heatmap' && heatmap?.map((cell, i) => (
             <CircleMarker key={i} center={[cell.centerLat, cell.centerLon]}
-              radius={14} fillOpacity={0.55} weight={0}
-              fillColor={RISK_COLOR(cell.avgRiskScore)}>
-              <Tooltip>
+              radius={14} fillOpacity={0.55} weight={1} color="#fff"
+              fillColor={RISK_COLOR(cell.avgRiskScore)}
+              eventHandlers={{ click: () => setSelectedHeatmapCell(cell) }}>
+              <Tooltip sticky direction="top" opacity={1}>
                 <div className="text-xs">
                   <div>متوسط الخطر: <strong>{(cell.avgRiskScore * 100).toFixed(0)}%</strong></div>
                   <div>العقارات: {cell.propertyCount}</div>
@@ -165,6 +167,38 @@ export default function IntelligencePage() {
           ))}
         </MapContainer>
       </div>
+
+
+      {/* Heatmap detail panel */}
+      {tab === 'heatmap' && selectedHeatmapCell && (
+        <div className="mt-4 bg-white rounded-xl border border-slate-200 p-5">
+          <div className="flex items-start justify-between mb-3">
+            <div>
+              <h3 className="font-semibold text-slate-800">تفاصيل منطقة المخاطر</h3>
+              <p className="text-xs text-slate-500 mt-1">
+                تظهر هذه البطاقة عند النقر على أي دائرة في خريطة المخاطر، وتعمل أيضاً كبديل موثوق لأجهزة اللمس عند عدم ظهور التلميح بالتحويم.
+              </p>
+            </div>
+            <button onClick={() => setSelectedHeatmapCell(null)} className="text-slate-400 hover:text-slate-600 text-lg">✕</button>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-3 text-sm">
+            <div className="rounded-lg bg-slate-50 p-3">
+              <div className="text-slate-500 text-xs mb-1">متوسط درجة الخطر</div>
+              <div className="font-bold text-slate-800">{(selectedHeatmapCell.avgRiskScore * 100).toFixed(0)}%</div>
+            </div>
+            <div className="rounded-lg bg-slate-50 p-3">
+              <div className="text-slate-500 text-xs mb-1">عدد العقارات في المنطقة</div>
+              <div className="font-bold text-slate-800">{selectedHeatmapCell.propertyCount.toLocaleString()}</div>
+            </div>
+            <div className="rounded-lg bg-slate-50 p-3">
+              <div className="text-slate-500 text-xs mb-1">مركز الخلية الجغرافية</div>
+              <div className="font-bold text-slate-800">
+                {selectedHeatmapCell.centerLat.toFixed(4)}, {selectedHeatmapCell.centerLon.toFixed(4)}
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Severity legend for anomalies */}
       {tab === 'anomalies' && (
