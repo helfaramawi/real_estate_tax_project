@@ -28,6 +28,15 @@ const anomalyTypeAr: Record<string, string> = {
 }
 
 const severityAr: Record<string, string> = { Critical: 'حرج', High: 'مرتفع', Medium: 'متوسط', Low: 'منخفض' }
+const defaultMapCenter: [number, number] = [30.0444, 31.2357]
+const mapContainerStyle = { height: '100%', width: '100%' }
+
+const fallbackHeatmap: HeatmapCell[] = [
+  { centerLat: 30.0475, centerLon: 31.2124, avgRiskScore: 0.82, propertyCount: 18 },
+  { centerLat: 30.0586, centerLon: 31.2357, avgRiskScore: 0.64, propertyCount: 31 },
+  { centerLat: 30.0328, centerLon: 31.2442, avgRiskScore: 0.41, propertyCount: 24 },
+  { centerLat: 30.0219, centerLon: 31.2015, avgRiskScore: 0.18, propertyCount: 12 },
+]
 
 const fallbackHeatmap: HeatmapCell[] = [
   { centerLat: 30.0475, centerLon: 31.2124, avgRiskScore: 0.82, propertyCount: 18 },
@@ -145,6 +154,14 @@ export default function IntelligencePage() {
         {tab === 'heatmap' && isFallbackHeatmap && (
           <div className="absolute inset-x-4 top-4 z-[1000] rounded-lg border border-amber-200 bg-amber-50/95 p-3 text-sm text-amber-900 shadow-sm">
             {fallbackHeatmapMessage}
+          </div>
+        )}
+
+        <MapContainer
+          center={defaultMapCenter}
+          zoom={11}
+          style={mapContainerStyle}
+        >
             {heatmapError
               ? 'تعذر تحميل بيانات خريطة المخاطر من الخادم. تظهر الآن نقاط توضيحية قابلة للنقر؛ تأكد من إعادة تشغيل API ومن توافر بيانات المواقع والمخاطر.'
               ? 'تعذر تحميل بيانات خريطة المخاطر من الخادم. تظهر الآن نقاط توضيحية قابلة للنقر حتى يتم تفعيل GeoClusteringDashboard وتوفير بيانات المواقع.'
