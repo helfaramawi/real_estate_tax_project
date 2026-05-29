@@ -75,6 +75,9 @@ export default function IntelligencePage() {
   }, [heatmap, heatmapLoading, tab])
 
   const isFallbackHeatmap = tab === 'heatmap' && !heatmapLoading && (!heatmap || heatmap.length === 0)
+  const fallbackHeatmapMessage = heatmapError
+    ? 'تعذر تحميل بيانات خريطة المخاطر من الخادم. تظهر الآن نقاط توضيحية قابلة للنقر؛ تأكد من إعادة تشغيل API ومن توافر بيانات المواقع والمخاطر.'
+    : 'لا توجد خلايا مخاطر مرجعة من الخادم لهذه المنطقة. تظهر الآن نقاط توضيحية قابلة للنقر؛ أضف مواقع عقارات أو فعّل بيانات المخاطر لإظهار البيانات الفعلية.'
 
   const updateAnomaly = useMutation({
     mutationFn: ({ id, status, notes }: { id: string; status: string; notes?: string }) =>
@@ -141,6 +144,7 @@ export default function IntelligencePage() {
 
         {tab === 'heatmap' && isFallbackHeatmap && (
           <div className="absolute inset-x-4 top-4 z-[1000] rounded-lg border border-amber-200 bg-amber-50/95 p-3 text-sm text-amber-900 shadow-sm">
+            {fallbackHeatmapMessage}
             {heatmapError
               ? 'تعذر تحميل بيانات خريطة المخاطر من الخادم. تظهر الآن نقاط توضيحية قابلة للنقر؛ تأكد من إعادة تشغيل API ومن توافر بيانات المواقع والمخاطر.'
               ? 'تعذر تحميل بيانات خريطة المخاطر من الخادم. تظهر الآن نقاط توضيحية قابلة للنقر حتى يتم تفعيل GeoClusteringDashboard وتوفير بيانات المواقع.'
