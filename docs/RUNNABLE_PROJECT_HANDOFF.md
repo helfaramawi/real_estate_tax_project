@@ -96,3 +96,9 @@ git push origin wave3-rc
 - [ ] GO decision evidence block is complete (RC SHA, CI URL, TRX links, epic URL).
 - [ ] Release tag is created and pushed.
 - [ ] Final handoff note is shared with Product, Engineering, QA, and Compliance stakeholders.
+
+## 13) Minimal Final Deliverables (Checklist)
+- [ ] Production runbook validated by one dry-run.
+- [ ] Wave 3 Sprint 1 evidence package published.
+- [ ] Final compliance artifact bundle exported to release notes.
+- [ ] Closure approval message posted by Product + Engineering + QA + Compliance.
