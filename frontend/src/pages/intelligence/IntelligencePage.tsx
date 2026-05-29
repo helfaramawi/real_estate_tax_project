@@ -1,7 +1,7 @@
 import { createElement, useMemo, useState } from 'react'
 import { useMemo, useState } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { MapContainer, TileLayer, CircleMarker, Tooltip } from 'react-leaflet'
+import { MapContainer as LeafletMapContainer, TileLayer, CircleMarker, Tooltip } from 'react-leaflet'
 import 'leaflet/dist/leaflet.css'
 import { AlertTriangle, Map, TrendingUp } from 'lucide-react'
 import api from '../../lib/api'
@@ -209,6 +209,7 @@ export default function IntelligencePage() {
     : null
 
   const mapElement = createElement(
+    LeafletMapContainer,
     MapContainer,
     { center: defaultMapCenter, zoom: 11, style: mapContainerStyle },
     createElement(TileLayer, {
