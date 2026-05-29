@@ -41,3 +41,9 @@ Use this file as the single final evidence note before project close. Do not mar
 
 ## No-Fabrication Rule
 If an evidence URL or SHA is not available, leave it as `TBD` and assign owner/date. Do not invent placeholder links for audit artifacts.
+
+## Agent Completion Status (2026-05-29)
+- Repository-side Wave 2/Wave 3 documentation scaffolding is complete and indexed.
+- Authorization integration-test evidence scaffolding is complete in source; final pass/fail proof must come from CI artifact URLs.
+- Remaining items are external release artifacts only: RC SHA, CI URL, TRX URLs, release note URL, Wave 3 epic URL, rollback/on-call contacts, and stakeholder closure approval.
+- Agent must not mark final project closure complete until the external artifacts above are supplied or formally deferred with owner/date.
