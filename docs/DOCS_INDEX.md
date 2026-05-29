@@ -22,6 +22,7 @@ This index consolidates all documentation files under the `docs/` folder so pull
 - `docs/MERGE_CONFLICT_PLAYBOOK.md`
 
 - `docs/RUNNABLE_PROJECT_HANDOFF.md`
+- `docs/FINAL_RELEASE_EVIDENCE.md`
 
 ## Usage Rule
 For any documentation-focused pull request, include all new files added under `docs/` and update this index in the same PR.
