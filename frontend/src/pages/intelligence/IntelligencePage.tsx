@@ -1,4 +1,5 @@
 import { createElement, useMemo, useState } from 'react'
+import { useMemo, useState } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { MapContainer, TileLayer, CircleMarker, Tooltip } from 'react-leaflet'
 import 'leaflet/dist/leaflet.css'
@@ -74,6 +75,32 @@ function HeatmapCellMarker({
     ),
   )
 }
+  return (
+    <CircleMarker
+      key={index}
+      center={markerCenter}
+      radius={14}
+      fillOpacity={0.55}
+      weight={1}
+      color="#fff"
+      fillColor={RISK_COLOR(cell.avgRiskScore)}
+      eventHandlers={{ click: () => onSelect(cell) }}
+    >
+      <Tooltip sticky direction="top" opacity={1}>
+        <div className="text-xs">
+          <div>متوسط الخطر: <strong>{(cell.avgRiskScore * 100).toFixed(0)}%</strong></div>
+          <div>العقارات: {cell.propertyCount}</div>
+        </div>
+      </Tooltip>
+    </CircleMarker>
+  )
+}
+const fallbackHeatmap: HeatmapCell[] = [
+  { centerLat: 30.0475, centerLon: 31.2124, avgRiskScore: 0.82, propertyCount: 18 },
+  { centerLat: 30.0586, centerLon: 31.2357, avgRiskScore: 0.64, propertyCount: 31 },
+  { centerLat: 30.0328, centerLon: 31.2442, avgRiskScore: 0.41, propertyCount: 24 },
+  { centerLat: 30.0219, centerLon: 31.2015, avgRiskScore: 0.18, propertyCount: 12 },
+]
 
 export default function IntelligencePage() {
   const qc = useQueryClient()
@@ -249,6 +276,56 @@ export default function IntelligencePage() {
 
       {/* Map */}
       <div className="relative rounded-xl overflow-hidden border border-slate-200 shadow-sm" style={{ height: 520 }}>
+
+        {tab === 'heatmap' && heatmapLoading && (
+          <div className="absolute inset-x-4 top-4 z-[1000] rounded-lg border border-blue-100 bg-white/95 p-3 text-sm text-slate-700 shadow-sm">
+            جارٍ تحميل بيانات خريطة المخاطر...
+          </div>
+        )}
+
+        {tab === 'heatmap' && isFallbackHeatmap && (
+          <div className="absolute inset-x-4 top-4 z-[1000] rounded-lg border border-amber-200 bg-amber-50/95 p-3 text-sm text-amber-900 shadow-sm">
+            {fallbackHeatmapMessage}
+          </div>
+        )}
+
+        <MapContainer
+          center={defaultMapCenter}
+          zoom={11}
+          style={mapContainerStyle}
+        >
+            {heatmapError
+              ? 'تعذر تحميل بيانات خريطة المخاطر من الخادم. تظهر الآن نقاط توضيحية قابلة للنقر؛ تأكد من إعادة تشغيل API ومن توافر بيانات المواقع والمخاطر.'
+              ? 'تعذر تحميل بيانات خريطة المخاطر من الخادم. تظهر الآن نقاط توضيحية قابلة للنقر حتى يتم تفعيل GeoClusteringDashboard وتوفير بيانات المواقع.'
+              : 'لا توجد خلايا مخاطر مرجعة من الخادم لهذه المنطقة. تظهر الآن نقاط توضيحية قابلة للنقر؛ أضف مواقع عقارات أو فعّل بيانات المخاطر لإظهار البيانات الفعلية.'}
+          </div>
+        )}
+
+        <MapContainer center={[30.0444, 31.2357]} zoom={11} style={{ height: '100%', width: '100%' }}>
+          <TileLayer
+            url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+            attribution={osmAttribution}
+          />
+
+          {tab === 'heatmap' && displayedHeatmap.map((cell, i) => (
+            <HeatmapCellMarker
+              key={i}
+              cell={cell}
+              index={i}
+              onSelect={setSelectedHeatmapCell}
+            />
+            <CircleMarker key={i} center={[cell.centerLat, cell.centerLon]}
+              radius={14} fillOpacity={0.55} weight={1} color="#fff"
+              fillColor={RISK_COLOR(cell.avgRiskScore)}
+              eventHandlers={{ click: () => setSelectedHeatmapCell(cell) }}>
+              <Tooltip sticky direction="top" opacity={1}>
+                <div className="text-xs">
+                  <div>متوسط الخطر: <strong>{(cell.avgRiskScore * 100).toFixed(0)}%</strong></div>
+                  <div>العقارات: {cell.propertyCount}</div>
+                </div>
+              </Tooltip>
+            </CircleMarker>
+          ))}
 
         {tab === 'heatmap' && heatmapLoading && (
           <div className="absolute inset-x-4 top-4 z-[1000] rounded-lg border border-blue-100 bg-white/95 p-3 text-sm text-slate-700 shadow-sm">
