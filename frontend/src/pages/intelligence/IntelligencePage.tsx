@@ -1,3 +1,4 @@
+import { createElement, useMemo, useState } from 'react'
 import { useMemo, useState } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { MapContainer, TileLayer, CircleMarker, Tooltip } from 'react-leaflet'
@@ -50,6 +51,30 @@ function HeatmapCellMarker({
 }) {
   const markerCenter: [number, number] = [cell.centerLat, cell.centerLon]
 
+  return createElement(
+    CircleMarker,
+    {
+      key: index,
+      center: markerCenter,
+      radius: 14,
+      fillOpacity: 0.55,
+      weight: 1,
+      color: '#fff',
+      fillColor: RISK_COLOR(cell.avgRiskScore),
+      eventHandlers: { click: () => onSelect(cell) },
+    },
+    createElement(
+      Tooltip,
+      { sticky: true, direction: 'top', opacity: 1 },
+      createElement(
+        'div',
+        { className: 'text-xs' },
+        createElement('div', null, 'متوسط الخطر: ', createElement('strong', null, `${(cell.avgRiskScore * 100).toFixed(0)}%`)),
+        createElement('div', null, `العقارات: ${cell.propertyCount}`),
+      ),
+    ),
+  )
+}
   return (
     <CircleMarker
       key={index}
@@ -119,6 +144,81 @@ export default function IntelligencePage() {
   const fallbackHeatmapMessage = heatmapError
     ? 'تعذر تحميل بيانات خريطة المخاطر من الخادم. تظهر الآن نقاط توضيحية قابلة للنقر؛ تأكد من إعادة تشغيل API ومن توافر بيانات المواقع والمخاطر.'
     : 'لا توجد خلايا مخاطر مرجعة من الخادم لهذه المنطقة. تظهر الآن نقاط توضيحية قابلة للنقر؛ أضف مواقع عقارات أو فعّل بيانات المخاطر لإظهار البيانات الفعلية.'
+
+  const heatmapMarkers = tab === 'heatmap'
+    ? displayedHeatmap.map((cell, i) => createElement(HeatmapCellMarker, {
+      key: i,
+      cell,
+      index: i,
+      onSelect: setSelectedHeatmapCell,
+    }))
+    : null
+
+  const anomalyMarkers = tab === 'anomalies'
+    ? anomalies?.filter(a => a.lat && a.lon).map(a => createElement(
+      CircleMarker,
+      {
+        key: a.id,
+        center: [a.lat!, a.lon!] as [number, number],
+        radius: 9,
+        fillOpacity: 0.9,
+        weight: 2,
+        color: '#fff',
+        fillColor: SEVERITY_COLOR[a.severity] ?? '#94a3b8',
+        eventHandlers: { click: () => setSelectedAnomaly(a) },
+      },
+      createElement(
+        Tooltip,
+        null,
+        createElement(
+          'div',
+          { className: 'text-xs' },
+          createElement('div', { className: 'font-semibold' }, anomalyTypeAr[a.anomalyType] ?? a.anomalyType),
+          createElement('div', null, severityAr[a.severity] ?? a.severity),
+        ),
+      ),
+    ))
+    : null
+
+  const clusterMarkers = tab === 'clusters'
+    ? clusters?.filter(c => c.centroidLat && c.centroidLon).map(c => createElement(
+      CircleMarker,
+      {
+        key: c.id,
+        center: [c.centroidLat!, c.centroidLon!] as [number, number],
+        radius: Math.min(6 + Math.log(c.propertyCount + 1) * 3, 24),
+        fillOpacity: 0.7,
+        weight: 1,
+        color: '#3b82f6',
+        fillColor: '#93c5fd',
+      },
+      createElement(
+        Tooltip,
+        null,
+        createElement(
+          'div',
+          { className: 'text-xs' },
+          createElement('div', { className: 'font-semibold' }, c.governorate ?? `تجمع رقم ${c.clusterLabel}`),
+          createElement('div', null, `العقارات: ${c.propertyCount}`),
+          c.medianValueSqm
+            ? createElement('div', null, `متوسط القيمة: ${Number(c.medianValueSqm).toLocaleString()} ج.م/م²`)
+            : null,
+        ),
+      ),
+    ))
+    : null
+
+  const mapElement = createElement(
+    MapContainer,
+    { center: defaultMapCenter, zoom: 11, style: mapContainerStyle },
+    createElement(TileLayer, {
+      url: 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
+      attribution: osmAttribution,
+    }),
+    heatmapMarkers,
+    anomalyMarkers,
+    clusterMarkers,
+  )
 
   const updateAnomaly = useMutation({
     mutationFn: ({ id, status, notes }: { id: string; status: string; notes?: string }) =>
@@ -227,34 +327,19 @@ export default function IntelligencePage() {
             </CircleMarker>
           ))}
 
-          {tab === 'anomalies' && anomalies?.filter(a => a.lat && a.lon).map(a => (
-            <CircleMarker key={a.id} center={[a.lat!, a.lon!]}
-              radius={9} fillOpacity={0.9} weight={2} color="#fff"
-              fillColor={SEVERITY_COLOR[a.severity] ?? '#94a3b8'}
-              eventHandlers={{ click: () => setSelectedAnomaly(a) }}>
-              <Tooltip>
-                <div className="text-xs">
-                  <div className="font-semibold">{anomalyTypeAr[a.anomalyType] ?? a.anomalyType}</div>
-                  <div>{severityAr[a.severity] ?? a.severity}</div>
-                </div>
-              </Tooltip>
-            </CircleMarker>
-          ))}
+        {tab === 'heatmap' && heatmapLoading && (
+          <div className="absolute inset-x-4 top-4 z-[1000] rounded-lg border border-blue-100 bg-white/95 p-3 text-sm text-slate-700 shadow-sm">
+            جارٍ تحميل بيانات خريطة المخاطر...
+          </div>
+        )}
 
-          {tab === 'clusters' && clusters?.filter(c => c.centroidLat && c.centroidLon).map(c => (
-            <CircleMarker key={c.id} center={[c.centroidLat!, c.centroidLon!]}
-              radius={Math.min(6 + Math.log(c.propertyCount + 1) * 3, 24)}
-              fillOpacity={0.7} weight={1} color="#3b82f6" fillColor="#93c5fd">
-              <Tooltip>
-                <div className="text-xs">
-                  <div className="font-semibold">{c.governorate ?? 'تجمع رقم ' + c.clusterLabel}</div>
-                  <div>العقارات: {c.propertyCount}</div>
-                  {c.medianValueSqm && <div>متوسط القيمة: {Number(c.medianValueSqm).toLocaleString()} ج.م/م²</div>}
-                </div>
-              </Tooltip>
-            </CircleMarker>
-          ))}
-        </MapContainer>
+        {tab === 'heatmap' && isFallbackHeatmap && (
+          <div className="absolute inset-x-4 top-4 z-[1000] rounded-lg border border-amber-200 bg-amber-50/95 p-3 text-sm text-amber-900 shadow-sm">
+            {fallbackHeatmapMessage}
+          </div>
+        )}
+
+        {mapElement}
       </div>
 
 
