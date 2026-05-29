@@ -31,3 +31,13 @@ Use this file as the single final evidence note before project close. Do not mar
 - [ ] All required evidence links are attached.
 - [ ] Any missing evidence is explicitly deferred with owner/date.
 - [ ] Product, Engineering, QA, and Compliance approve project closure.
+
+## Finalization Run Order
+1. Attach release identity values (RC SHA, release tag, release note URL, Wave 3 epic URL).
+2. Attach verification evidence links (CI run, unit TRX, integration TRX, Docker smoke evidence).
+3. Fill operational readiness owners and contacts.
+4. Review unresolved `Pending` rows; either complete them or mark deferred with owner/date.
+5. Check all final closure decision boxes only after Product, Engineering, QA, and Compliance approve.
+
+## No-Fabrication Rule
+If an evidence URL or SHA is not available, leave it as `TBD` and assign owner/date. Do not invent placeholder links for audit artifacts.
