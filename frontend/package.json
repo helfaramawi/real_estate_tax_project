@@ -11,6 +11,7 @@
     "check:intelligence-map": "node scripts/check-intelligence-map-clean.mjs",
     "prebuild": "npm run fix:intelligence-map",
     "fix:intelligence-map": "node scripts/check-intelligence-map-clean.mjs --fix"
+    "prebuild": "npm run check:intelligence-map"
   },
   "dependencies": {
     "@tailwindcss/vite": "^4.2.4",
