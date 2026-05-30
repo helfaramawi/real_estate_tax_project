@@ -37,6 +37,30 @@ findstr /n "createElement" frontend\src\pages\intelligence\IntelligencePage.tsx
 
 All three `findstr` commands should return no results. If they return lines, your local branch still has a stale copy of `frontend/src/pages/intelligence/IntelligencePage.tsx`.
 
+
+## If `npm` cannot parse `package.json`
+
+If `npm run fix:intelligence-map` fails with `EJSONPARSE`, run the standalone repair script with Node instead of npm:
+
+```bash
+node frontend/scripts/repair-frontend-build.mjs
+```
+
+On Windows Command Prompt from the repository root:
+
+```bat
+node frontend\scripts\repair-frontend-build.mjs
+```
+
+This script repairs the `scripts` block in `frontend/package.json`, restores the dependency-free Intelligence page, and then you can rebuild:
+
+```bash
+docker compose build --no-cache frontend
+docker compose up -d --force-recreate frontend
+```
+
+Docker builds also run the same package repair in `--package-only` mode before `npm install`, so a stale local `package.json` with a missing comma no longer blocks the container build before the full source tree is copied.
+
 ## Rebuild frontend after the check passes
 
 ```bash
