@@ -6,6 +6,7 @@ import PageHeader from '../../components/PageHeader'
 import StatusBadge from '../../components/StatusBadge'
 
 type HeatmapCell = { centerLat: number; centerLon: number; avgRiskScore: number; propertyCount: number }
+type RawHeatmapCell = Partial<HeatmapCell> & { CenterLat?: number; CenterLon?: number; AvgRiskScore?: number; PropertyCount?: number }
 type Anomaly = { id: string; anomalyType: string; severity: string; status: string; lat?: number; lon?: number; description?: string; detectedAt: string }
 type Cluster = { id: string; clusterLabel: number; centroidLat?: number; centroidLon?: number; propertyCount: number; medianValueSqm?: number; governorate?: string; computedAt: string }
 type MapPoint = { x: number; y: number }
@@ -37,6 +38,31 @@ const fallbackHeatmap: HeatmapCell[] = [
   { centerLat: 30.0219, centerLon: 31.2015, avgRiskScore: 0.18, propertyCount: 12 },
 ]
 
+function toNumber(value: unknown) {
+  const numberValue = typeof value === 'number' ? value : Number(value)
+  return Number.isFinite(numberValue) ? numberValue : null
+}
+
+function normalizeHeatmapCells(cells: RawHeatmapCell[] | undefined) {
+  return (cells ?? [])
+    .map(cell => {
+      const centerLat = toNumber(cell.centerLat ?? cell.CenterLat)
+      const centerLon = toNumber(cell.centerLon ?? cell.CenterLon)
+      const avgRiskScore = toNumber(cell.avgRiskScore ?? cell.AvgRiskScore)
+      const propertyCount = toNumber(cell.propertyCount ?? cell.PropertyCount)
+
+      if (centerLat === null || centerLon === null || avgRiskScore === null || propertyCount === null) return null
+
+      return {
+        centerLat,
+        centerLon,
+        avgRiskScore: Math.min(1, Math.max(0, avgRiskScore)),
+        propertyCount: Math.max(0, Math.round(propertyCount)),
+      } satisfies HeatmapCell
+    })
+    .filter((cell): cell is HeatmapCell => cell !== null)
+}
+
 function riskColor(score: number) {
   if (score >= 0.75) return '#dc2626'
   if (score >= 0.5) return '#ea580c'
@@ -65,13 +91,15 @@ function HeatmapMarker({ cell, isSelected, onSelect }: { cell: HeatmapCell; isSe
       onClick={() => onSelect(cell)}
       onMouseEnter={() => onSelect(cell)}
       onFocus={() => onSelect(cell)}
-      className={`group absolute rounded-full border-2 border-white shadow-lg outline-none transition-transform hover:scale-125 focus:scale-125 focus:ring-4 focus:ring-blue-200 ${isSelected ? 'scale-125 ring-4 ring-blue-200' : ''}`}
-      style={{ left: `${point.x}%`, top: `${point.y}%`, width: 34, height: 34, transform: 'translate(-50%, -50%)', backgroundColor: riskColor(cell.avgRiskScore), zIndex: isSelected ? 60 : 40 }}
+      className={`group absolute flex items-center justify-center rounded-full border-2 border-white shadow-lg outline-none transition-transform hover:scale-125 focus:scale-125 focus:ring-4 focus:ring-blue-200 ${isSelected ? 'scale-125 ring-4 ring-blue-200' : ''}`}
+      style={{ left: `${point.x}%`, top: `${point.y}%`, width: 46, height: 46, transform: 'translate(-50%, -50%)', backgroundColor: riskColor(cell.avgRiskScore), zIndex: isSelected ? 60 : 40 }}
       aria-label={`تفاصيل منطقة مخاطر: متوسط الخطر ${riskPercent}%، عدد العقارات ${cell.propertyCount}`}
       title={`متوسط الخطر ${riskPercent}% - العقارات ${cell.propertyCount}`}
     >
+      <span className="absolute inset-[-8px] rounded-full border-2 border-white/70 opacity-70" />
+      <span className="relative z-10 text-xs font-bold text-white drop-shadow">{riskPercent}%</span>
       <span className="sr-only">تفاصيل منطقة مخاطر</span>
-      <div className="pointer-events-none absolute bottom-10 left-1/2 z-[1200] w-56 -translate-x-1/2 rounded-lg bg-slate-900 px-3 py-2 text-xs text-white opacity-0 shadow-lg transition-opacity group-hover:opacity-100 group-focus:opacity-100">
+      <div className="pointer-events-none absolute bottom-14 left-1/2 z-[1200] w-56 -translate-x-1/2 rounded-lg bg-slate-900 px-3 py-2 text-xs text-white opacity-0 shadow-lg transition-opacity group-hover:opacity-100 group-focus:opacity-100">
         <div className="font-semibold">متوسط الخطر: {riskPercent}%</div>
         <div>العقارات: {cell.propertyCount.toLocaleString()}</div>
         <div className="text-slate-300">اضغط أو مرر المؤشر لتثبيت التفاصيل</div>
@@ -89,7 +117,21 @@ function MapSurface({ children }: { children: ReactNode }) {
         نطاق القاهرة التجريبي: {boundsQuery}
       </div>
       <div className="absolute bottom-4 left-4 rounded bg-white/90 px-2 py-1 text-[11px] text-slate-500 shadow-sm">
-        خريطة تحليلية داخلية - اضغط أو مرر على النقاط لعرض البيانات
+        خريطة تحليلية داخلية - الدوائر الملونة تعرض نسبة الخطر واضغط عليها للتفاصيل
+      </div>
+      <div className="absolute right-4 top-4 z-20 rounded-xl border border-white/70 bg-white/90 p-3 text-xs text-slate-600 shadow-sm">
+        <div className="mb-2 font-semibold text-slate-800">مفتاح الألوان</div>
+        {[
+          ['خطر مرتفع', '#dc2626'],
+          ['خطر متوسط مرتفع', '#ea580c'],
+          ['خطر متوسط', '#d97706'],
+          ['خطر منخفض', '#65a30d'],
+        ].map(([label, color]) => (
+          <div key={label} className="mb-1 flex items-center gap-2">
+            <span className="h-3 w-3 rounded-full" style={{ backgroundColor: color }} />
+            <span>{label}</span>
+          </div>
+        ))}
       </div>
       {children}
     </div>
@@ -104,7 +146,7 @@ export default function IntelligencePage() {
 
   const heatmapQuery = useQuery<HeatmapCell[]>({
     queryKey: ['heatmap', boundsQuery],
-    queryFn: () => api.get(`/v2/geo/risk-heatmap?minLat=${bounds.minLat}&minLon=${bounds.minLon}&maxLat=${bounds.maxLat}&maxLon=${bounds.maxLon}`).then(r => r.data.data?.cells ?? []),
+    queryFn: () => api.get(`/v2/geo/risk-heatmap?minLat=${bounds.minLat}&minLon=${bounds.minLon}&maxLat=${bounds.maxLat}&maxLon=${bounds.maxLon}`).then(r => normalizeHeatmapCells(r.data.data?.cells)),
     enabled: tab === 'heatmap',
   })
 
