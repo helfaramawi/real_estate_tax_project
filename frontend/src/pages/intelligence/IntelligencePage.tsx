@@ -10,6 +10,7 @@ type RawHeatmapCell = Partial<HeatmapCell> & { CenterLat?: number; CenterLon?: n
 type Anomaly = { id: string; anomalyType: string; severity: string; status: string; lat?: number; lon?: number; description?: string; detectedAt: string }
 type Cluster = { id: string; clusterLabel: number; centroidLat?: number; centroidLon?: number; propertyCount: number; medianValueSqm?: number; governorate?: string; computedAt: string }
 type MapPoint = { x: number; y: number }
+type GeoBounds = { minLat: number; minLon: number; maxLat: number; maxLon: number }
 
 const severityColor: Record<string, string> = {
   Critical: '#dc2626',
@@ -29,8 +30,8 @@ const anomalyTypeAr: Record<string, string> = {
 }
 
 const severityAr: Record<string, string> = { Critical: 'حرج', High: 'مرتفع', Medium: 'متوسط', Low: 'منخفض' }
-const bounds = { minLat: 29.5, minLon: 30.5, maxLat: 30.5, maxLon: 31.5 }
-const boundsQuery = `${bounds.minLat},${bounds.minLon},${bounds.maxLat},${bounds.maxLon}`
+const queryBounds: GeoBounds = { minLat: 29.5, minLon: 30.5, maxLat: 30.5, maxLon: 31.5 }
+const queryBoundsLabel = `${queryBounds.minLat},${queryBounds.minLon},${queryBounds.maxLat},${queryBounds.maxLon}`
 const fallbackHeatmap: HeatmapCell[] = [
   { centerLat: 30.0475, centerLon: 31.2124, avgRiskScore: 0.82, propertyCount: 18 },
   { centerLat: 30.0586, centerLon: 31.2357, avgRiskScore: 0.64, propertyCount: 31 },
@@ -74,15 +75,37 @@ function clampPercent(value: number) {
   return Math.min(94, Math.max(6, value))
 }
 
-function projectPoint(lat: number, lon: number): MapPoint {
+function boundsFromPoints(points: Array<{ lat: number; lon: number }>): GeoBounds {
+  if (points.length === 0) return queryBounds
+
+  const latitudes = points.map(point => point.lat)
+  const longitudes = points.map(point => point.lon)
+  const minLat = Math.min(...latitudes)
+  const maxLat = Math.max(...latitudes)
+  const minLon = Math.min(...longitudes)
+  const maxLon = Math.max(...longitudes)
+  const latSpan = Math.max(maxLat - minLat, 0.035)
+  const lonSpan = Math.max(maxLon - minLon, 0.035)
+  const latPadding = latSpan * 0.45
+  const lonPadding = lonSpan * 0.45
+
   return {
-    x: clampPercent(((lon - bounds.minLon) / (bounds.maxLon - bounds.minLon)) * 100),
-    y: clampPercent(((bounds.maxLat - lat) / (bounds.maxLat - bounds.minLat)) * 100),
+    minLat: minLat - latPadding,
+    maxLat: maxLat + latPadding,
+    minLon: minLon - lonPadding,
+    maxLon: maxLon + lonPadding,
   }
 }
 
-function HeatmapMarker({ cell, isSelected, onSelect }: { cell: HeatmapCell; isSelected: boolean; onSelect: (cell: HeatmapCell) => void }) {
-  const point = projectPoint(cell.centerLat, cell.centerLon)
+function projectPoint(lat: number, lon: number, viewBounds: GeoBounds): MapPoint {
+  return {
+    x: clampPercent(((lon - viewBounds.minLon) / (viewBounds.maxLon - viewBounds.minLon)) * 100),
+    y: clampPercent(((viewBounds.maxLat - lat) / (viewBounds.maxLat - viewBounds.minLat)) * 100),
+  }
+}
+
+function HeatmapMarker({ cell, isSelected, viewBounds, onSelect }: { cell: HeatmapCell; isSelected: boolean; viewBounds: GeoBounds; onSelect: (cell: HeatmapCell) => void }) {
+  const point = projectPoint(cell.centerLat, cell.centerLon, viewBounds)
   const riskPercent = Math.round(cell.avgRiskScore * 100)
 
   return (
@@ -108,16 +131,26 @@ function HeatmapMarker({ cell, isSelected, onSelect }: { cell: HeatmapCell; isSe
   )
 }
 
-function MapSurface({ children }: { children: ReactNode }) {
+function MapSurface({ children, viewBounds, fallbackMode }: { children: ReactNode; viewBounds: GeoBounds; fallbackMode: boolean }) {
   return (
     <div className="relative h-full w-full overflow-hidden bg-slate-100">
       <div className="absolute inset-0 bg-gradient-to-br from-blue-50 via-white to-emerald-50" />
-      <div className="absolute inset-0 opacity-60" style={{ backgroundImage: 'linear-gradient(90deg, rgba(148,163,184,.22) 1px, transparent 1px), linear-gradient(0deg, rgba(148,163,184,.22) 1px, transparent 1px)', backgroundSize: '64px 64px' }} />
+      <div className="absolute inset-0 opacity-70" style={{ backgroundImage: 'linear-gradient(90deg, rgba(148,163,184,.22) 1px, transparent 1px), linear-gradient(0deg, rgba(148,163,184,.22) 1px, transparent 1px)', backgroundSize: '64px 64px' }} />
+      <svg className="pointer-events-none absolute inset-0 h-full w-full" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">
+        <path d="M8 92 C24 70 30 58 34 42 C38 27 49 18 68 6" fill="none" stroke="rgba(59,130,246,.24)" strokeWidth="5" />
+        <path d="M0 72 C20 66 42 64 100 58" fill="none" stroke="rgba(100,116,139,.24)" strokeWidth="1.4" strokeDasharray="2 2" />
+        <path d="M14 18 C34 35 52 42 96 38" fill="none" stroke="rgba(100,116,139,.2)" strokeWidth="1.2" strokeDasharray="2 3" />
+        <path d="M18 8 L86 92" fill="none" stroke="rgba(16,185,129,.16)" strokeWidth="7" />
+      </svg>
+      <div className="absolute left-[18%] top-[72%] rounded bg-blue-50/90 px-2 py-1 text-[10px] font-semibold text-blue-700">النيل</div>
+      <div className="absolute left-[54%] top-[35%] rounded bg-white/80 px-2 py-1 text-[10px] text-slate-500">محور رئيسي</div>
       <div className="absolute left-6 top-6 rounded-lg border border-white/70 bg-white/85 px-3 py-2 text-xs text-slate-600 shadow-sm">
-        نطاق القاهرة التجريبي: {boundsQuery}
+        النطاق المعروض: {viewBounds.minLat.toFixed(3)}, {viewBounds.minLon.toFixed(3)} → {viewBounds.maxLat.toFixed(3)}, {viewBounds.maxLon.toFixed(3)}
+        <div className="mt-1 text-[10px] text-slate-400">نطاق الطلب: {queryBoundsLabel}</div>
+        {fallbackMode && <div className="mt-1 font-semibold text-amber-700">وضع توضيحي لحين توفر بيانات حقيقية</div>}
       </div>
       <div className="absolute bottom-4 left-4 rounded bg-white/90 px-2 py-1 text-[11px] text-slate-500 shadow-sm">
-        خريطة تحليلية داخلية - الدوائر الملونة تعرض نسبة الخطر واضغط عليها للتفاصيل
+        خريطة تحليلية داخلية - الدوائر الملونة تعرض نسبة الخطر، واضغط على أي دائرة للتفاصيل
       </div>
       <div className="absolute right-4 top-4 z-20 rounded-xl border border-white/70 bg-white/90 p-3 text-xs text-slate-600 shadow-sm">
         <div className="mb-2 font-semibold text-slate-800">مفتاح الألوان</div>
@@ -145,8 +178,8 @@ export default function IntelligencePage() {
   const [selectedHeatmapCell, setSelectedHeatmapCell] = useState<HeatmapCell | null>(null)
 
   const heatmapQuery = useQuery<HeatmapCell[]>({
-    queryKey: ['heatmap', boundsQuery],
-    queryFn: () => api.get(`/v2/geo/risk-heatmap?minLat=${bounds.minLat}&minLon=${bounds.minLon}&maxLat=${bounds.maxLat}&maxLon=${bounds.maxLon}`).then(r => normalizeHeatmapCells(r.data.data?.cells)),
+    queryKey: ['heatmap', queryBoundsLabel],
+    queryFn: () => api.get(`/v2/geo/risk-heatmap?minLat=${queryBounds.minLat}&minLon=${queryBounds.minLon}&maxLat=${queryBounds.maxLat}&maxLon=${queryBounds.maxLon}`).then(r => normalizeHeatmapCells(r.data.data?.cells)),
     enabled: tab === 'heatmap',
   })
 
@@ -176,9 +209,14 @@ export default function IntelligencePage() {
   const clusters = clustersQuery.data ?? []
   const activeHeatmapCell = tab === 'heatmap' ? selectedHeatmapCell ?? displayedHeatmap[0] ?? null : null
   const isFallbackHeatmap = tab === 'heatmap' && !heatmapQuery.isLoading && (!heatmapQuery.data || heatmapQuery.data.length === 0)
+  const mapBounds = useMemo(() => {
+    if (tab === 'heatmap') return boundsFromPoints(displayedHeatmap.map(cell => ({ lat: cell.centerLat, lon: cell.centerLon })))
+    if (tab === 'anomalies') return boundsFromPoints(anomalies.filter(item => item.lat && item.lon).map(item => ({ lat: item.lat!, lon: item.lon! })))
+    return boundsFromPoints(clusters.filter(item => item.centroidLat && item.centroidLon).map(item => ({ lat: item.centroidLat!, lon: item.centroidLon! })))
+  }, [anomalies, clusters, displayedHeatmap, tab])
   const fallbackHeatmapMessage = heatmapQuery.isError
-    ? 'تعذر تحميل بيانات خريطة المخاطر من الخادم. تظهر الآن نقاط توضيحية قابلة للنقر.'
-    : 'لا توجد خلايا مخاطر مرجعة من الخادم لهذه المنطقة. تظهر الآن نقاط توضيحية قابلة للنقر.'
+    ? 'تعذر تحميل البيانات الحقيقية من الخادم؛ نعرض طبقة توضيحية مؤقتة حتى تتأكد من صلاحيات المستخدم ووجود بيانات مواقع/مخاطر.'
+    : 'لا توجد خلايا مخاطر حقيقية داخل النطاق الحالي؛ نعرض طبقة توضيحية مؤقتة قابلة للنقر.'
 
   const updateAnomaly = useMutation({
     mutationFn: ({ id, status, notes }: { id: string; status: string; notes?: string }) => api.patch(`/v2/geo/anomalies/${id}/status`, { status, notes }),
@@ -241,17 +279,18 @@ export default function IntelligencePage() {
 
         {tab === 'heatmap' && isFallbackHeatmap && (
           <div className="pointer-events-none absolute inset-x-4 top-4 z-[1000] rounded-lg border border-amber-200 bg-amber-50/95 p-3 text-sm text-amber-900 shadow-sm">
-            {fallbackHeatmapMessage}
+            <div className="font-semibold">وضع توضيحي للخريطة</div>
+            <div className="mt-1">{fallbackHeatmapMessage}</div>
           </div>
         )}
 
-        <MapSurface>
+        <MapSurface viewBounds={mapBounds} fallbackMode={isFallbackHeatmap}>
           {tab === 'heatmap' && displayedHeatmap.map((cell, index) => (
-            <HeatmapMarker key={`${cell.centerLat}-${cell.centerLon}-${index}`} cell={cell} isSelected={selectedHeatmapCell === cell} onSelect={setSelectedHeatmapCell} />
+            <HeatmapMarker key={`${cell.centerLat}-${cell.centerLon}-${index}`} cell={cell} isSelected={selectedHeatmapCell === cell} viewBounds={mapBounds} onSelect={setSelectedHeatmapCell} />
           ))}
 
           {tab === 'anomalies' && anomalies.filter(item => item.lat && item.lon).map(item => {
-            const point = projectPoint(item.lat!, item.lon!)
+            const point = projectPoint(item.lat!, item.lon!, mapBounds)
             return (
               <button
                 key={item.id}
@@ -265,7 +304,7 @@ export default function IntelligencePage() {
           })}
 
           {tab === 'clusters' && clusters.filter(item => item.centroidLat && item.centroidLon).map(item => {
-            const point = projectPoint(item.centroidLat!, item.centroidLon!)
+            const point = projectPoint(item.centroidLat!, item.centroidLon!, mapBounds)
             const size = Math.min(26 + Math.log(item.propertyCount + 1) * 5, 54)
             return (
               <div
