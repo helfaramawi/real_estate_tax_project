@@ -19,15 +19,17 @@ function findFailures(source) {
 }
 
 let source = readFileSync(pagePath, 'utf8')
-let failures = findFailures(source)
 
-if (failures.length > 0 && shouldFix) {
+if (shouldFix) {
   const cleanSource = readFileSync(templatePath, 'utf8')
-  writeFileSync(pagePath, cleanSource)
+  if (source !== cleanSource) {
+    writeFileSync(pagePath, cleanSource)
+    console.log('Restored IntelligencePage.tsx from the canonical dependency-free projected-grid template.')
+  }
   source = cleanSource
-  failures = findFailures(source)
-  console.log('Replaced stale IntelligencePage.tsx with the dependency-free projected-grid implementation.')
 }
+
+const failures = findFailures(source)
 
 if (failures.length > 0) {
   console.error('IntelligencePage.tsx still contains stale map implementation fragments:')

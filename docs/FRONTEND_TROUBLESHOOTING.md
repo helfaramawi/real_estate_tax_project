@@ -53,7 +53,6 @@ node frontend\scripts\repair-frontend-build.mjs
 ```
 
 This script repairs the `scripts` block in `frontend/package.json`, rewrites the checker script if it has duplicate import/SyntaxError damage, restores the dependency-free Intelligence page, and then you can rebuild:
-This script repairs the `scripts` block in `frontend/package.json`, restores the dependency-free Intelligence page, and then you can rebuild:
 
 ```bash
 docker compose build --no-cache frontend
@@ -61,6 +60,20 @@ docker compose up -d --force-recreate frontend
 ```
 
 Docker builds also run the same package repair in `--package-only` mode before `npm install`, so a stale local `package.json` with a missing comma no longer blocks the container build before the full source tree is copied.
+
+
+## If `repair-frontend-build.mjs` has duplicate `checkerSource` after a merge
+
+If PowerShell reports `Identifier 'checkerSource' has already been declared`, your local merge kept two historical versions of the repair script. Restore the canonical template from the repository root before running Node:
+
+```powershell
+Copy-Item frontend\scripts\templates\repair-frontend-build.mjs frontend\scripts\repair-frontend-build.mjs -Force
+findstr /n "checkerSource" frontend\scripts\repair-frontend-build.mjs
+node --check frontend\scripts\repair-frontend-build.mjs
+node frontend\scripts\repair-frontend-build.mjs
+```
+
+The `findstr` command should return no results. Docker builds also restore this template before executing the repair script so stale merge fragments cannot break the image build.
 
 ## Rebuild frontend after the check passes
 

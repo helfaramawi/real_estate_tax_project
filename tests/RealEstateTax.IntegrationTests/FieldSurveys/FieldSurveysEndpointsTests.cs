@@ -150,6 +150,3 @@ public class FieldSurveysEndpointsTests : IAsyncLifetime
     }
 
 }
-
-
-}

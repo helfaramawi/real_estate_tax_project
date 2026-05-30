@@ -47,15 +47,12 @@ const fallbackHeatmap: HeatmapCell[] = [
 function HeatmapMarker({ cell, isSelected, onSelect }: { cell: HeatmapCell; isSelected: boolean; onSelect: (cell: HeatmapCell) => void }) {
   const point = projectPoint(cell.centerLat, cell.centerLon)
   const riskPercent = (cell.avgRiskScore * 100).toFixed(0)
-function HeatmapMarker({ cell, onSelect }: { cell: HeatmapCell; onSelect: (cell: HeatmapCell) => void }) {
-  const point = projectPoint(cell.centerLat, cell.centerLon)
 
   return (
     <button
       type="button"
       onClick={() => onSelect(cell)}
       onMouseEnter={() => onSelect(cell)}
-       onMouseEnter={() => onSelect(cell)}
       onFocus={() => onSelect(cell)}
       className={`group absolute -translate-x-1/2 -translate-y-1/2 rounded-full border-2 border-white shadow-lg outline-none transition-transform hover:scale-125 focus:scale-125 focus:ring-4 focus:ring-blue-200 ${isSelected ? 'scale-125 ring-4 ring-blue-200' : ''}`}
       style={{ left: `${point.x}%`, top: `${point.y}%`, width: 34, height: 34, backgroundColor: riskColor(cell.avgRiskScore), zIndex: isSelected ? 60 : 40 }}
@@ -67,15 +64,6 @@ function HeatmapMarker({ cell, onSelect }: { cell: HeatmapCell; onSelect: (cell:
         <span className="block font-semibold">متوسط الخطر: {riskPercent}%</span>
         <span className="block">العقارات: {cell.propertyCount.toLocaleString()}</span>
         <span className="block text-slate-300">اضغط أو مرّر المؤشر لتثبيت التفاصيل</span>
-      className="group absolute -translate-x-1/2 -translate-y-1/2 rounded-full border-2 border-white shadow-lg outline-none focus:ring-4 focus:ring-blue-200"
-      style={{ left: `${point.x}%`, top: `${point.y}%`, width: 30, height: 30, backgroundColor: riskColor(cell.avgRiskScore) }}
-      title={`متوسط الخطر ${(cell.avgRiskScore * 100).toFixed(0)}% - العقارات ${cell.propertyCount}`}
-    >
-      <span className="sr-only">تفاصيل منطقة مخاطر</span>
-      <span className="pointer-events-none absolute bottom-9 left-1/2 z-[1000] w-52 -translate-x-1/2 rounded-lg bg-slate-900 px-3 py-2 text-xs text-white opacity-0 shadow-lg transition-opacity group-hover:opacity-100 group-focus:opacity-100">
-        <span className="block font-semibold">متوسط الخطر: {(cell.avgRiskScore * 100).toFixed(0)}%</span>
-        <span className="block">العقارات: {cell.propertyCount.toLocaleString()}</span>
-        <span className="block text-slate-300">انقر لعرض التفاصيل</span>
       </span>
     </button>
   )
@@ -189,14 +177,12 @@ export default function IntelligencePage() {
       <div className="relative rounded-xl overflow-hidden border border-slate-200 shadow-sm" style={{ height: 520 }}>
         {tab === 'heatmap' && heatmapLoading && (
           <div className="pointer-events-none absolute inset-x-4 top-4 z-[1000] rounded-lg border border-blue-100 bg-white/95 p-3 text-sm text-slate-700 shadow-sm">
-          <div className="absolute inset-x-4 top-4 z-[1000] rounded-lg border border-blue-100 bg-white/95 p-3 text-sm text-slate-700 shadow-sm">
             جارٍ تحميل بيانات خريطة المخاطر...
           </div>
         )}
 
         {tab === 'heatmap' && isFallbackHeatmap && (
           <div className="pointer-events-none absolute inset-x-4 top-4 z-[1000] rounded-lg border border-amber-200 bg-amber-50/95 p-3 text-sm text-amber-900 shadow-sm">
-          <div className="absolute inset-x-4 top-4 z-[1000] rounded-lg border border-amber-200 bg-amber-50/95 p-3 text-sm text-amber-900 shadow-sm">
             {fallbackHeatmapMessage}
           </div>
         )}
@@ -209,7 +195,6 @@ export default function IntelligencePage() {
               isSelected={selectedHeatmapCell === cell}
               onSelect={setSelectedHeatmapCell}
             />
-            <HeatmapMarker key={index} cell={cell} onSelect={setSelectedHeatmapCell} />
           ))}
 
           {tab === 'anomalies' && anomalies?.filter(item => item.lat && item.lon).map(item => {
