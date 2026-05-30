@@ -10,7 +10,7 @@ type Anomaly = { id: string; anomalyType: string; severity: string; status: stri
 type Cluster = { id: string; clusterLabel: number; centroidLat?: number; centroidLon?: number; propertyCount: number; medianValueSqm?: number; governorate?: string; computedAt: string }
 type MapPoint = { x: number; y: number }
 
-const SEVERITY_COLOR: Record<string, string> = {
+const severityColor: Record<string, string> = {
   Critical: '#dc2626',
   High: '#ea580c',
   Medium: '#d97706',
@@ -30,13 +30,6 @@ const anomalyTypeAr: Record<string, string> = {
 const severityAr: Record<string, string> = { Critical: 'حرج', High: 'مرتفع', Medium: 'متوسط', Low: 'منخفض' }
 const bounds = { minLat: 29.5, minLon: 30.5, maxLat: 30.5, maxLon: 31.5 }
 const boundsQuery = `${bounds.minLat},${bounds.minLon},${bounds.maxLat},${bounds.maxLon}`
-const riskColor = (score: number) => score >= 0.75 ? '#dc2626' : score >= 0.5 ? '#ea580c' : score >= 0.25 ? '#d97706' : '#65a30d'
-const clampPercent = (value: number) => Math.min(94, Math.max(6, value))
-const projectPoint = (lat: number, lon: number): MapPoint => ({
-  x: clampPercent(((lon - bounds.minLon) / (bounds.maxLon - bounds.minLon)) * 100),
-  y: clampPercent(((bounds.maxLat - lat) / (bounds.maxLat - bounds.minLat)) * 100),
-})
-
 const fallbackHeatmap: HeatmapCell[] = [
   { centerLat: 30.0475, centerLon: 31.2124, avgRiskScore: 0.82, propertyCount: 18 },
   { centerLat: 30.0586, centerLon: 31.2357, avgRiskScore: 0.64, propertyCount: 31 },
@@ -44,9 +37,27 @@ const fallbackHeatmap: HeatmapCell[] = [
   { centerLat: 30.0219, centerLon: 31.2015, avgRiskScore: 0.18, propertyCount: 12 },
 ]
 
+function riskColor(score: number) {
+  if (score >= 0.75) return '#dc2626'
+  if (score >= 0.5) return '#ea580c'
+  if (score >= 0.25) return '#d97706'
+  return '#65a30d'
+}
+
+function clampPercent(value: number) {
+  return Math.min(94, Math.max(6, value))
+}
+
+function projectPoint(lat: number, lon: number): MapPoint {
+  return {
+    x: clampPercent(((lon - bounds.minLon) / (bounds.maxLon - bounds.minLon)) * 100),
+    y: clampPercent(((bounds.maxLat - lat) / (bounds.maxLat - bounds.minLat)) * 100),
+  }
+}
+
 function HeatmapMarker({ cell, isSelected, onSelect }: { cell: HeatmapCell; isSelected: boolean; onSelect: (cell: HeatmapCell) => void }) {
   const point = projectPoint(cell.centerLat, cell.centerLon)
-  const riskPercent = (cell.avgRiskScore * 100).toFixed(0)
+  const riskPercent = Math.round(cell.avgRiskScore * 100)
 
   return (
     <button
@@ -54,17 +65,17 @@ function HeatmapMarker({ cell, isSelected, onSelect }: { cell: HeatmapCell; isSe
       onClick={() => onSelect(cell)}
       onMouseEnter={() => onSelect(cell)}
       onFocus={() => onSelect(cell)}
-      className={`group absolute -translate-x-1/2 -translate-y-1/2 rounded-full border-2 border-white shadow-lg outline-none transition-transform hover:scale-125 focus:scale-125 focus:ring-4 focus:ring-blue-200 ${isSelected ? 'scale-125 ring-4 ring-blue-200' : ''}`}
-      style={{ left: `${point.x}%`, top: `${point.y}%`, width: 34, height: 34, backgroundColor: riskColor(cell.avgRiskScore), zIndex: isSelected ? 60 : 40 }}
+      className={`group absolute rounded-full border-2 border-white shadow-lg outline-none transition-transform hover:scale-125 focus:scale-125 focus:ring-4 focus:ring-blue-200 ${isSelected ? 'scale-125 ring-4 ring-blue-200' : ''}`}
+      style={{ left: `${point.x}%`, top: `${point.y}%`, width: 34, height: 34, transform: 'translate(-50%, -50%)', backgroundColor: riskColor(cell.avgRiskScore), zIndex: isSelected ? 60 : 40 }}
       aria-label={`تفاصيل منطقة مخاطر: متوسط الخطر ${riskPercent}%، عدد العقارات ${cell.propertyCount}`}
       title={`متوسط الخطر ${riskPercent}% - العقارات ${cell.propertyCount}`}
     >
       <span className="sr-only">تفاصيل منطقة مخاطر</span>
-      <span className="pointer-events-none absolute bottom-10 left-1/2 z-[1200] w-56 -translate-x-1/2 rounded-lg bg-slate-900 px-3 py-2 text-xs text-white opacity-0 shadow-lg transition-opacity group-hover:opacity-100 group-focus:opacity-100">
-        <span className="block font-semibold">متوسط الخطر: {riskPercent}%</span>
-        <span className="block">العقارات: {cell.propertyCount.toLocaleString()}</span>
-        <span className="block text-slate-300">اضغط أو مرّر المؤشر لتثبيت التفاصيل</span>
-      </span>
+      <div className="pointer-events-none absolute bottom-10 left-1/2 z-[1200] w-56 -translate-x-1/2 rounded-lg bg-slate-900 px-3 py-2 text-xs text-white opacity-0 shadow-lg transition-opacity group-hover:opacity-100 group-focus:opacity-100">
+        <div className="font-semibold">متوسط الخطر: {riskPercent}%</div>
+        <div>العقارات: {cell.propertyCount.toLocaleString()}</div>
+        <div className="text-slate-300">اضغط أو مرر المؤشر لتثبيت التفاصيل</div>
+      </div>
     </button>
   )
 }
@@ -72,13 +83,13 @@ function HeatmapMarker({ cell, isSelected, onSelect }: { cell: HeatmapCell; isSe
 function MapSurface({ children }: { children: ReactNode }) {
   return (
     <div className="relative h-full w-full overflow-hidden bg-slate-100">
-      <div className="absolute inset-0 bg-[linear-gradient(90deg,rgba(148,163,184,.22)_1px,transparent_1px),linear-gradient(0deg,rgba(148,163,184,.22)_1px,transparent_1px)] bg-[size:64px_64px]" />
       <div className="absolute inset-0 bg-gradient-to-br from-blue-50 via-white to-emerald-50" />
+      <div className="absolute inset-0 opacity-60" style={{ backgroundImage: 'linear-gradient(90deg, rgba(148,163,184,.22) 1px, transparent 1px), linear-gradient(0deg, rgba(148,163,184,.22) 1px, transparent 1px)', backgroundSize: '64px 64px' }} />
       <div className="absolute left-6 top-6 rounded-lg border border-white/70 bg-white/85 px-3 py-2 text-xs text-slate-600 shadow-sm">
         نطاق القاهرة التجريبي: {boundsQuery}
       </div>
       <div className="absolute bottom-4 left-4 rounded bg-white/90 px-2 py-1 text-[11px] text-slate-500 shadow-sm">
-        خريطة تحليلية داخلية - اضغط/مرّر على النقاط لعرض البيانات
+        خريطة تحليلية داخلية - اضغط أو مرر على النقاط لعرض البيانات
       </div>
       {children}
     </div>
@@ -91,19 +102,19 @@ export default function IntelligencePage() {
   const [selectedAnomaly, setSelectedAnomaly] = useState<Anomaly | null>(null)
   const [selectedHeatmapCell, setSelectedHeatmapCell] = useState<HeatmapCell | null>(null)
 
-  const { data: heatmap, isLoading: heatmapLoading, isError: heatmapError } = useQuery<HeatmapCell[]>({
+  const heatmapQuery = useQuery<HeatmapCell[]>({
     queryKey: ['heatmap', boundsQuery],
     queryFn: () => api.get(`/v2/geo/risk-heatmap?minLat=${bounds.minLat}&minLon=${bounds.minLon}&maxLat=${bounds.maxLat}&maxLon=${bounds.maxLon}`).then(r => r.data.data?.cells ?? []),
     enabled: tab === 'heatmap',
   })
 
-  const { data: anomalies } = useQuery<Anomaly[]>({
+  const anomaliesQuery = useQuery<Anomaly[]>({
     queryKey: ['anomalies', 'Open'],
     queryFn: () => api.get('/v2/geo/anomalies?status=Open').then(r => r.data.data ?? []),
     enabled: tab === 'anomalies',
   })
 
-  const { data: clusters } = useQuery<Cluster[]>({
+  const clustersQuery = useQuery<Cluster[]>({
     queryKey: ['geo-clusters'],
     queryFn: () => api.get('/v2/geo/clusters').then(r => r.data.data ?? []),
     enabled: tab === 'clusters',
@@ -115,19 +126,20 @@ export default function IntelligencePage() {
   })
 
   const displayedHeatmap = useMemo(() => {
-    if (tab !== 'heatmap' || heatmapLoading) return []
-    return heatmap && heatmap.length > 0 ? heatmap : fallbackHeatmap
-  }, [heatmap, heatmapLoading, tab])
+    if (tab !== 'heatmap' || heatmapQuery.isLoading) return []
+    return heatmapQuery.data && heatmapQuery.data.length > 0 ? heatmapQuery.data : fallbackHeatmap
+  }, [heatmapQuery.data, heatmapQuery.isLoading, tab])
 
-  const isFallbackHeatmap = tab === 'heatmap' && !heatmapLoading && (!heatmap || heatmap.length === 0)
+  const anomalies = anomaliesQuery.data ?? []
+  const clusters = clustersQuery.data ?? []
   const activeHeatmapCell = tab === 'heatmap' ? selectedHeatmapCell ?? displayedHeatmap[0] ?? null : null
-  const fallbackHeatmapMessage = heatmapError
-    ? 'تعذر تحميل بيانات خريطة المخاطر من الخادم. تظهر الآن نقاط توضيحية قابلة للنقر؛ تأكد من إعادة تشغيل API ومن توافر بيانات المواقع والمخاطر.'
-    : 'لا توجد خلايا مخاطر مرجعة من الخادم لهذه المنطقة. تظهر الآن نقاط توضيحية قابلة للنقر؛ أضف مواقع عقارات أو فعّل بيانات المخاطر لإظهار البيانات الفعلية.'
+  const isFallbackHeatmap = tab === 'heatmap' && !heatmapQuery.isLoading && (!heatmapQuery.data || heatmapQuery.data.length === 0)
+  const fallbackHeatmapMessage = heatmapQuery.isError
+    ? 'تعذر تحميل بيانات خريطة المخاطر من الخادم. تظهر الآن نقاط توضيحية قابلة للنقر.'
+    : 'لا توجد خلايا مخاطر مرجعة من الخادم لهذه المنطقة. تظهر الآن نقاط توضيحية قابلة للنقر.'
 
   const updateAnomaly = useMutation({
-    mutationFn: ({ id, status, notes }: { id: string; status: string; notes?: string }) =>
-      api.patch(`/v2/geo/anomalies/${id}/status`, { status, notes }),
+    mutationFn: ({ id, status, notes }: { id: string; status: string; notes?: string }) => api.patch(`/v2/geo/anomalies/${id}/status`, { status, notes }),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['anomalies'] })
       setSelectedAnomaly(null)
@@ -145,39 +157,43 @@ export default function IntelligencePage() {
       <PageHeader title="الذكاء الاصطناعي" subtitle="التحليل الجغرافي ونماذج التعلم الآلي" />
 
       {summary && (
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+        <div className="mb-6 grid grid-cols-2 gap-4 md:grid-cols-4">
           {[
             { label: 'تنبؤات عالية الخطر', value: summary.highRiskCount, color: 'text-red-600' },
             { label: 'مشبوه بالاحتيال', value: summary.fraudSuspectCount, color: 'text-orange-600' },
             { label: 'شذوذات مفتوحة', value: summary.openAnomalies, color: 'text-yellow-600' },
             { label: 'بانتظار المراجعة', value: summary.pendingReview, color: 'text-blue-600' },
           ].map(kpi => (
-            <div key={kpi.label} className="bg-white rounded-xl border border-slate-200 p-4">
-              <div className="text-xs text-slate-500 mb-1">{kpi.label}</div>
+            <div key={kpi.label} className="rounded-xl border border-slate-200 bg-white p-4">
+              <div className="mb-1 text-xs text-slate-500">{kpi.label}</div>
               <div className={`text-2xl font-bold ${kpi.color}`}>{kpi.value?.toLocaleString()}</div>
             </div>
           ))}
         </div>
       )}
 
-      <div className="flex gap-2 mb-4">
+      <div className="mb-4 flex gap-2">
         {tabs.map(tabItem => {
           const Icon = tabItem.icon
+          const isActive = tab === tabItem.key
           return (
-            <button key={tabItem.key} onClick={() => setTab(tabItem.key)}
-              className={`flex items-center gap-2 px-4 py-2 text-sm rounded-lg transition-colors ${
-                tab === tabItem.key ? 'bg-blue-600 text-white' : 'bg-white border border-slate-200 text-slate-600 hover:bg-slate-50'
-              }`}>
-              <Icon size={15} /> {tabItem.label}
+            <button
+              key={tabItem.key}
+              type="button"
+              onClick={() => setTab(tabItem.key)}
+              className={`flex items-center gap-2 rounded-lg px-4 py-2 text-sm transition-colors ${isActive ? 'bg-blue-600 text-white' : 'border border-slate-200 bg-white text-slate-600 hover:bg-slate-50'}`}
+            >
+              <Icon size={15} />
+              {tabItem.label}
             </button>
           )
         })}
       </div>
 
-      <div className="relative rounded-xl overflow-hidden border border-slate-200 shadow-sm" style={{ height: 520 }}>
-        {tab === 'heatmap' && heatmapLoading && (
+      <div className="relative overflow-hidden rounded-xl border border-slate-200 shadow-sm" style={{ height: 520 }}>
+        {tab === 'heatmap' && heatmapQuery.isLoading && (
           <div className="pointer-events-none absolute inset-x-4 top-4 z-[1000] rounded-lg border border-blue-100 bg-white/95 p-3 text-sm text-slate-700 shadow-sm">
-            جارٍ تحميل بيانات خريطة المخاطر...
+            جار تحميل بيانات خريطة المخاطر...
           </div>
         )}
 
@@ -189,31 +205,33 @@ export default function IntelligencePage() {
 
         <MapSurface>
           {tab === 'heatmap' && displayedHeatmap.map((cell, index) => (
-            <HeatmapMarker
-              key={index}
-              cell={cell}
-              isSelected={selectedHeatmapCell === cell}
-              onSelect={setSelectedHeatmapCell}
-            />
+            <HeatmapMarker key={`${cell.centerLat}-${cell.centerLon}-${index}`} cell={cell} isSelected={selectedHeatmapCell === cell} onSelect={setSelectedHeatmapCell} />
           ))}
 
-          {tab === 'anomalies' && anomalies?.filter(item => item.lat && item.lon).map(item => {
+          {tab === 'anomalies' && anomalies.filter(item => item.lat && item.lon).map(item => {
             const point = projectPoint(item.lat!, item.lon!)
             return (
-              <button key={item.id} type="button" onClick={() => setSelectedAnomaly(item)}
-                className="absolute -translate-x-1/2 -translate-y-1/2 rounded-full border-2 border-white shadow-lg"
-                style={{ left: `${point.x}%`, top: `${point.y}%`, width: 22, height: 22, backgroundColor: SEVERITY_COLOR[item.severity] ?? '#94a3b8' }}
-                title={`${anomalyTypeAr[item.anomalyType] ?? item.anomalyType} - ${severityAr[item.severity] ?? item.severity}`} />
+              <button
+                key={item.id}
+                type="button"
+                onClick={() => setSelectedAnomaly(item)}
+                className="absolute rounded-full border-2 border-white shadow-lg"
+                style={{ left: `${point.x}%`, top: `${point.y}%`, width: 22, height: 22, transform: 'translate(-50%, -50%)', backgroundColor: severityColor[item.severity] ?? '#94a3b8' }}
+                title={`${anomalyTypeAr[item.anomalyType] ?? item.anomalyType} - ${severityAr[item.severity] ?? item.severity}`}
+              />
             )
           })}
 
-          {tab === 'clusters' && clusters?.filter(item => item.centroidLat && item.centroidLon).map(item => {
+          {tab === 'clusters' && clusters.filter(item => item.centroidLat && item.centroidLon).map(item => {
             const point = projectPoint(item.centroidLat!, item.centroidLon!)
+            const size = Math.min(26 + Math.log(item.propertyCount + 1) * 5, 54)
             return (
-              <div key={item.id}
-                className="absolute -translate-x-1/2 -translate-y-1/2 rounded-full border border-blue-500 bg-blue-200/80 text-[10px] font-bold text-blue-900 shadow"
-                style={{ left: `${point.x}%`, top: `${point.y}%`, width: Math.min(26 + Math.log(item.propertyCount + 1) * 5, 54), height: Math.min(26 + Math.log(item.propertyCount + 1) * 5, 54), display: 'grid', placeItems: 'center' }}
-                title={`العقارات: ${item.propertyCount}`}>
+              <div
+                key={item.id}
+                className="absolute grid place-items-center rounded-full border border-blue-500 bg-blue-200/80 text-[10px] font-bold text-blue-900 shadow"
+                style={{ left: `${point.x}%`, top: `${point.y}%`, width: size, height: size, transform: 'translate(-50%, -50%)' }}
+                title={`العقارات: ${item.propertyCount}`}
+              >
                 {item.propertyCount}
               </div>
             )
@@ -228,13 +246,15 @@ export default function IntelligencePage() {
                 <p className="text-xs text-slate-500">تتغير هذه البطاقة فور تمرير المؤشر أو الضغط على أي دائرة.</p>
               </div>
               {selectedHeatmapCell && (
-                <button type="button" onClick={() => setSelectedHeatmapCell(null)} className="text-slate-400 hover:text-slate-600" aria-label="إلغاء تحديد نقطة المخاطر">✕</button>
+                <button type="button" onClick={() => setSelectedHeatmapCell(null)} className="text-slate-400 hover:text-slate-600" aria-label="إلغاء تحديد نقطة المخاطر">
+                  ✕
+                </button>
               )}
             </div>
             <div className="grid grid-cols-2 gap-2">
               <div className="rounded-lg bg-slate-50 p-2">
                 <div className="text-xs text-slate-500">متوسط الخطر</div>
-                <div className="font-bold text-slate-800">{(activeHeatmapCell.avgRiskScore * 100).toFixed(0)}%</div>
+                <div className="font-bold text-slate-800">{Math.round(activeHeatmapCell.avgRiskScore * 100)}%</div>
               </div>
               <div className="rounded-lg bg-slate-50 p-2">
                 <div className="text-xs text-slate-500">عدد العقارات</div>
@@ -249,72 +269,69 @@ export default function IntelligencePage() {
       </div>
 
       {tab === 'heatmap' && selectedHeatmapCell && (
-        <div className="mt-4 bg-white rounded-xl border border-slate-200 p-5">
-          <div className="flex items-start justify-between mb-3">
+        <div className="mt-4 rounded-xl border border-slate-200 bg-white p-5">
+          <div className="mb-3 flex items-start justify-between">
             <div>
               <h3 className="font-semibold text-slate-800">تفاصيل منطقة المخاطر</h3>
-              <p className="text-xs text-slate-500 mt-1">
-                تظهر هذه البطاقة عند النقر على أي دائرة في خريطة المخاطر، وتعمل أيضاً كبديل موثوق لأجهزة اللمس عند عدم ظهور التلميح بالتحويم.
-              </p>
+              <p className="mt-1 text-xs text-slate-500">تظهر هذه البطاقة عند النقر على أي دائرة في خريطة المخاطر.</p>
             </div>
-            <button onClick={() => setSelectedHeatmapCell(null)} className="text-slate-400 hover:text-slate-600 text-lg">✕</button>
+            <button type="button" onClick={() => setSelectedHeatmapCell(null)} className="text-lg text-slate-400 hover:text-slate-600">
+              ✕
+            </button>
           </div>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-3 text-sm">
+          <div className="grid grid-cols-1 gap-3 text-sm md:grid-cols-3">
             <div className="rounded-lg bg-slate-50 p-3">
-              <div className="text-slate-500 text-xs mb-1">متوسط درجة الخطر</div>
-              <div className="font-bold text-slate-800">{(selectedHeatmapCell.avgRiskScore * 100).toFixed(0)}%</div>
+              <div className="mb-1 text-xs text-slate-500">متوسط درجة الخطر</div>
+              <div className="font-bold text-slate-800">{Math.round(selectedHeatmapCell.avgRiskScore * 100)}%</div>
             </div>
             <div className="rounded-lg bg-slate-50 p-3">
-              <div className="text-slate-500 text-xs mb-1">عدد العقارات في المنطقة</div>
+              <div className="mb-1 text-xs text-slate-500">عدد العقارات في المنطقة</div>
               <div className="font-bold text-slate-800">{selectedHeatmapCell.propertyCount.toLocaleString()}</div>
             </div>
             <div className="rounded-lg bg-slate-50 p-3">
-              <div className="text-slate-500 text-xs mb-1">مركز الخلية الجغرافية</div>
-              <div className="font-bold text-slate-800">
-                {selectedHeatmapCell.centerLat.toFixed(4)}, {selectedHeatmapCell.centerLon.toFixed(4)}
-              </div>
+              <div className="mb-1 text-xs text-slate-500">مركز الخلية الجغرافية</div>
+              <div className="font-bold text-slate-800">{selectedHeatmapCell.centerLat.toFixed(4)}, {selectedHeatmapCell.centerLon.toFixed(4)}</div>
             </div>
           </div>
         </div>
       )}
 
       {tab === 'anomalies' && (
-        <div className="mt-4 flex gap-4 flex-wrap">
-          {Object.entries(SEVERITY_COLOR).map(([sev, color]) => (
-            <div key={sev} className="flex items-center gap-2">
-              <div className="w-3 h-3 rounded-full" style={{ backgroundColor: color }} />
-              <span className="text-sm text-slate-600">{severityAr[sev]}</span>
-              <span className="text-xs text-slate-400">
-                ({anomalies?.filter(item => item.severity === sev).length ?? 0})
-              </span>
+        <div className="mt-4 flex flex-wrap gap-4">
+          {Object.entries(severityColor).map(([severity, color]) => (
+            <div key={severity} className="flex items-center gap-2">
+              <div className="h-3 w-3 rounded-full" style={{ backgroundColor: color }} />
+              <span className="text-sm text-slate-600">{severityAr[severity]}</span>
+              <span className="text-xs text-slate-400">({anomalies.filter(item => item.severity === severity).length})</span>
             </div>
           ))}
         </div>
       )}
 
       {selectedAnomaly && (
-        <div className="mt-4 bg-white rounded-xl border border-slate-200 p-5">
-          <div className="flex items-start justify-between mb-3">
+        <div className="mt-4 rounded-xl border border-slate-200 bg-white p-5">
+          <div className="mb-3 flex items-start justify-between">
             <div>
-              <h3 className="font-semibold text-slate-800">
-                {anomalyTypeAr[selectedAnomaly.anomalyType] ?? selectedAnomaly.anomalyType}
-              </h3>
-              <div className="flex gap-2 mt-1">
+              <h3 className="font-semibold text-slate-800">{anomalyTypeAr[selectedAnomaly.anomalyType] ?? selectedAnomaly.anomalyType}</h3>
+              <div className="mt-1 flex gap-2">
                 <StatusBadge label={selectedAnomaly.severity} />
                 <StatusBadge label={selectedAnomaly.status} />
               </div>
             </div>
-            <button onClick={() => setSelectedAnomaly(null)} className="text-slate-400 hover:text-slate-600 text-lg">✕</button>
+            <button type="button" onClick={() => setSelectedAnomaly(null)} className="text-lg text-slate-400 hover:text-slate-600">
+              ✕
+            </button>
           </div>
-          {selectedAnomaly.description && (
-            <p className="text-sm text-slate-600 mb-4">{selectedAnomaly.description}</p>
-          )}
+          {selectedAnomaly.description && <p className="mb-4 text-sm text-slate-600">{selectedAnomaly.description}</p>}
           <div className="flex gap-2">
             {['Investigating', 'Resolved', 'FalsePositive'].map(status => (
-              <button key={status}
+              <button
+                key={status}
+                type="button"
                 onClick={() => updateAnomaly.mutate({ id: selectedAnomaly.id, status })}
                 disabled={updateAnomaly.isPending}
-                className="px-3 py-1.5 text-xs border border-slate-200 rounded-lg hover:bg-slate-50 disabled:opacity-60">
+                className="rounded-lg border border-slate-200 px-3 py-1.5 text-xs hover:bg-slate-50 disabled:opacity-60"
+              >
                 {status === 'Investigating' ? 'قيد التحقيق' : status === 'Resolved' ? 'تم الحل' : 'غير صحيح'}
               </button>
             ))}
