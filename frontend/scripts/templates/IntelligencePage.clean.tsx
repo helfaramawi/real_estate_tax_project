@@ -54,6 +54,7 @@ function HeatmapMarker({ cell, onSelect }: { cell: HeatmapCell; onSelect: (cell:
     <button
       type="button"
       onClick={() => onSelect(cell)}
+      onMouseEnter={() => onSelect(cell)}
        onMouseEnter={() => onSelect(cell)}
       onFocus={() => onSelect(cell)}
       className={`group absolute -translate-x-1/2 -translate-y-1/2 rounded-full border-2 border-white shadow-lg outline-none transition-transform hover:scale-125 focus:scale-125 focus:ring-4 focus:ring-blue-200 ${isSelected ? 'scale-125 ring-4 ring-blue-200' : ''}`}

@@ -460,6 +460,74 @@ export default function IntelligencePage() {
         )}
       </div>
 
+
+        {tab === 'heatmap' && isFallbackHeatmap && (
+          <div className="pointer-events-none absolute inset-x-4 top-4 z-[1000] rounded-lg border border-amber-200 bg-amber-50/95 p-3 text-sm text-amber-900 shadow-sm">
+            {fallbackHeatmapMessage}
+          </div>
+        )}
+
+        <MapSurface>
+          {tab === 'heatmap' && displayedHeatmap.map((cell, index) => (
+            <HeatmapMarker
+              key={index}
+              cell={cell}
+              isSelected={selectedHeatmapCell === cell}
+              onSelect={setSelectedHeatmapCell}
+            />
+          ))}
+
+          {tab === 'anomalies' && anomalies?.filter(item => item.lat && item.lon).map(item => {
+            const point = projectPoint(item.lat!, item.lon!)
+            return (
+              <button key={item.id} type="button" onClick={() => setSelectedAnomaly(item)}
+                className="absolute -translate-x-1/2 -translate-y-1/2 rounded-full border-2 border-white shadow-lg"
+                style={{ left: `${point.x}%`, top: `${point.y}%`, width: 22, height: 22, backgroundColor: SEVERITY_COLOR[item.severity] ?? '#94a3b8' }}
+                title={`${anomalyTypeAr[item.anomalyType] ?? item.anomalyType} - ${severityAr[item.severity] ?? item.severity}`} />
+            )
+          })}
+
+          {tab === 'clusters' && clusters?.filter(item => item.centroidLat && item.centroidLon).map(item => {
+            const point = projectPoint(item.centroidLat!, item.centroidLon!)
+            return (
+              <div key={item.id}
+                className="absolute -translate-x-1/2 -translate-y-1/2 rounded-full border border-blue-500 bg-blue-200/80 text-[10px] font-bold text-blue-900 shadow"
+                style={{ left: `${point.x}%`, top: `${point.y}%`, width: Math.min(26 + Math.log(item.propertyCount + 1) * 5, 54), height: Math.min(26 + Math.log(item.propertyCount + 1) * 5, 54), display: 'grid', placeItems: 'center' }}
+                title={`العقارات: ${item.propertyCount}`}>
+                {item.propertyCount}
+              </div>
+            )
+          })}
+        </MapSurface>
+
+        {tab === 'heatmap' && activeHeatmapCell && (
+          <div className="absolute bottom-4 right-4 z-[1100] w-[min(24rem,calc(100%-2rem))] rounded-xl border border-slate-200 bg-white/95 p-4 text-sm shadow-xl backdrop-blur" dir="rtl">
+            <div className="mb-2 flex items-start justify-between gap-3">
+              <div>
+                <h3 className="font-semibold text-slate-800">معلومات نقطة المخاطر</h3>
+                <p className="text-xs text-slate-500">تتغير هذه البطاقة فور تمرير المؤشر أو الضغط على أي دائرة.</p>
+              </div>
+              {selectedHeatmapCell && (
+                <button type="button" onClick={() => setSelectedHeatmapCell(null)} className="text-slate-400 hover:text-slate-600" aria-label="إلغاء تحديد نقطة المخاطر">✕</button>
+              )}
+            </div>
+            <div className="grid grid-cols-2 gap-2">
+              <div className="rounded-lg bg-slate-50 p-2">
+                <div className="text-xs text-slate-500">متوسط الخطر</div>
+                <div className="font-bold text-slate-800">{(activeHeatmapCell.avgRiskScore * 100).toFixed(0)}%</div>
+              </div>
+              <div className="rounded-lg bg-slate-50 p-2">
+                <div className="text-xs text-slate-500">عدد العقارات</div>
+                <div className="font-bold text-slate-800">{activeHeatmapCell.propertyCount.toLocaleString()}</div>
+              </div>
+            </div>
+            <div className="mt-2 rounded-lg bg-slate-50 p-2 text-xs text-slate-600">
+              مركز الخلية: {activeHeatmapCell.centerLat.toFixed(4)}, {activeHeatmapCell.centerLon.toFixed(4)}
+            </div>
+          </div>
+        )}
+      </div>
+
       {/* Map */}
       <div className="relative rounded-xl overflow-hidden border border-slate-200 shadow-sm" style={{ height: 520 }}>
 
