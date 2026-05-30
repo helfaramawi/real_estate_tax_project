@@ -62,6 +62,9 @@ const fallbackHeatmap: HeatmapCell[] = [
   { centerLat: 30.0219, centerLon: 31.2015, avgRiskScore: 0.18, propertyCount: 12 },
 ]
 
+function HeatmapMarker({ cell, isSelected, onSelect }: { cell: HeatmapCell; isSelected: boolean; onSelect: (cell: HeatmapCell) => void }) {
+  const point = projectPoint(cell.centerLat, cell.centerLon)
+  const riskPercent = (cell.avgRiskScore * 100).toFixed(0)
 function HeatmapMarker({ cell, onSelect }: { cell: HeatmapCell; onSelect: (cell: HeatmapCell) => void }) {
   const point = projectPoint(cell.centerLat, cell.centerLon)
 
@@ -69,6 +72,18 @@ function HeatmapMarker({ cell, onSelect }: { cell: HeatmapCell; onSelect: (cell:
     <button
       type="button"
       onClick={() => onSelect(cell)}
+      onMouseEnter={() => onSelect(cell)}
+      onFocus={() => onSelect(cell)}
+      className={`group absolute -translate-x-1/2 -translate-y-1/2 rounded-full border-2 border-white shadow-lg outline-none transition-transform hover:scale-125 focus:scale-125 focus:ring-4 focus:ring-blue-200 ${isSelected ? 'scale-125 ring-4 ring-blue-200' : ''}`}
+      style={{ left: `${point.x}%`, top: `${point.y}%`, width: 34, height: 34, backgroundColor: riskColor(cell.avgRiskScore), zIndex: isSelected ? 60 : 40 }}
+      aria-label={`تفاصيل منطقة مخاطر: متوسط الخطر ${riskPercent}%، عدد العقارات ${cell.propertyCount}`}
+      title={`متوسط الخطر ${riskPercent}% - العقارات ${cell.propertyCount}`}
+    >
+      <span className="sr-only">تفاصيل منطقة مخاطر</span>
+      <span className="pointer-events-none absolute bottom-10 left-1/2 z-[1200] w-56 -translate-x-1/2 rounded-lg bg-slate-900 px-3 py-2 text-xs text-white opacity-0 shadow-lg transition-opacity group-hover:opacity-100 group-focus:opacity-100">
+        <span className="block font-semibold">متوسط الخطر: {riskPercent}%</span>
+        <span className="block">العقارات: {cell.propertyCount.toLocaleString()}</span>
+        <span className="block text-slate-300">اضغط أو مرّر المؤشر لتثبيت التفاصيل</span>
       className="group absolute -translate-x-1/2 -translate-y-1/2 rounded-full border-2 border-white shadow-lg outline-none focus:ring-4 focus:ring-blue-200"
       style={{ left: `${point.x}%`, top: `${point.y}%`, width: 30, height: 30, backgroundColor: riskColor(cell.avgRiskScore) }}
       title={`متوسط الخطر ${(cell.avgRiskScore * 100).toFixed(0)}% - العقارات ${cell.propertyCount}`}
@@ -211,6 +226,7 @@ export default function IntelligencePage() {
   }, [heatmap, heatmapLoading, tab])
 
   const isFallbackHeatmap = tab === 'heatmap' && !heatmapLoading && (!heatmap || heatmap.length === 0)
+  const activeHeatmapCell = tab === 'heatmap' ? selectedHeatmapCell ?? displayedHeatmap[0] ?? null : null
   const fallbackHeatmapMessage = heatmapError
     ? 'تعذر تحميل بيانات خريطة المخاطر من الخادم. تظهر الآن نقاط توضيحية قابلة للنقر؛ تأكد من إعادة تشغيل API ومن توافر بيانات المواقع والمخاطر.'
     : 'لا توجد خلايا مخاطر مرجعة من الخادم لهذه المنطقة. تظهر الآن نقاط توضيحية قابلة للنقر؛ أضف مواقع عقارات أو فعّل بيانات المخاطر لإظهار البيانات الفعلية.'
@@ -371,6 +387,79 @@ export default function IntelligencePage() {
       </div>
 
       <div className="relative rounded-xl overflow-hidden border border-slate-200 shadow-sm" style={{ height: 520 }}>
+        {tab === 'heatmap' && heatmapLoading && (
+          <div className="pointer-events-none absolute inset-x-4 top-4 z-[1000] rounded-lg border border-blue-100 bg-white/95 p-3 text-sm text-slate-700 shadow-sm">
+            جارٍ تحميل بيانات خريطة المخاطر...
+          </div>
+        )}
+
+        {tab === 'heatmap' && isFallbackHeatmap && (
+          <div className="pointer-events-none absolute inset-x-4 top-4 z-[1000] rounded-lg border border-amber-200 bg-amber-50/95 p-3 text-sm text-amber-900 shadow-sm">
+            {fallbackHeatmapMessage}
+          </div>
+        )}
+
+        <MapSurface>
+          {tab === 'heatmap' && displayedHeatmap.map((cell, index) => (
+            <HeatmapMarker
+              key={index}
+              cell={cell}
+              isSelected={selectedHeatmapCell === cell}
+              onSelect={setSelectedHeatmapCell}
+            />
+          ))}
+
+          {tab === 'anomalies' && anomalies?.filter(item => item.lat && item.lon).map(item => {
+            const point = projectPoint(item.lat!, item.lon!)
+            return (
+              <button key={item.id} type="button" onClick={() => setSelectedAnomaly(item)}
+                className="absolute -translate-x-1/2 -translate-y-1/2 rounded-full border-2 border-white shadow-lg"
+                style={{ left: `${point.x}%`, top: `${point.y}%`, width: 22, height: 22, backgroundColor: SEVERITY_COLOR[item.severity] ?? '#94a3b8' }}
+                title={`${anomalyTypeAr[item.anomalyType] ?? item.anomalyType} - ${severityAr[item.severity] ?? item.severity}`} />
+            )
+          })}
+
+          {tab === 'clusters' && clusters?.filter(item => item.centroidLat && item.centroidLon).map(item => {
+            const point = projectPoint(item.centroidLat!, item.centroidLon!)
+            return (
+              <div key={item.id}
+                className="absolute -translate-x-1/2 -translate-y-1/2 rounded-full border border-blue-500 bg-blue-200/80 text-[10px] font-bold text-blue-900 shadow"
+                style={{ left: `${point.x}%`, top: `${point.y}%`, width: Math.min(26 + Math.log(item.propertyCount + 1) * 5, 54), height: Math.min(26 + Math.log(item.propertyCount + 1) * 5, 54), display: 'grid', placeItems: 'center' }}
+                title={`العقارات: ${item.propertyCount}`}>
+                {item.propertyCount}
+              </div>
+            )
+          })}
+        </MapSurface>
+
+        {tab === 'heatmap' && activeHeatmapCell && (
+          <div className="absolute bottom-4 right-4 z-[1100] w-[min(24rem,calc(100%-2rem))] rounded-xl border border-slate-200 bg-white/95 p-4 text-sm shadow-xl backdrop-blur" dir="rtl">
+            <div className="mb-2 flex items-start justify-between gap-3">
+              <div>
+                <h3 className="font-semibold text-slate-800">معلومات نقطة المخاطر</h3>
+                <p className="text-xs text-slate-500">تتغير هذه البطاقة فور تمرير المؤشر أو الضغط على أي دائرة.</p>
+              </div>
+              {selectedHeatmapCell && (
+                <button type="button" onClick={() => setSelectedHeatmapCell(null)} className="text-slate-400 hover:text-slate-600" aria-label="إلغاء تحديد نقطة المخاطر">✕</button>
+              )}
+            </div>
+            <div className="grid grid-cols-2 gap-2">
+              <div className="rounded-lg bg-slate-50 p-2">
+                <div className="text-xs text-slate-500">متوسط الخطر</div>
+                <div className="font-bold text-slate-800">{(activeHeatmapCell.avgRiskScore * 100).toFixed(0)}%</div>
+              </div>
+              <div className="rounded-lg bg-slate-50 p-2">
+                <div className="text-xs text-slate-500">عدد العقارات</div>
+                <div className="font-bold text-slate-800">{activeHeatmapCell.propertyCount.toLocaleString()}</div>
+              </div>
+            </div>
+            <div className="mt-2 rounded-lg bg-slate-50 p-2 text-xs text-slate-600">
+              مركز الخلية: {activeHeatmapCell.centerLat.toFixed(4)}, {activeHeatmapCell.centerLon.toFixed(4)}
+            </div>
+          </div>
+        )}
+      </div>
+
       {/* Map */}
       <div className="relative rounded-xl overflow-hidden border border-slate-200 shadow-sm" style={{ height: 520 }}>
 
