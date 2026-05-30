@@ -101,11 +101,15 @@ writeCheckerScript()
 
 if (packageOnly) {
   console.log('Frontend package.json and checker script repaired. Continue with npm install or Docker build.')
+
+if (packageOnly) {
+  console.log('Frontend package.json repaired. Continue with npm install or Docker build.')
   process.exit(0)
 }
 
 if (!existsSync(intelligencePagePath)) {
   console.log('Frontend package.json and checker script repaired. Intelligence page was not present, so map repair was skipped.')
+  console.log('Frontend package.json repaired. Intelligence page was not present, so map repair was skipped.')
   process.exit(0)
 }
 
@@ -119,3 +123,4 @@ if (fixResult.status !== 0) {
 }
 
 console.log('Frontend package.json, checker script, and Intelligence map page are repaired. You can now run docker compose build --no-cache frontend.')
+console.log('Frontend package.json and Intelligence map page are repaired. You can now run docker compose build --no-cache frontend.')
