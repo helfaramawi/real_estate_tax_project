@@ -21,6 +21,93 @@ const desiredScripts = {
   prebuild: 'npm run fix:intelligence-map',
 }
 
+const checkerSource = [
+  "import { readFileSync, writeFileSync } from 'node:fs'",
+  "import { fileURLToPath } from 'node:url'",
+  "import { dirname, resolve } from 'node:path'",
+  '',
+  'const scriptDir = dirname(fileURLToPath(import.meta.url))',
+  "const pagePath = resolve(scriptDir, '../src/pages/intelligence/IntelligencePage.tsx')",
+  "const templatePath = resolve(scriptDir, './templates/IntelligencePage.clean.tsx')",
+  "const shouldFix = process.argv.includes('--fix')",
+  '',
+  'const forbiddenPatterns = [',
+  "  { name: '<MapContainer JSX tag', pattern: /<\\/?MapContainer\\b/ },",
+  "  { name: 'react-leaflet import', pattern: /from ['\"]react-leaflet['\"]/ },",
+  "  { name: 'leaflet stylesheet import', pattern: /leaflet\\/dist\\/leaflet\\.css/ },",
+  "  { name: 'createElement map renderer', pattern: /\\bcreateElement\\b/ },",
+  ']',
+  '',
+  'function findFailures(source) {',
+  '  return forbiddenPatterns.filter(({ pattern }) => pattern.test(source))',
+  '}',
+  '',
+  "let source = readFileSync(pagePath, 'utf8')",
+  'let failures = findFailures(source)',
+  '',
+  'if (failures.length > 0 && shouldFix) {',
+  "  const cleanSource = readFileSync(templatePath, 'utf8')",
+  '  writeFileSync(pagePath, cleanSource)',
+  '  source = cleanSource',
+  '  failures = findFailures(source)',
+  "  console.log('Replaced stale IntelligencePage.tsx with the dependency-free projected-grid implementation.')",
+  '}',
+  '',
+  'if (failures.length > 0) {',
+  "  console.error('IntelligencePage.tsx still contains stale map implementation fragments:')",
+  '  for (const failure of failures) {',
+  "    console.error('- ' + failure.name)",
+  '  }',
+  "  console.error('\\nRun npm run fix:intelligence-map or replace frontend/src/pages/intelligence/IntelligencePage.tsx with the dependency-free projected-grid version before building.')",
+  '  process.exit(1)',
+  '}',
+  '',
+  "console.log('Intelligence map implementation is dependency-free and free of stale MapContainer fragments.')",
+  '',
+].join('\n')
+const checkerSource = `import { readFileSync, writeFileSync } from 'node:fs'
+import { fileURLToPath } from 'node:url'
+import { dirname, resolve } from 'node:path'
+
+const scriptDir = dirname(fileURLToPath(import.meta.url))
+const pagePath = resolve(scriptDir, '../src/pages/intelligence/IntelligencePage.tsx')
+const templatePath = resolve(scriptDir, './templates/IntelligencePage.clean.tsx')
+const shouldFix = process.argv.includes('--fix')
+
+const forbiddenPatterns = [
+  { name: '<MapContainer JSX tag', pattern: /<\\/?MapContainer\\b/ },
+  { name: 'react-leaflet import', pattern: /from ['"]react-leaflet['"]/ },
+  { name: 'leaflet stylesheet import', pattern: /leaflet\\/dist\\/leaflet\\.css/ },
+  { name: 'createElement map renderer', pattern: /\\bcreateElement\\b/ },
+]
+
+function findFailures(source) {
+  return forbiddenPatterns.filter(({ pattern }) => pattern.test(source))
+}
+
+let source = readFileSync(pagePath, 'utf8')
+let failures = findFailures(source)
+
+if (failures.length > 0 && shouldFix) {
+  const cleanSource = readFileSync(templatePath, 'utf8')
+  writeFileSync(pagePath, cleanSource)
+  source = cleanSource
+  failures = findFailures(source)
+  console.log('Replaced stale IntelligencePage.tsx with the dependency-free projected-grid implementation.')
+}
+
+if (failures.length > 0) {
+  console.error('IntelligencePage.tsx still contains stale map implementation fragments:')
+  for (const failure of failures) {
+    console.error('- ' + failure.name)
+  }
+  console.error('\\nRun npm run fix:intelligence-map or replace frontend/src/pages/intelligence/IntelligencePage.tsx with the dependency-free projected-grid version before building.')
+  process.exit(1)
+}
+
+console.log('Intelligence map implementation is dependency-free and free of stale MapContainer fragments.')
+`
+
 function readPackageText() {
   return readFileSync(packagePath, 'utf8')
 }
@@ -36,6 +123,7 @@ function writeCheckerScript() {
   }
 
   writeFileSync(checkerPath, readFileSync(checkerTemplatePath, 'utf8'))
+  writeFileSync(checkerPath, checkerSource)
 }
 
 function parseOrRepairPackageJson() {
@@ -63,11 +151,15 @@ writePackageJson(packageJson)
 writeCheckerScript()
 
 if (packageOnly) {
+  console.log('Frontend package.json and checker script repaired. Continue with npm install or Docker build.')
+
+if (packageOnly) {
   console.log('Frontend package.json repaired. Continue with npm install or Docker build.')
   process.exit(0)
 }
 
 if (!existsSync(intelligencePagePath)) {
+  console.log('Frontend package.json and checker script repaired. Intelligence page was not present, so map repair was skipped.')
   console.log('Frontend package.json repaired. Intelligence page was not present, so map repair was skipped.')
   process.exit(0)
 }
@@ -82,3 +174,4 @@ if (fixResult.status !== 0) {
 }
 
 console.log('Frontend package.json, checker script, and Intelligence map page are repaired. You can now run docker compose build --no-cache frontend.')
+console.log('Frontend package.json and Intelligence map page are repaired. You can now run docker compose build --no-cache frontend.')
