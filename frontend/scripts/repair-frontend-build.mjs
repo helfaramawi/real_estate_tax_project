@@ -7,6 +7,7 @@ const scriptDir = dirname(fileURLToPath(import.meta.url))
 const frontendDir = resolve(scriptDir, '..')
 const packagePath = resolve(frontendDir, 'package.json')
 const checkerPath = resolve(scriptDir, 'check-intelligence-map-clean.mjs')
+const checkerTemplatePath = resolve(scriptDir, 'templates/check-intelligence-map-clean.mjs')
 const intelligencePagePath = resolve(frontendDir, 'src/pages/intelligence/IntelligencePage.tsx')
 const packageOnly = process.argv.includes('--package-only')
 
@@ -116,6 +117,12 @@ function writePackageJson(packageJson) {
 }
 
 function writeCheckerScript() {
+  if (!existsSync(checkerTemplatePath)) {
+    console.log('Checker template was not present; package repair will continue without rewriting the checker script.')
+    return
+  }
+
+  writeFileSync(checkerPath, readFileSync(checkerTemplatePath, 'utf8'))
   writeFileSync(checkerPath, checkerSource)
 }
 
