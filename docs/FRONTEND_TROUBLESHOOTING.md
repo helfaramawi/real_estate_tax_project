@@ -17,6 +17,16 @@ npm run check:intelligence-map
 cd ..
 ```
 
+If stale fragments are reported, repair the page automatically with:
+
+```bash
+cd frontend
+npm run fix:intelligence-map
+cd ..
+```
+
+`npm run build` also runs the fix command automatically through `prebuild`, so Docker builds repair stale local copies before TypeScript compilation starts.
+
 On Windows Command Prompt, you can also verify the file directly:
 
 ```bat
