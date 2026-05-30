@@ -7,7 +7,10 @@
     "dev": "vite",
     "build": "tsc -b && vite build",
     "lint": "eslint .",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "check:intelligence-map": "node scripts/check-intelligence-map-clean.mjs",
+    "prebuild": "npm run fix:intelligence-map",
+    "fix:intelligence-map": "node scripts/check-intelligence-map-clean.mjs --fix"
   },
   "dependencies": {
     "@tailwindcss/vite": "^4.2.4",
