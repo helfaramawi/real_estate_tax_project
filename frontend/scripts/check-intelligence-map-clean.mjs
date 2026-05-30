@@ -35,6 +35,9 @@ const failures = forbiddenPatterns.filter(({ pattern }) => pattern.test(source))
 if (failures.length > 0) {
   console.error('IntelligencePage.tsx still contains stale map implementation fragments:')
   for (const failure of failures) {
+    console.error('- ' + failure.name)
+  }
+  console.error('\nRun npm run fix:intelligence-map or replace frontend/src/pages/intelligence/IntelligencePage.tsx with the dependency-free projected-grid version before building.')
     console.error(`- ${failure.name}`)
   }
   console.error('\nRun `npm run fix:intelligence-map` or replace frontend/src/pages/intelligence/IntelligencePage.tsx with the dependency-free projected-grid version before building.')

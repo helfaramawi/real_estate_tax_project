@@ -52,6 +52,7 @@ On Windows Command Prompt from the repository root:
 node frontend\scripts\repair-frontend-build.mjs
 ```
 
+This script repairs the `scripts` block in `frontend/package.json`, rewrites the checker script if it has duplicate import/SyntaxError damage, restores the dependency-free Intelligence page, and then you can rebuild:
 This script repairs the `scripts` block in `frontend/package.json`, restores the dependency-free Intelligence page, and then you can rebuild:
 
 ```bash

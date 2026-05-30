@@ -530,6 +530,42 @@ export default function IntelligencePage() {
           </div>
         )}
 
+        <MapSurface>
+          {tab === 'heatmap' && displayedHeatmap.map((cell, index) => (
+            <HeatmapMarker key={index} cell={cell} onSelect={setSelectedHeatmapCell} />
+          ))}
+
+          {tab === 'anomalies' && anomalies?.filter(item => item.lat && item.lon).map(item => {
+            const point = projectPoint(item.lat!, item.lon!)
+            return (
+              <button key={item.id} type="button" onClick={() => setSelectedAnomaly(item)}
+                className="absolute -translate-x-1/2 -translate-y-1/2 rounded-full border-2 border-white shadow-lg"
+                style={{ left: `${point.x}%`, top: `${point.y}%`, width: 22, height: 22, backgroundColor: SEVERITY_COLOR[item.severity] ?? '#94a3b8' }}
+                title={`${anomalyTypeAr[item.anomalyType] ?? item.anomalyType} - ${severityAr[item.severity] ?? item.severity}`} />
+            )
+          })}
+
+          {tab === 'clusters' && clusters?.filter(item => item.centroidLat && item.centroidLon).map(item => {
+            const point = projectPoint(item.centroidLat!, item.centroidLon!)
+            return (
+              <div key={item.id}
+                className="absolute -translate-x-1/2 -translate-y-1/2 rounded-full border border-blue-500 bg-blue-200/80 text-[10px] font-bold text-blue-900 shadow"
+                style={{ left: `${point.x}%`, top: `${point.y}%`, width: Math.min(26 + Math.log(item.propertyCount + 1) * 5, 54), height: Math.min(26 + Math.log(item.propertyCount + 1) * 5, 54), display: 'grid', placeItems: 'center' }}
+                title={`العقارات: ${item.propertyCount}`}>
+                {item.propertyCount}
+              </div>
+            )
+          })}
+        </MapSurface>
+      </div>
+
+
+        {tab === 'heatmap' && isFallbackHeatmap && (
+          <div className="absolute inset-x-4 top-4 z-[1000] rounded-lg border border-amber-200 bg-amber-50/95 p-3 text-sm text-amber-900 shadow-sm">
+            {fallbackHeatmapMessage}
+          </div>
+        )}
+
         {mapElement}
       </div>
 
