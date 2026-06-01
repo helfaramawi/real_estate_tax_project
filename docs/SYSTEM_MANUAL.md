@@ -273,7 +273,7 @@ Schema changes are applied automatically at API startup — no manual SQL steps 
   "DuplicateDetection": false,
   "ValuationPrediction": false,
   "UnregisteredBuildingDetection": false,
-  "GeoClusteringDashboard": false
+  "GeoClusteringDashboard": true
 }
 ```
 
@@ -288,7 +288,7 @@ Schema changes are applied automatically at API startup — no manual SQL steps 
 | `DuplicateDetection` | Duplicate registration detection | Works immediately (rule-based fallback active) |
 | `ValuationPrediction` | Predicted market value | After training valuation model |
 | `UnregisteredBuildingDetection` | Satellite/field-based detection | After model training |
-| `GeoClusteringDashboard` | Geographic cluster visualisation | After feature computation |
+| `GeoClusteringDashboard` | Geographic cluster visualisation and risk heatmap endpoints | Enabled by default for the map UI; requires property location/risk data for real cells |
 
 To enable a flag, change its value to `true` and restart the API:
 
