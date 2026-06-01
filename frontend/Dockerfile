@@ -5,6 +5,9 @@ FROM node:20-alpine AS build
 WORKDIR /app
 
 COPY package*.json ./
+COPY scripts ./scripts
+RUN cp scripts/templates/repair-frontend-build.mjs scripts/repair-frontend-build.mjs
+RUN node scripts/repair-frontend-build.mjs --package-only
 RUN npm install --frozen-lockfile || npm install
 
 COPY . .
