@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { CircleMarker, MapContainer, Popup, TileLayer, useMap } from 'react-leaflet'
 import type { LatLngBoundsExpression, LatLngExpression, PathOptions } from 'leaflet'
+import type { AxiosError } from 'axios'
 import 'leaflet/dist/leaflet.css'
 import { AlertTriangle, Map, TrendingUp } from 'lucide-react'
 import api from '../../lib/api'
@@ -15,6 +16,7 @@ type Cluster = { id: string; clusterLabel: number; centroidLat?: number; centroi
 type GeoBounds = { minLat: number; minLon: number; maxLat: number; maxLon: number }
 
 type MapPoint = { lat: number; lon: number }
+type ApiErrorPayload = { error?: string; message?: string; title?: string }
 
 const severityColor: Record<string, string> = {
   Critical: '#dc2626',
@@ -43,6 +45,29 @@ const fallbackHeatmap: HeatmapCell[] = [
   { centerLat: 30.0328, centerLon: 31.2442, avgRiskScore: 0.41, propertyCount: 24 },
   { centerLat: 30.0219, centerLon: 31.2015, avgRiskScore: 0.18, propertyCount: 12 },
 ]
+
+
+function getErrorPayload(error: unknown) {
+  return (error as AxiosError<ApiErrorPayload> | undefined)?.response?.data
+}
+
+function getHttpStatus(error: unknown) {
+  return (error as AxiosError | undefined)?.response?.status
+}
+
+function getHeatmapErrorDetails(error: unknown) {
+  const status = getHttpStatus(error)
+  const payload = getErrorPayload(error)
+  const serverMessage = payload?.error ?? payload?.message ?? payload?.title
+
+  if (status === 401) return { status, title: 'جلسة الدخول غير صالحة', action: 'سجّل الدخول مرة أخرى بحساب Admin أو SuperAdmin أو TaxOfficer.', serverMessage }
+  if (status === 403) return { status, title: 'صلاحيات غير كافية', action: 'الحساب الحالي لا يملك دور Admin/SuperAdmin/TaxOfficer المطلوب لخريطة المخاطر.', serverMessage }
+  if (status === 404) return { status, title: 'مسار الخدمة غير موجود', action: 'تأكد أن API container يعمل وأن nginx يمرر /api/v2/geo/risk-heatmap إلى الخادم.', serverMessage }
+  if (status && status >= 500) return { status, title: 'خطأ في الخادم أو قاعدة البيانات', action: 'راجع docker compose logs --tail=150 api وابحث عن أخطاء property_locations أو risk_scores أو migrations.', serverMessage }
+  if (!status) return { status: null, title: 'تعذر الاتصال بالخادم', action: 'تأكد أن API يعمل وأن المتصفح يستطيع الوصول إلى /api/v2/geo/risk-heatmap.', serverMessage }
+
+  return { status, title: 'تعذر تحميل بيانات المخاطر', action: 'افتح DevTools > Network وافحص طلب risk-heatmap لمعرفة سبب الفشل.', serverMessage }
+}
 
 function toNumber(value: unknown) {
   const numberValue = typeof value === 'number' ? value : Number(value)
@@ -221,9 +246,9 @@ export default function IntelligencePage() {
     if (tab === 'anomalies') return boundsFromPoints(anomalies.filter(item => item.lat && item.lon).map(item => ({ lat: item.lat!, lon: item.lon! })))
     return boundsFromPoints(clusters.filter(item => item.centroidLat && item.centroidLon).map(item => ({ lat: item.centroidLat!, lon: item.centroidLon! })))
   }, [anomalies, clusters, displayedHeatmap, tab])
-  const fallbackHeatmapMessage = heatmapQuery.isError
-    ? 'تعذر تحميل البيانات الحقيقية من الخادم؛ نعرض طبقة توضيحية مؤقتة حتى تتأكد من صلاحيات المستخدم ووجود بيانات مواقع/مخاطر.'
-    : 'لا توجد خلايا مخاطر حقيقية داخل النطاق الحالي؛ نعرض طبقة توضيحية مؤقتة قابلة للنقر.'
+  const heatmapErrorDetails = heatmapQuery.isError ? getHeatmapErrorDetails(heatmapQuery.error) : null
+  const fallbackHeatmapTitle = heatmapErrorDetails?.title ?? 'لا توجد خلايا مخاطر حقيقية داخل النطاق الحالي'
+  const fallbackHeatmapMessage = heatmapErrorDetails?.action ?? 'الخادم استجاب بنجاح لكن لم يرجع خلايا داخل النطاق الحالي؛ تأكد من وجود property_locations داخل نطاق الطلب.'
 
   const updateAnomaly = useMutation({
     mutationFn: ({ id, status, notes }: { id: string; status: string; notes?: string }) => api.patch(`/v2/geo/anomalies/${id}/status`, { status, notes }),
@@ -265,9 +290,18 @@ export default function IntelligencePage() {
         )}
 
         {tab === 'heatmap' && isFallbackHeatmap && (
-          <div className="pointer-events-none absolute inset-x-4 top-4 z-[1000] rounded-lg border border-amber-200 bg-amber-50/95 p-3 text-sm text-amber-900 shadow-sm">
-            <div className="font-semibold">وضع توضيحي للخريطة</div>
+          <div className="absolute inset-x-4 top-4 z-[1000] rounded-lg border border-amber-200 bg-amber-50/95 p-3 text-sm text-amber-900 shadow-sm" dir="rtl">
+            <div className="flex flex-wrap items-center gap-2 font-semibold">
+              <span>وضع توضيحي للخريطة</span>
+              {heatmapErrorDetails?.status && <span className="rounded bg-amber-100 px-2 py-0.5 text-xs">HTTP {heatmapErrorDetails.status}</span>}
+            </div>
+            <div className="mt-1 font-medium">{fallbackHeatmapTitle}</div>
             <div className="mt-1">{fallbackHeatmapMessage}</div>
+            {heatmapErrorDetails?.serverMessage && <div className="mt-1 text-xs text-amber-700">رسالة الخادم: {heatmapErrorDetails.serverMessage}</div>}
+            <div className="mt-1 text-xs text-amber-700">Endpoint: /api/v2/geo/risk-heatmap?minLat={queryBounds.minLat}&amp;minLon={queryBounds.minLon}&amp;maxLat={queryBounds.maxLat}&amp;maxLon={queryBounds.maxLon}</div>
+            <button type="button" onClick={() => heatmapQuery.refetch()} className="mt-2 rounded border border-amber-300 bg-white px-3 py-1 text-xs font-semibold text-amber-900 hover:bg-amber-100">
+              إعادة المحاولة
+            </button>
           </div>
         )}
 
