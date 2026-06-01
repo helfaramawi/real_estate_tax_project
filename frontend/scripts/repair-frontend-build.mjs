@@ -81,4 +81,4 @@ if (fixResult.status !== 0) {
   process.exit(fixResult.status ?? 1)
 }
 
-console.log('Frontend package.json, checker script, and Intelligence map page are repaired. You can now run docker compose build --no-cache frontend.')
+console.log('Frontend package.json, checker script, and Leaflet/OpenStreetMap Intelligence map page are repaired. You can now run docker compose build --no-cache frontend.')
