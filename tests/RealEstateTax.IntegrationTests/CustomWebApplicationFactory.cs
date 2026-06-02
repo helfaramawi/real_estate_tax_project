@@ -37,7 +37,10 @@ public class CustomWebApplicationFactory : WebApplicationFactory<Program>
                 ["Jwt:Issuer"]   = "RealEstateTaxTestIssuer",
                 ["Jwt:Audience"] = "RealEstateTaxTestAudience",
                 // Unused by tests (EF Core in-memory replaces the real DB)
-                ["ConnectionStrings:DefaultConnection"] = "Host=localhost;Database=integration_tests_unused"
+                ["ConnectionStrings:DefaultConnection"] = "Host=localhost;Database=integration_tests_unused",
+                ["FeatureManagement:GeoClusteringDashboard"] = "true",
+                ["FeatureManagement:GeoFencing"] = "true",
+                ["FeatureManagement:OfflineSync"] = "true"
             });
         });
 
@@ -83,6 +86,41 @@ public class CustomWebApplicationFactory : WebApplicationFactory<Program>
                 opts.TokenValidationParameters.ValidAudience = testAudience;
             });
         });
+    }
+
+
+    public async Task<(string Username, string Password)> CreateUserWithRoleAsync(string roleName)
+    {
+        using var scope = Services.CreateScope();
+        var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+
+        var role = await db.Roles.FirstAsync(r => r.Name == roleName);
+
+        var username = $"test_{roleName.ToLowerInvariant()}_{Guid.NewGuid():N}";
+        const string password = "Admin@12345";
+
+        var user = new User
+        {
+            Id = Guid.NewGuid(),
+            Username = username,
+            Email = $"{username}@test.com",
+            PasswordHash = BCrypt.Net.BCrypt.HashPassword(password),
+            FirstName = "Test",
+            LastName = roleName,
+            IsActive = true,
+            CreatedBy = "system"
+        };
+
+        db.Users.Add(user);
+        db.UserRoles.Add(new UserRole
+        {
+            UserId = user.Id,
+            RoleId = role.Id,
+            CreatedBy = "system"
+        });
+
+        await db.SaveChangesAsync();
+        return (username, password);
     }
 
     /// <summary>Seed roles, permissions, reference data, and a test admin user with SuperAdmin role.</summary>

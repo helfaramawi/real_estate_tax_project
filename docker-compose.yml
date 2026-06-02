@@ -45,6 +45,9 @@ services:
       MLService__InternalSecret: ${ML_INTERNAL_SECRET}
       Storage__LocalPath:   /var/retax/uploads
       Storage__BaseUrl:     /files
+      FeatureManagement__GeoClusteringDashboard: "true"
+      FeatureManagement__GeoFencing: "true"
+      FeatureManagement__OfflineSync: "true"
     volumes:
       - uploads_data:/var/retax/uploads
     expose:

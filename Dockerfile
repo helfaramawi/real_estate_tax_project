@@ -7,6 +7,7 @@ WORKDIR /src
 COPY ["src/RealEstateTax.Domain/RealEstateTax.Domain.csproj",          "src/RealEstateTax.Domain/"]
 COPY ["src/RealEstateTax.Application/RealEstateTax.Application.csproj","src/RealEstateTax.Application/"]
 COPY ["src/RealEstateTax.Infrastructure/RealEstateTax.Infrastructure.csproj","src/RealEstateTax.Infrastructure/"]
+COPY ["src/RealEstateTax.Intelligence/RealEstateTax.Intelligence.csproj","src/RealEstateTax.Intelligence/"]
 COPY ["src/RealEstateTax.API/RealEstateTax.API.csproj",                "src/RealEstateTax.API/"]
 
 RUN dotnet restore "src/RealEstateTax.API/RealEstateTax.API.csproj"
