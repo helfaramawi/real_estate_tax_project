@@ -37,7 +37,10 @@ public class CustomWebApplicationFactory : WebApplicationFactory<Program>
                 ["Jwt:Issuer"]   = "RealEstateTaxTestIssuer",
                 ["Jwt:Audience"] = "RealEstateTaxTestAudience",
                 // Unused by tests (EF Core in-memory replaces the real DB)
-                ["ConnectionStrings:DefaultConnection"] = "Host=localhost;Database=integration_tests_unused"
+                ["ConnectionStrings:DefaultConnection"] = "Host=localhost;Database=integration_tests_unused",
+                ["FeatureManagement:GeoClusteringDashboard"] = "true",
+                ["FeatureManagement:GeoFencing"] = "true",
+                ["FeatureManagement:OfflineSync"] = "true"
             });
         });
 
