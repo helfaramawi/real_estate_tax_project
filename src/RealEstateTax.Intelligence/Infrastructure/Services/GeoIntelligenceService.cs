@@ -32,13 +32,13 @@ public class GeoIntelligenceService(
         // ST_ClusterDBSCAN: eps in degrees (~100m ≈ 0.001°), minPoints = 3
         const string sql = """
             SELECT
-                c.cluster_id                                              AS cluster_label,
-                ST_AsText(ST_Centroid(ST_Collect(pl.coordinates)))        AS centroid_wkt,
-                ST_AsText(ST_ConvexHull(ST_Collect(pl.coordinates)))      AS hull_wkt,
-                COUNT(*)                                                   AS property_count,
-                PERCENTILE_CONT(0.5) WITHIN GROUP (ORDER BY v.market_value_per_sq_m) AS median_val,
-                PERCENTILE_CONT(0.25) WITHIN GROUP (ORDER BY v.market_value_per_sq_m) AS p25_val,
-                PERCENTILE_CONT(0.75) WITHIN GROUP (ORDER BY v.market_value_per_sq_m) AS p75_val
+                c.cluster_id                                               AS "ClusterLabel",
+                ST_AsText(ST_Centroid(ST_Collect(pl.coordinates)))         AS "CentroidWkt",
+                ST_AsText(ST_ConvexHull(ST_Collect(pl.coordinates)))       AS "HullWkt",
+                COUNT(*)::int                                             AS "PropertyCount",
+                PERCENTILE_CONT(0.5) WITHIN GROUP (ORDER BY v.market_value_per_sq_m) AS "MedianVal",
+                PERCENTILE_CONT(0.25) WITHIN GROUP (ORDER BY v.market_value_per_sq_m) AS "P25Val",
+                PERCENTILE_CONT(0.75) WITHIN GROUP (ORDER BY v.market_value_per_sq_m) AS "P75Val"
             FROM (
                 SELECT
                     property_id,
@@ -163,10 +163,10 @@ public class GeoIntelligenceService(
         // Aggregate risk scores by 0.01° grid cells (≈ 1km) within bounding box
         const string sql = """
             SELECT
-                ROUND(CAST(pl.latitude AS NUMERIC), 2)  AS cell_lat,
-                ROUND(CAST(pl.longitude AS NUMERIC), 2) AS cell_lon,
-                AVG(COALESCE(p.ml_risk_score, r.score / 100.0, 0.5)) AS avg_risk,
-                COUNT(*) AS property_count
+                ROUND(CAST(pl.latitude AS NUMERIC), 2)::double precision  AS "CellLat",
+                ROUND(CAST(pl.longitude AS NUMERIC), 2)::double precision AS "CellLon",
+                AVG(COALESCE(p.ml_risk_score, r.score / 100.0, 0.5))      AS "AvgRisk",
+                COUNT(*)::int                                            AS "PropertyCount"
             FROM public.property_locations pl
             JOIN public.properties p ON p.id = pl.property_id AND NOT p.is_deleted
             LEFT JOIN LATERAL (
