@@ -101,6 +101,7 @@ export default function PropertiesPage() {
       setShowCreate(false)
       setLocation(null)
       setForm({ type: '0', builtUpArea: '', landArea: '', yearBuilt: '', streetAddress: '', district: '', city: '', governorate: 'Cairo' })
+      setErrors({})
     },
     onError: (err: any) => {
       const detail = err.response?.data
@@ -112,7 +113,10 @@ export default function PropertiesPage() {
   function validate() {
     const e: Record<string, string> = {}
     if (!form.builtUpArea || isNaN(parseFloat(form.builtUpArea))) e.builtUpArea = 'مطلوب'
+    if (!form.streetAddress.trim()) e.streetAddress = 'العنوان التفصيلي مطلوب'
+    if (!form.city.trim()) e.city = 'المدينة مطلوبة'
     if (!form.governorate) e.governorate = 'مطلوب'
+    if (!location) e.location = 'يجب تحديد موقع العقار من GPS أو الخريطة'
     setErrors(e)
     return Object.keys(e).length === 0
   }
@@ -193,8 +197,8 @@ export default function PropertiesPage() {
                   onChange={(e) => setForm({ ...form, yearBuilt: e.target.value })} placeholder="2010" />
               </FormField>
             </div>
-            <FormField label="عنوان الشارع">
-              <Input value={form.streetAddress}
+            <FormField label="عنوان الشارع" required error={errors.streetAddress}>
+              <Input value={form.streetAddress} error={!!errors.streetAddress}
                 onChange={(e) => setForm({ ...form, streetAddress: e.target.value })} placeholder="15 كورنيش النيل" />
             </FormField>
             <div className="grid grid-cols-3 gap-4">
@@ -202,8 +206,8 @@ export default function PropertiesPage() {
                 <Input value={form.district}
                   onChange={(e) => setForm({ ...form, district: e.target.value })} placeholder="جاردن سيتي" />
               </FormField>
-              <FormField label="المدينة">
-                <Input value={form.city}
+              <FormField label="المدينة" required error={errors.city}>
+                <Input value={form.city} error={!!errors.city}
                   onChange={(e) => setForm({ ...form, city: e.target.value })} placeholder="القاهرة" />
               </FormField>
               <FormField label="المحافظة" required error={errors.governorate}>
@@ -213,9 +217,12 @@ export default function PropertiesPage() {
                 </Select>
               </FormField>
             </div>
-            <FormField label="الموقع الجغرافي (GPS)">
-              <MapLocationPicker value={location} onChange={setLocation} />
+            <FormField label="الموقع الجغرافي (GPS)" required error={errors.location}>
+              <MapLocationPicker value={location} onChange={setLocation} error={!!errors.location} />
             </FormField>
+            <p className="text-xs text-slate-500 -mt-2">
+              اختيار نقطة GPS إلزامي لأن الإحداثيات تُستخدم في خريطة الذكاء الاصطناعي وحساب مناطق المخاطر بدقة.
+            </p>
             <div className="flex gap-3 justify-start pt-2">
               <button
                 onClick={() => { if (validate()) createMutation.mutate() }}

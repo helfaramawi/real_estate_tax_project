@@ -42,7 +42,7 @@ try
 
     // ─── Controllers (includes Intelligence assembly for /api/v2/* routes) ──
     builder.Services.AddControllers()
-        .AddApplicationPart(typeof(RealEstateTax.Intelligence.API.Controllers.IntelligenceController).Assembly)
+        .AddApplicationPart(typeof(RealEstateTax.Intelligence.API.Controllers.GeoController).Assembly)
         .AddJsonOptions(o => o.JsonSerializerOptions.PropertyNamingPolicy = System.Text.Json.JsonNamingPolicy.CamelCase)
         .AddFluentValidation();
     builder.Services.AddFluentValidationAutoValidation();

@@ -61,6 +61,7 @@ docker compose up -d api
 # API will be available at: http://localhost:8080
 # Swagger UI:              http://localhost:8080/swagger
 # Hangfire Dashboard:      http://localhost:8080/hangfire
+# Health check:            http://localhost:8080/health
 ```
 
 ### Option B: Local Development
@@ -91,6 +92,7 @@ dotnet run
 
 # API: http://localhost:5000
 # Swagger: http://localhost:5000/swagger
+# Health: http://localhost:5000/health
 ```
 
 ---

@@ -1,6 +1,6 @@
 import { useState, useCallback } from 'react'
 import { MapContainer, TileLayer, Marker, useMapEvents } from 'react-leaflet'
-import { MapPin } from 'lucide-react'
+import { Crosshair, MapPin } from 'lucide-react'
 import 'leaflet/dist/leaflet.css'
 import L from 'leaflet'
 
@@ -25,14 +25,40 @@ function ClickHandler({ onPick }: { onPick: (ll: LatLon) => void }) {
 type Props = {
   value: LatLon | null
   onChange: (ll: LatLon | null) => void
+  error?: boolean
 }
 
-export default function MapLocationPicker({ value, onChange }: Props) {
+export default function MapLocationPicker({ value, onChange, error }: Props) {
   const [open, setOpen] = useState(false)
+  const [gpsError, setGpsError] = useState<string | null>(null)
+  const [locating, setLocating] = useState(false)
 
   const handlePick = useCallback((ll: LatLon) => {
     onChange(ll)
+    setGpsError(null)
     setOpen(false)
+  }, [onChange])
+
+  const useCurrentGps = useCallback(() => {
+    if (!navigator.geolocation) {
+      setGpsError('المتصفح لا يدعم تحديد الموقع عبر GPS.')
+      return
+    }
+
+    setLocating(true)
+    setGpsError(null)
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        onChange({ lat: position.coords.latitude, lon: position.coords.longitude })
+        setLocating(false)
+        setOpen(true)
+      },
+      () => {
+        setGpsError('تعذر قراءة موقع الجهاز. اسمح بالوصول للموقع أو اختر النقطة من الخريطة.')
+        setLocating(false)
+      },
+      { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 },
+    )
   }, [onChange])
 
   return (
@@ -40,7 +66,7 @@ export default function MapLocationPicker({ value, onChange }: Props) {
       <button
         type="button"
         onClick={() => setOpen(true)}
-        className="flex items-center gap-2 px-3 py-2 text-sm border border-slate-300 rounded-lg hover:bg-slate-50 transition-colors w-full"
+        className={`flex items-center gap-2 px-3 py-2 text-sm border rounded-lg hover:bg-slate-50 transition-colors w-full ${error ? 'border-red-300 ring-2 ring-red-100' : 'border-slate-300'}`}
       >
         <MapPin size={15} className={value ? 'text-blue-600' : 'text-slate-400'} />
         {value
@@ -55,6 +81,18 @@ export default function MapLocationPicker({ value, onChange }: Props) {
           >✕</button>
         )}
       </button>
+      <div className="mt-2 flex flex-wrap items-center gap-2 text-xs text-slate-500">
+        <button
+          type="button"
+          onClick={useCurrentGps}
+          disabled={locating}
+          className="inline-flex items-center gap-1 rounded-md border border-blue-200 bg-blue-50 px-2 py-1 text-blue-700 hover:bg-blue-100 disabled:opacity-60"
+        >
+          <Crosshair size={13} /> {locating ? 'جاري قراءة GPS…' : 'استخدام موقع الجهاز GPS'}
+        </button>
+        <span>أو اضغط على الخريطة لتثبيت موقع العقار بدقة.</span>
+      </div>
+      {gpsError && <p className="mt-1 text-xs text-amber-700">{gpsError}</p>}
 
       {open && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4">
@@ -63,7 +101,17 @@ export default function MapLocationPicker({ value, onChange }: Props) {
               <h3 className="font-semibold text-slate-800">حدد موقع العقار على الخريطة</h3>
               <button onClick={() => setOpen(false)} className="text-slate-400 hover:text-slate-700 text-lg">✕</button>
             </div>
-            <p className="text-xs text-slate-500">انقر على الخريطة لتثبيت الموقع</p>
+            <div className="flex items-center justify-between gap-3">
+              <p className="text-xs text-slate-500">انقر على الخريطة لتثبيت الموقع، أو استخدم GPS من زر موقع الجهاز.</p>
+              <button
+                type="button"
+                onClick={useCurrentGps}
+                disabled={locating}
+                className="inline-flex items-center gap-1 rounded-md border border-blue-200 bg-blue-50 px-2 py-1 text-xs text-blue-700 hover:bg-blue-100 disabled:opacity-60"
+              >
+                <Crosshair size={13} /> {locating ? 'جاري قراءة GPS…' : 'GPS'}
+              </button>
+            </div>
             <div className="rounded-lg overflow-hidden border border-slate-200" style={{ height: 420 }}>
               <MapContainer
                 center={value ? [value.lat, value.lon] : [26.8206, 30.8025]}
