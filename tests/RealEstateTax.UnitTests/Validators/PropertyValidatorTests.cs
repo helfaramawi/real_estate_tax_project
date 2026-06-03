@@ -13,6 +13,9 @@ public class PropertyValidatorTests
     {
         Type = PropertyType.Residential,
         BuiltUpArea = 120m,
+        StreetAddress = "15 Corniche El Nile",
+        City = "Cairo",
+        Governorate = "Cairo",
         Latitude = 30.044,
         Longitude = 31.235
     };
@@ -21,6 +24,9 @@ public class PropertyValidatorTests
     {
         Type = PropertyType.Residential,
         BuiltUpArea = 120m,
+        StreetAddress = "15 Corniche El Nile",
+        City = "Cairo",
+        Governorate = "Cairo",
         Latitude = lat,
         Longitude = lon
     };
@@ -52,17 +58,37 @@ public class PropertyValidatorTests
     }
 
     [Fact]
-    public async Task Coordinates_Null_AreOptional_Passes()
+    public async Task Coordinates_Null_AreRequired_Fails()
     {
-        var req = new CreatePropertyRequest
-        {
-            Type = PropertyType.Residential,
-            BuiltUpArea = 120m,
-            Latitude = null,
-            Longitude = null
-        };
+        var req = Cairo();
+        req.Latitude = null;
+        req.Longitude = null;
+
         var result = await _validator.ValidateAsync(req);
-        result.IsValid.Should().BeTrue();
+
+        result.IsValid.Should().BeFalse();
+        result.Errors.Should().Contain(e => e.PropertyName == nameof(CreatePropertyRequest.Latitude));
+        result.Errors.Should().Contain(e => e.PropertyName == nameof(CreatePropertyRequest.Longitude));
+    }
+
+    [Theory]
+    [InlineData(nameof(CreatePropertyRequest.StreetAddress))]
+    [InlineData(nameof(CreatePropertyRequest.City))]
+    [InlineData(nameof(CreatePropertyRequest.Governorate))]
+    public async Task AddressFields_Missing_Fail(string missingField)
+    {
+        var req = Cairo();
+        switch (missingField)
+        {
+            case nameof(CreatePropertyRequest.StreetAddress): req.StreetAddress = null; break;
+            case nameof(CreatePropertyRequest.City): req.City = null; break;
+            case nameof(CreatePropertyRequest.Governorate): req.Governorate = null; break;
+        }
+
+        var result = await _validator.ValidateAsync(req);
+
+        result.IsValid.Should().BeFalse();
+        result.Errors.Should().Contain(e => e.PropertyName == missingField);
     }
 
     // ── BuiltUpArea ────────────────────────────────────────────────────────────
@@ -99,7 +125,8 @@ public class PropertyValidatorTests
     [InlineData(1_000_000)]
     public async Task BuiltUpArea_ValidRange_Passes(decimal area)
     {
-        var req = new CreatePropertyRequest { Type = PropertyType.Residential, BuiltUpArea = area };
+        var req = Cairo();
+        req.BuiltUpArea = area;
         var result = await _validator.ValidateAsync(req);
         result.Errors.Should().NotContain(e => e.PropertyName == nameof(CreatePropertyRequest.BuiltUpArea));
     }

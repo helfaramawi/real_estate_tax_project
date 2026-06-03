@@ -95,6 +95,10 @@ public class PropertyAppService : IPropertyService
 
     public async Task<Result<PropertyDto>> CreateAsync(CreatePropertyRequest request, CancellationToken ct = default)
     {
+        var locationErrors = ValidateRequiredAddressAndGps(request);
+        if (locationErrors.Count > 0)
+            return Result<PropertyDto>.ValidationFailure(locationErrors);
+
         var property = request.Adapt<Property>();
         property.PropertyCode = await GeneratePropertyCodeAsync(ct);
         property.Status = PropertyStatus.Draft;
@@ -108,7 +112,13 @@ public class PropertyAppService : IPropertyService
                 Latitude = request.Latitude,
                 Longitude = request.Longitude,
                 Coordinates = new Point(request.Longitude.Value, request.Latitude.Value) { SRID = 4326 },
-                GeocodingSource = "ManualEntry",
+                Governorate = request.Governorate,
+                City = request.City,
+                Neighbourhood = request.Neighbourhood,
+                Markaz = request.District,
+                GeocodingSource = "GpsMapSelection",
+                GeocodedAt = DateTime.UtcNow,
+                IsVerified = true,
                 CreatedBy = _currentUser.Username ?? "System"
             };
         }
@@ -295,6 +305,18 @@ public class PropertyAppService : IPropertyService
             }
         }
         return Result<BulkImportResult>.Success(result);
+    }
+
+
+    private static List<string> ValidateRequiredAddressAndGps(CreatePropertyRequest request)
+    {
+        var errors = new List<string>();
+        if (string.IsNullOrWhiteSpace(request.StreetAddress)) errors.Add("Street address is required for property registration.");
+        if (string.IsNullOrWhiteSpace(request.City)) errors.Add("City is required for property registration.");
+        if (string.IsNullOrWhiteSpace(request.Governorate)) errors.Add("Governorate is required for property registration.");
+        if (!request.Latitude.HasValue) errors.Add("GPS latitude is required. Select the property location on the map.");
+        if (!request.Longitude.HasValue) errors.Add("GPS longitude is required. Select the property location on the map.");
+        return errors;
     }
 
     private async Task<string> GeneratePropertyCodeAsync(CancellationToken ct)

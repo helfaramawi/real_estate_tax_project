@@ -1,3 +1,4 @@
+using System.Data;
 using System.Text.Json;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
@@ -32,13 +33,13 @@ public class GeoIntelligenceService(
         // ST_ClusterDBSCAN: eps in degrees (~100m ≈ 0.001°), minPoints = 3
         const string sql = """
             SELECT
-                c.cluster_id                                              AS cluster_label,
-                ST_AsText(ST_Centroid(ST_Collect(pl.coordinates)))        AS centroid_wkt,
-                ST_AsText(ST_ConvexHull(ST_Collect(pl.coordinates)))      AS hull_wkt,
-                COUNT(*)                                                   AS property_count,
-                PERCENTILE_CONT(0.5) WITHIN GROUP (ORDER BY v.market_value_per_sq_m) AS median_val,
-                PERCENTILE_CONT(0.25) WITHIN GROUP (ORDER BY v.market_value_per_sq_m) AS p25_val,
-                PERCENTILE_CONT(0.75) WITHIN GROUP (ORDER BY v.market_value_per_sq_m) AS p75_val
+                c.cluster_id                                               AS "ClusterLabel",
+                ST_AsText(ST_Centroid(ST_Collect(pl.coordinates)))         AS "CentroidWkt",
+                ST_AsText(ST_ConvexHull(ST_Collect(pl.coordinates)))       AS "HullWkt",
+                COUNT(*)::int                                             AS "PropertyCount",
+                PERCENTILE_CONT(0.5) WITHIN GROUP (ORDER BY v.market_value_per_sq_m) AS "MedianVal",
+                PERCENTILE_CONT(0.25) WITHIN GROUP (ORDER BY v.market_value_per_sq_m) AS "P25Val",
+                PERCENTILE_CONT(0.75) WITHIN GROUP (ORDER BY v.market_value_per_sq_m) AS "P75Val"
             FROM (
                 SELECT
                     property_id,
@@ -163,10 +164,10 @@ public class GeoIntelligenceService(
         // Aggregate risk scores by 0.01° grid cells (≈ 1km) within bounding box
         const string sql = """
             SELECT
-                ROUND(CAST(pl.latitude AS NUMERIC), 2)  AS cell_lat,
-                ROUND(CAST(pl.longitude AS NUMERIC), 2) AS cell_lon,
-                AVG(COALESCE(p.ml_risk_score, r.score / 100.0, 0.5)) AS avg_risk,
-                COUNT(*) AS property_count
+                ROUND(CAST(pl.latitude AS NUMERIC), 2)::double precision  AS "CellLat",
+                ROUND(CAST(pl.longitude AS NUMERIC), 2)::double precision AS "CellLon",
+                AVG(COALESCE(p.ml_risk_score, r.score / 100.0, 0.5))::double precision AS "AvgRisk",
+                COUNT(*)::int                                            AS "PropertyCount"
             FROM public.property_locations pl
             JOIN public.properties p ON p.id = pl.property_id AND NOT p.is_deleted
             LEFT JOIN LATERAL (
@@ -174,15 +175,13 @@ public class GeoIntelligenceService(
                 WHERE property_id = p.id
                 ORDER BY created_at DESC LIMIT 1
             ) r ON TRUE
-            WHERE pl.latitude BETWEEN {0} AND {1}
-              AND pl.longitude BETWEEN {2} AND {3}
+            WHERE pl.latitude BETWEEN @minLat AND @maxLat
+              AND pl.longitude BETWEEN @minLon AND @maxLon
             GROUP BY ROUND(CAST(pl.latitude AS NUMERIC), 2),
                      ROUND(CAST(pl.longitude AS NUMERIC), 2)
             """;
 
-        var rows = await appDb.Database
-            .SqlQueryRaw<HeatmapRaw>(sql, minLat, maxLat, minLon, maxLon)
-            .ToListAsync(ct);
+        var rows = await ReadHeatmapRowsAsync(sql, minLat, maxLat, minLon, maxLon, ct);
 
         return new RiskHeatmapDto
         {
@@ -195,6 +194,53 @@ public class GeoIntelligenceService(
                 H3Index = $"{r.CellLat:F2},{r.CellLon:F2}",
             }).ToList()
         };
+    }
+
+    private async Task<List<HeatmapRaw>> ReadHeatmapRowsAsync(
+        string sql, double minLat, double maxLat, double minLon, double maxLon, CancellationToken ct)
+    {
+        var connection = appDb.Database.GetDbConnection();
+        var shouldClose = connection.State != ConnectionState.Open;
+        if (shouldClose)
+            await connection.OpenAsync(ct);
+
+        try
+        {
+            using var command = connection.CreateCommand();
+            command.CommandText = sql;
+            AddParameter(command, "minLat", minLat);
+            AddParameter(command, "maxLat", maxLat);
+            AddParameter(command, "minLon", minLon);
+            AddParameter(command, "maxLon", maxLon);
+
+            var rows = new List<HeatmapRaw>();
+            await using var reader = await command.ExecuteReaderAsync(ct);
+            while (await reader.ReadAsync(ct))
+            {
+                rows.Add(new HeatmapRaw
+                {
+                    CellLat = reader.GetDouble(reader.GetOrdinal("CellLat")),
+                    CellLon = reader.GetDouble(reader.GetOrdinal("CellLon")),
+                    AvgRisk = reader.GetDouble(reader.GetOrdinal("AvgRisk")),
+                    PropertyCount = reader.GetInt32(reader.GetOrdinal("PropertyCount")),
+                });
+            }
+
+            return rows;
+        }
+        finally
+        {
+            if (shouldClose)
+                await connection.CloseAsync();
+        }
+    }
+
+    private static void AddParameter(System.Data.Common.DbCommand command, string name, double value)
+    {
+        var parameter = command.CreateParameter();
+        parameter.ParameterName = name;
+        parameter.Value = value;
+        command.Parameters.Add(parameter);
     }
 
     private static Polygon ParseGeoJsonPolygon(string geoJson)

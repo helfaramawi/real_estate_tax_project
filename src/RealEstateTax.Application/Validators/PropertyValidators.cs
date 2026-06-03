@@ -23,6 +23,26 @@ public class CreatePropertyRequestValidator : AbstractValidator<CreatePropertyRe
             .InclusiveBetween(1800, DateTime.UtcNow.Year)
             .When(x => x.YearBuilt.HasValue);
 
+        RuleFor(x => x.StreetAddress)
+            .NotEmpty()
+            .WithMessage("Street address is required for property registration.");
+
+        RuleFor(x => x.City)
+            .NotEmpty()
+            .WithMessage("City is required for property registration.");
+
+        RuleFor(x => x.Governorate)
+            .NotEmpty()
+            .WithMessage("Governorate is required for property registration.");
+
+        RuleFor(x => x.Latitude)
+            .NotNull()
+            .WithMessage("GPS latitude is required. Select the property location on the map.");
+
+        RuleFor(x => x.Longitude)
+            .NotNull()
+            .WithMessage("GPS longitude is required. Select the property location on the map.");
+
         RuleFor(x => x.Latitude)
             .InclusiveBetween(-90, 90)
             .When(x => x.Latitude.HasValue);
